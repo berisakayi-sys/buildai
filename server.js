@@ -82,6 +82,10 @@ app.post('/api/generate', async (req, res) => {
   }
 });
 
+app.get('/builder', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'builder.html'));
+});
+
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
