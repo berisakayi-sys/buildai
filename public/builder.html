@@ -1,0 +1,794 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BuildAI — Builder</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #050508;
+      --surface: #0d0d14;
+      --surface2: #12121c;
+      --border: rgba(255,255,255,0.07);
+      --border2: rgba(255,255,255,0.12);
+      --purple: #7c3aed;
+      --purple-light: #a78bfa;
+      --blue: #3b82f6;
+      --green: #34d399;
+      --text: #f1f5f9;
+      --muted: #64748b;
+      --muted2: #94a3b8;
+    }
+
+    html, body { height: 100%; overflow: hidden; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── TOPBAR ── */
+    .topbar {
+      height: 54px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 20px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+      gap: 12px;
+    }
+
+    .logo {
+      font-size: 1.1rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, #a78bfa, #60a5fa);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      text-decoration: none;
+      flex-shrink: 0;
+    }
+
+    .topbar-center {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 6px 14px;
+      flex: 1;
+      max-width: 360px;
+    }
+
+    .site-title-display {
+      font-size: 0.85rem;
+      color: var(--muted2);
+      font-weight: 500;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .topbar-actions {
+      display: flex;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .btn {
+      padding: 7px 16px;
+      border-radius: 8px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+      text-decoration: none;
+      white-space: nowrap;
+    }
+
+    .btn-ghost {
+      background: transparent;
+      color: var(--muted2);
+      border: 1px solid var(--border);
+    }
+    .btn-ghost:hover { color: var(--text); border-color: var(--border2); }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--purple), var(--blue));
+      color: #fff;
+      box-shadow: 0 0 20px rgba(124,58,237,0.3);
+    }
+    .btn-primary:hover { box-shadow: 0 0 30px rgba(124,58,237,0.5); }
+    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .btn-download {
+      background: rgba(52,211,153,0.12);
+      color: var(--green);
+      border: 1px solid rgba(52,211,153,0.25);
+    }
+    .btn-download:hover { background: rgba(52,211,153,0.2); }
+    .btn-download:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    /* ── MAIN LAYOUT ── */
+    .workspace {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    /* ── CHAT PANEL ── */
+    .chat-panel {
+      width: 380px;
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+      border-right: 1px solid var(--border);
+      background: var(--surface);
+    }
+
+    .chat-header {
+      padding: 16px 20px 12px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .chat-header h3 {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
+
+    .chat-header p {
+      font-size: 0.75rem;
+      color: var(--muted);
+    }
+
+    .messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(255,255,255,0.08) transparent;
+    }
+
+    .message {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .message-role {
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .message.user .message-role { color: var(--purple-light); }
+    .message.ai .message-role { color: var(--muted); }
+
+    .message-bubble {
+      padding: 10px 14px;
+      border-radius: 12px;
+      font-size: 0.85rem;
+      line-height: 1.55;
+    }
+
+    .message.user .message-bubble {
+      background: rgba(124,58,237,0.15);
+      border: 1px solid rgba(124,58,237,0.2);
+      color: var(--text);
+    }
+
+    .message.ai .message-bubble {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--border);
+      color: var(--muted2);
+    }
+
+    .message.ai.success .message-bubble {
+      border-color: rgba(52,211,153,0.25);
+      background: rgba(52,211,153,0.05);
+    }
+
+    .message.ai.error .message-bubble {
+      border-color: rgba(239,68,68,0.25);
+      background: rgba(239,68,68,0.05);
+      color: #fca5a5;
+    }
+
+    /* Typing indicator */
+    .typing-indicator {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      padding: 10px 14px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      width: fit-content;
+    }
+
+    .typing-indicator span {
+      width: 6px; height: 6px;
+      background: var(--purple-light);
+      border-radius: 50%;
+      animation: bounce 1.2s infinite;
+    }
+    .typing-indicator span:nth-child(2) { animation-delay: 0.15s; }
+    .typing-indicator span:nth-child(3) { animation-delay: 0.3s; }
+
+    @keyframes bounce {
+      0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+      30% { transform: translateY(-5px); opacity: 1; }
+    }
+
+    /* ── INPUT AREA ── */
+    .input-area {
+      padding: 14px 16px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .input-wrap {
+      display: flex;
+      gap: 8px;
+      align-items: flex-end;
+    }
+
+    textarea {
+      flex: 1;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--border2);
+      border-radius: 10px;
+      color: var(--text);
+      font-family: inherit;
+      font-size: 0.85rem;
+      padding: 10px 14px;
+      resize: none;
+      outline: none;
+      min-height: 44px;
+      max-height: 160px;
+      line-height: 1.5;
+      transition: border-color 0.2s;
+    }
+
+    textarea:focus { border-color: rgba(124,58,237,0.5); }
+    textarea::placeholder { color: var(--muted); }
+
+    .send-btn {
+      width: 40px; height: 40px;
+      background: linear-gradient(135deg, var(--purple), var(--blue));
+      border: none;
+      border-radius: 10px;
+      color: white;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      flex-shrink: 0;
+      transition: all 0.2s;
+      box-shadow: 0 0 16px rgba(124,58,237,0.3);
+    }
+
+    .send-btn:hover { transform: scale(1.05); box-shadow: 0 0 24px rgba(124,58,237,0.5); }
+    .send-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+    .input-hint {
+      font-size: 0.72rem;
+      color: var(--muted);
+      text-align: center;
+    }
+
+    /* ── PREVIEW PANEL ── */
+    .preview-panel {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      background: #1a1a2e;
+    }
+
+    .preview-toolbar {
+      height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 16px;
+      background: var(--surface2);
+      border-bottom: 1px solid var(--border);
+      gap: 10px;
+      flex-shrink: 0;
+    }
+
+    .preview-tabs {
+      display: flex;
+      gap: 2px;
+    }
+
+    .tab {
+      padding: 5px 14px;
+      border-radius: 6px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      background: transparent;
+      color: var(--muted);
+      transition: all 0.2s;
+    }
+
+    .tab.active {
+      background: rgba(124,58,237,0.2);
+      color: var(--purple-light);
+    }
+
+    .tab:hover:not(.active) { color: var(--text); }
+
+    .preview-status {
+      font-size: 0.75rem;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .status-dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: var(--muted);
+    }
+
+    .status-dot.ready { background: var(--green); box-shadow: 0 0 8px var(--green); }
+    .status-dot.building {
+      background: var(--purple-light);
+      animation: pulse2 1s infinite;
+    }
+
+    @keyframes pulse2 {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+
+    .preview-frame-wrap {
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+    }
+
+    #preview-iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+      background: white;
+    }
+
+    .code-view {
+      flex: 1;
+      overflow: auto;
+      display: none;
+      background: #0d1117;
+      padding: 20px;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(255,255,255,0.08) transparent;
+    }
+
+    .code-view pre {
+      font-family: 'Fira Code', 'Cascadia Code', 'Consolas', monospace;
+      font-size: 0.78rem;
+      line-height: 1.6;
+      color: #e2e8f0;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    /* Empty state */
+    .empty-state {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 40px;
+      background: var(--surface);
+      gap: 16px;
+    }
+
+    .empty-icon {
+      font-size: 3.5rem;
+      line-height: 1;
+    }
+
+    .empty-state h3 {
+      font-size: 1.2rem;
+      font-weight: 700;
+    }
+
+    .empty-state p {
+      color: var(--muted);
+      font-size: 0.88rem;
+      max-width: 360px;
+    }
+
+    .suggestion-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: center;
+      margin-top: 8px;
+    }
+
+    .chip {
+      background: rgba(124,58,237,0.1);
+      border: 1px solid rgba(124,58,237,0.25);
+      color: var(--purple-light);
+      padding: 7px 14px;
+      border-radius: 100px;
+      font-size: 0.78rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .chip:hover {
+      background: rgba(124,58,237,0.2);
+      border-color: rgba(124,58,237,0.5);
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 5px; height: 5px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 3px; }
+
+    @media (max-width: 700px) {
+      .chat-panel { width: 100%; border-right: none; border-bottom: 1px solid var(--border); }
+      .workspace { flex-direction: column; }
+      .preview-panel { min-height: 300px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <a href="/" class="logo">BuildAI</a>
+    <div class="topbar-center">
+      <span style="color: var(--muted); font-size: 0.75rem;">📄</span>
+      <span class="site-title-display" id="site-title">No website generated yet</span>
+    </div>
+    <div class="topbar-actions">
+      <button class="btn btn-ghost" id="btn-new" onclick="newProject()">+ New</button>
+      <button class="btn btn-download" id="btn-download" disabled onclick="downloadSite()">⬇ Download</button>
+    </div>
+  </div>
+
+  <!-- WORKSPACE -->
+  <div class="workspace">
+
+    <!-- CHAT PANEL -->
+    <div class="chat-panel">
+      <div class="chat-header">
+        <h3>✦ AI Website Builder</h3>
+        <p>Describe your website and the AI will build it instantly</p>
+      </div>
+
+      <div class="messages" id="messages">
+        <div class="message ai">
+          <div class="message-role">BuildAI</div>
+          <div class="message-bubble">
+            Hi! Tell me about the website you want to build. Describe the type of business, style preferences, colors, and any sections you need. I'll generate a complete website for you instantly! 🚀
+          </div>
+        </div>
+      </div>
+
+      <div class="input-area">
+        <div class="input-wrap">
+          <textarea
+            id="user-input"
+            placeholder="e.g. Build a modern landing page for a fitness app called 'FitFlow' with a dark theme, hero section, features, and pricing..."
+            rows="2"
+          ></textarea>
+          <button class="send-btn" id="send-btn" onclick="sendMessage()">➤</button>
+        </div>
+        <div class="input-hint">Press Enter to send · Shift+Enter for new line</div>
+      </div>
+    </div>
+
+    <!-- PREVIEW PANEL -->
+    <div class="preview-panel" id="preview-panel">
+      <div class="preview-toolbar">
+        <div class="preview-tabs">
+          <button class="tab active" id="tab-preview" onclick="switchTab('preview')">Preview</button>
+          <button class="tab" id="tab-code" onclick="switchTab('code')">Code</button>
+        </div>
+        <div class="preview-status">
+          <span class="status-dot" id="status-dot"></span>
+          <span id="status-text">Waiting for prompt...</span>
+        </div>
+      </div>
+
+      <div class="preview-frame-wrap" id="preview-wrap">
+        <!-- Empty state -->
+        <div class="empty-state" id="empty-state">
+          <div class="empty-icon">✦</div>
+          <h3>Your website will appear here</h3>
+          <p>Describe any website in the chat and the AI will generate a complete, beautiful site in seconds.</p>
+          <div class="suggestion-chips">
+            <span class="chip" onclick="useSuggestion('Restaurant landing page with online menu and reservations')">🍕 Restaurant</span>
+            <span class="chip" onclick="useSuggestion('Personal portfolio for a UX designer with dark theme and project showcase')">👤 Portfolio</span>
+            <span class="chip" onclick="useSuggestion('SaaS landing page for a project management tool called TaskFlow')">🚀 SaaS App</span>
+            <span class="chip" onclick="useSuggestion('E-commerce store for handmade jewelry with product grid')">💍 Shop</span>
+            <span class="chip" onclick="useSuggestion('Fitness coach website with about, services, and contact form')">💪 Fitness</span>
+            <span class="chip" onclick="useSuggestion('Wedding photography portfolio with gallery and booking form')">📸 Photography</span>
+          </div>
+        </div>
+
+        <iframe id="preview-iframe" style="display:none;"></iframe>
+      </div>
+
+      <div class="code-view" id="code-view">
+        <pre id="code-content"><!-- Code will appear here after generation --></pre>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    let conversationHistory = [];
+    let currentHtml = null;
+    let isGenerating = false;
+
+    const messagesEl = document.getElementById('messages');
+    const inputEl = document.getElementById('user-input');
+    const sendBtn = document.getElementById('send-btn');
+    const iframeEl = document.getElementById('preview-iframe');
+    const emptyState = document.getElementById('empty-state');
+    const statusDot = document.getElementById('status-dot');
+    const statusText = document.getElementById('status-text');
+    const siteTitle = document.getElementById('site-title');
+    const codeContent = document.getElementById('code-content');
+    const downloadBtn = document.getElementById('btn-download');
+
+    // Auto-resize textarea
+    inputEl.addEventListener('input', () => {
+      inputEl.style.height = 'auto';
+      inputEl.style.height = Math.min(inputEl.scrollHeight, 160) + 'px';
+    });
+
+    inputEl.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendMessage();
+      }
+    });
+
+    function useSuggestion(text) {
+      inputEl.value = text;
+      inputEl.dispatchEvent(new Event('input'));
+      inputEl.focus();
+    }
+
+    function setStatus(state, text) {
+      statusDot.className = 'status-dot ' + state;
+      statusText.textContent = text;
+    }
+
+    function addMessage(role, content, type = '') {
+      const div = document.createElement('div');
+      div.className = `message ${role} ${type}`;
+      div.innerHTML = `
+        <div class="message-role">${role === 'user' ? 'You' : 'BuildAI'}</div>
+        <div class="message-bubble">${escapeHtml(content)}</div>
+      `;
+      messagesEl.appendChild(div);
+      messagesEl.scrollTop = messagesEl.scrollHeight;
+      return div;
+    }
+
+    function addTypingIndicator() {
+      const div = document.createElement('div');
+      div.className = 'message ai';
+      div.id = 'typing';
+      div.innerHTML = `
+        <div class="message-role">BuildAI</div>
+        <div class="typing-indicator">
+          <span></span><span></span><span></span>
+        </div>
+      `;
+      messagesEl.appendChild(div);
+      messagesEl.scrollTop = messagesEl.scrollHeight;
+      return div;
+    }
+
+    function removeTypingIndicator() {
+      const el = document.getElementById('typing');
+      if (el) el.remove();
+    }
+
+    function escapeHtml(str) {
+      return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
+
+    function showPreview(html) {
+      emptyState.style.display = 'none';
+      iframeEl.style.display = 'block';
+      const blob = new Blob([html], { type: 'text/html' });
+      const url = URL.createObjectURL(blob);
+      iframeEl.src = url;
+      codeContent.textContent = html;
+      currentHtml = html;
+      downloadBtn.disabled = false;
+      setStatus('ready', 'Website ready');
+    }
+
+    async function sendMessage() {
+      const text = inputEl.value.trim();
+      if (!text || isGenerating) return;
+
+      isGenerating = true;
+      sendBtn.disabled = true;
+      inputEl.value = '';
+      inputEl.style.height = 'auto';
+
+      addMessage('user', text);
+      conversationHistory.push({ role: 'user', content: text });
+
+      const typingEl = addTypingIndicator();
+      setStatus('building', 'AI is building your website...');
+
+      let fullResponse = '';
+
+      try {
+        const res = await fetch('/api/generate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ messages: conversationHistory }),
+        });
+
+        if (!res.ok) {
+          const err = await res.json();
+          throw new Error(err.error || 'Server error');
+        }
+
+        const reader = res.body.getReader();
+        const decoder = new TextDecoder();
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          const chunk = decoder.decode(value);
+          const lines = chunk.split('\n');
+          for (const line of lines) {
+            if (line.startsWith('data: ')) {
+              const data = line.slice(6).trim();
+              if (data === '[DONE]') break;
+              try {
+                const parsed = JSON.parse(data);
+                if (parsed.error) throw new Error(parsed.error);
+                if (parsed.text) fullResponse += parsed.text;
+              } catch {}
+            }
+          }
+        }
+
+        removeTypingIndicator();
+
+        // Parse JSON response from AI
+        let parsed;
+        try {
+          // Extract JSON from response (AI might wrap it in markdown)
+          const jsonMatch = fullResponse.match(/\{[\s\S]*\}/);
+          if (jsonMatch) {
+            parsed = JSON.parse(jsonMatch[0]);
+          } else {
+            throw new Error('No JSON in response');
+          }
+        } catch {
+          addMessage('ai', fullResponse || 'Something went wrong. Please try again.', 'error');
+          setStatus('', 'Error — try again');
+          isGenerating = false;
+          sendBtn.disabled = false;
+          return;
+        }
+
+        conversationHistory.push({ role: 'assistant', content: fullResponse });
+
+        if (parsed.html) {
+          showPreview(parsed.html);
+          if (parsed.title) {
+            siteTitle.textContent = parsed.title;
+          }
+          const desc = parsed.description || 'Website generated successfully!';
+          addMessage('ai', `✅ ${desc}\n\nYou can ask me to make changes — just describe what you want updated!`, 'success');
+        } else {
+          addMessage('ai', parsed.description || 'Done!', 'success');
+          setStatus(currentHtml ? 'ready' : '', currentHtml ? 'Website ready' : 'Waiting for prompt...');
+        }
+
+      } catch (err) {
+        removeTypingIndicator();
+        addMessage('ai', `Error: ${err.message}`, 'error');
+        setStatus('', 'Error — check your API key in .env');
+      }
+
+      isGenerating = false;
+      sendBtn.disabled = false;
+      inputEl.focus();
+    }
+
+    function switchTab(tab) {
+      const previewWrap = document.getElementById('preview-wrap');
+      const codeView = document.getElementById('code-view');
+      const tabPreview = document.getElementById('tab-preview');
+      const tabCode = document.getElementById('tab-code');
+
+      if (tab === 'preview') {
+        previewWrap.style.display = 'flex';
+        codeView.style.display = 'none';
+        tabPreview.classList.add('active');
+        tabCode.classList.remove('active');
+      } else {
+        previewWrap.style.display = 'none';
+        codeView.style.display = 'block';
+        tabPreview.classList.remove('active');
+        tabCode.classList.add('active');
+      }
+    }
+
+    function downloadSite() {
+      if (!currentHtml) return;
+      const blob = new Blob([currentHtml], { type: 'text/html' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = (siteTitle.textContent.replace(/[^a-z0-9]/gi, '-').toLowerCase() || 'my-website') + '.html';
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function newProject() {
+      if (currentHtml && !confirm('Start a new project? Your current site will be cleared.')) return;
+      conversationHistory = [];
+      currentHtml = null;
+      messagesEl.innerHTML = `
+        <div class="message ai">
+          <div class="message-role">BuildAI</div>
+          <div class="message-bubble">
+            Hi! Tell me about the website you want to build. Describe the type of business, style preferences, colors, and any sections you need. I'll generate a complete website for you instantly! 🚀
+          </div>
+        </div>
+      `;
+      emptyState.style.display = 'flex';
+      iframeEl.style.display = 'none';
+      iframeEl.src = '';
+      codeContent.textContent = '';
+      siteTitle.textContent = 'No website generated yet';
+      downloadBtn.disabled = true;
+      setStatus('', 'Waiting for prompt...');
+      switchTab('preview');
+    }
+  </script>
+</body>
+</html>

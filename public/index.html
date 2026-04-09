@@ -1,0 +1,918 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BuildAI — Free AI Website Builder</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #050507;
+      --surface: #0a0a0f;
+      --border: rgba(255,255,255,0.07);
+      --blue: #0ea5e9;
+      --cyan: #06b6d4;
+      --blue-dark: #0284c7;
+      --purple: #7c3aed;
+      --text: #f8fafc;
+      --muted: #64748b;
+      --muted2: #94a3b8;
+      --card: rgba(255,255,255,0.03);
+      --card-hover: rgba(14,165,233,0.06);
+    }
+
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      overflow-x: hidden;
+      line-height: 1.6;
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 48px;
+      height: 64px;
+      background: rgba(5,5,7,0.85);
+      backdrop-filter: blur(24px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .logo {
+      font-size: 1.35rem;
+      font-weight: 900;
+      color: #fff;
+      text-decoration: none;
+      letter-spacing: -0.02em;
+    }
+
+    .logo span {
+      background: linear-gradient(135deg, var(--blue), var(--cyan));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 36px;
+      list-style: none;
+    }
+
+    .nav-links a {
+      color: var(--muted2);
+      text-decoration: none;
+      font-size: 0.88rem;
+      font-weight: 500;
+      transition: color 0.2s;
+    }
+
+    .nav-links a:hover { color: var(--text); }
+
+    .btn {
+      padding: 10px 22px;
+      border-radius: 8px;
+      font-size: 0.88rem;
+      font-weight: 700;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.2s;
+      border: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--blue), var(--cyan));
+      color: #fff;
+      box-shadow: 0 0 24px rgba(14,165,233,0.35);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 0 36px rgba(14,165,233,0.55);
+    }
+
+    .btn-ghost {
+      background: transparent;
+      color: var(--muted2);
+      border: 1px solid var(--border);
+    }
+    .btn-ghost:hover { color: var(--text); border-color: rgba(255,255,255,0.18); }
+
+    /* ── HERO ── */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 120px 24px 80px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-glow {
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 70% 50% at 50% 0%, rgba(14,165,233,0.18) 0%, transparent 60%),
+        radial-gradient(ellipse 50% 40% at 20% 80%, rgba(6,182,212,0.1) 0%, transparent 50%),
+        radial-gradient(ellipse 40% 30% at 80% 60%, rgba(124,58,237,0.08) 0%, transparent 40%);
+      pointer-events: none;
+    }
+
+    /* Grid lines */
+    .hero-grid {
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+      background-size: 60px 60px;
+      pointer-events: none;
+      mask-image: radial-gradient(ellipse at center, transparent 20%, black 80%);
+    }
+
+    .hero-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      background: rgba(14,165,233,0.1);
+      border: 1px solid rgba(14,165,233,0.25);
+      color: var(--blue);
+      padding: 6px 18px;
+      border-radius: 100px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      margin-bottom: 32px;
+      animation: fadeUp 0.5s ease both;
+    }
+
+    .live-dot {
+      width: 7px; height: 7px;
+      background: var(--cyan);
+      border-radius: 50%;
+      box-shadow: 0 0 8px var(--cyan);
+      animation: blink 2s infinite;
+    }
+
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.2; }
+    }
+
+    h1 {
+      font-size: clamp(2.8rem, 7vw, 5.8rem);
+      font-weight: 900;
+      line-height: 1.05;
+      letter-spacing: -0.035em;
+      margin-bottom: 28px;
+      animation: fadeUp 0.5s 0.1s ease both;
+    }
+
+    h1 em {
+      font-style: normal;
+      background: linear-gradient(135deg, var(--blue) 0%, var(--cyan) 60%, #a78bfa 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .hero-sub {
+      font-size: clamp(1rem, 2.2vw, 1.22rem);
+      color: var(--muted2);
+      max-width: 580px;
+      margin: 0 auto 48px;
+      line-height: 1.7;
+      animation: fadeUp 0.5s 0.2s ease both;
+    }
+
+    .hero-actions {
+      display: flex;
+      gap: 14px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+      animation: fadeUp 0.5s 0.3s ease both;
+    }
+
+    .btn-xl { padding: 15px 36px; font-size: 1rem; border-radius: 10px; }
+
+    .hero-note {
+      font-size: 0.8rem;
+      color: var(--muted);
+      animation: fadeUp 0.5s 0.4s ease both;
+    }
+
+    .hero-note span { color: var(--cyan); }
+
+    /* ── PREVIEW ── */
+    .preview-wrap {
+      margin-top: 72px;
+      width: 100%;
+      max-width: 960px;
+      animation: fadeUp 0.7s 0.5s ease both;
+    }
+
+    .browser {
+      background: #0d0d14;
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 14px;
+      overflow: hidden;
+      box-shadow:
+        0 50px 120px rgba(0,0,0,0.7),
+        0 0 0 1px rgba(255,255,255,0.04),
+        0 0 60px rgba(14,165,233,0.08);
+    }
+
+    .browser-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 18px;
+      background: rgba(255,255,255,0.025);
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+
+    .dot { width: 11px; height: 11px; border-radius: 50%; }
+    .dot-r { background: #ff5f57; }
+    .dot-y { background: #febc2e; }
+    .dot-g { background: #28c840; }
+
+    .browser-addr {
+      flex: 1;
+      background: rgba(255,255,255,0.04);
+      border-radius: 5px;
+      padding: 5px 14px;
+      font-size: 0.75rem;
+      color: var(--muted);
+      margin: 0 14px;
+    }
+
+    .browser-body {
+      display: grid;
+      grid-template-columns: 340px 1fr;
+      height: 420px;
+    }
+
+    .demo-chat {
+      border-right: 1px solid rgba(255,255,255,0.06);
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      background: rgba(0,0,0,0.3);
+    }
+
+    .demo-label {
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .demo-msg {
+      background: rgba(14,165,233,0.1);
+      border: 1px solid rgba(14,165,233,0.2);
+      color: var(--blue);
+      border-radius: 10px;
+      padding: 10px 14px;
+      font-size: 0.82rem;
+      line-height: 1.5;
+    }
+
+    .demo-msg.reply {
+      background: rgba(255,255,255,0.04);
+      border-color: rgba(255,255,255,0.06);
+      color: var(--muted2);
+    }
+
+    .demo-typing {
+      display: flex;
+      gap: 5px;
+      padding: 10px 14px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 10px;
+      width: fit-content;
+    }
+
+    .demo-typing span {
+      width: 6px; height: 6px;
+      background: var(--blue);
+      border-radius: 50%;
+      animation: bounce 1.2s infinite;
+    }
+    .demo-typing span:nth-child(2) { animation-delay: 0.15s; }
+    .demo-typing span:nth-child(3) { animation-delay: 0.3s; }
+
+    @keyframes bounce {
+      0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+      30% { transform: translateY(-5px); opacity: 1; }
+    }
+
+    .demo-site {
+      background: linear-gradient(160deg, #0f172a 0%, #1e1b4b 100%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-family: sans-serif;
+      padding: 32px;
+      text-align: center;
+      gap: 12px;
+    }
+
+    .demo-site-nav {
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      padding: 12px 24px;
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.7rem;
+      color: rgba(255,255,255,0.5);
+    }
+
+    .demo-site-inner { position: relative; width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; }
+
+    .demo-site-badge {
+      background: rgba(14,165,233,0.2);
+      border: 1px solid rgba(14,165,233,0.3);
+      color: #7dd3fc;
+      padding: 4px 14px;
+      border-radius: 100px;
+      font-size: 0.7rem;
+      font-weight: 700;
+    }
+
+    .demo-site h2 { font-size: 1.6rem; font-weight: 800; letter-spacing: -0.02em; }
+    .demo-site p { font-size: 0.82rem; color: rgba(255,255,255,0.55); max-width: 220px; }
+
+    .demo-site-btn {
+      background: linear-gradient(135deg, #0ea5e9, #06b6d4);
+      color: white;
+      padding: 8px 20px;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 700;
+    }
+
+    /* ── STATS ── */
+    .stats-bar {
+      display: flex;
+      justify-content: center;
+      gap: 0;
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      flex-wrap: wrap;
+    }
+
+    .stat {
+      padding: 36px 48px;
+      text-align: center;
+      border-right: 1px solid var(--border);
+      flex: 1;
+      min-width: 160px;
+    }
+
+    .stat:last-child { border-right: none; }
+
+    .stat-num {
+      font-size: 2.4rem;
+      font-weight: 900;
+      letter-spacing: -0.03em;
+      color: #fff;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+
+    .stat-num span {
+      background: linear-gradient(135deg, var(--blue), var(--cyan));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .stat-label { color: var(--muted); font-size: 0.82rem; }
+
+    /* ── SECTIONS ── */
+    .section { padding: 100px 24px; max-width: 1100px; margin: 0 auto; }
+
+    .eyebrow {
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--blue);
+      margin-bottom: 16px;
+    }
+
+    h2 {
+      font-size: clamp(1.9rem, 4vw, 3rem);
+      font-weight: 900;
+      letter-spacing: -0.03em;
+      line-height: 1.1;
+      margin-bottom: 16px;
+    }
+
+    .section-sub {
+      color: var(--muted2);
+      font-size: 1.05rem;
+      max-width: 500px;
+      margin-bottom: 60px;
+      line-height: 1.65;
+    }
+
+    /* ── HOW IT WORKS ── */
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 1px;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+    }
+
+    .step {
+      padding: 36px;
+      background: var(--card);
+      transition: background 0.3s;
+      position: relative;
+    }
+
+    .step:hover { background: var(--card-hover); }
+
+    .step-num {
+      width: 36px; height: 36px;
+      background: linear-gradient(135deg, var(--blue), var(--cyan));
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.85rem;
+      font-weight: 800;
+      margin-bottom: 20px;
+    }
+
+    .step h3 { font-size: 1.05rem; font-weight: 700; margin-bottom: 10px; }
+    .step p { color: var(--muted2); font-size: 0.875rem; line-height: 1.6; }
+
+    /* ── FEATURES ── */
+    .features {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 16px;
+    }
+
+    .feat {
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 28px;
+      background: var(--card);
+      transition: all 0.25s;
+    }
+
+    .feat:hover {
+      border-color: rgba(14,165,233,0.3);
+      background: var(--card-hover);
+      transform: translateY(-3px);
+    }
+
+    .feat-icon { font-size: 1.6rem; margin-bottom: 14px; }
+    .feat h3 { font-size: 0.95rem; font-weight: 700; margin-bottom: 8px; }
+    .feat p { color: var(--muted2); font-size: 0.84rem; line-height: 1.6; }
+
+    /* ── VS SECTION ── */
+    .vs-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    .vs-card {
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 32px;
+      background: var(--card);
+    }
+
+    .vs-card.us {
+      border-color: rgba(14,165,233,0.3);
+      background: rgba(14,165,233,0.04);
+    }
+
+    .vs-label {
+      font-size: 0.7rem;
+      font-weight: 800;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: 20px;
+    }
+
+    .vs-card.us .vs-label { color: var(--cyan); }
+    .vs-card:not(.us) .vs-label { color: var(--muted); }
+
+    .vs-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      margin-bottom: 14px;
+      font-size: 0.88rem;
+    }
+
+    .vs-item .check { color: var(--cyan); flex-shrink: 0; font-size: 0.9rem; }
+    .vs-item .cross { color: #ef4444; flex-shrink: 0; font-size: 0.9rem; }
+    .vs-item .label { line-height: 1.4; }
+    .vs-item .label strong { color: var(--text); display: block; margin-bottom: 2px; }
+    .vs-item .label span { color: var(--muted2); font-size: 0.8rem; }
+
+    /* ── PRICING ── */
+    .pricing-card {
+      max-width: 540px;
+      margin: 0 auto;
+      border: 1px solid rgba(14,165,233,0.3);
+      border-radius: 20px;
+      padding: 52px 48px;
+      background: rgba(14,165,233,0.04);
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .pricing-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--blue), var(--cyan));
+    }
+
+    .pricing-tag {
+      display: inline-block;
+      background: linear-gradient(135deg, var(--blue), var(--cyan));
+      color: white;
+      font-size: 0.7rem;
+      font-weight: 800;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 4px 14px;
+      border-radius: 100px;
+      margin-bottom: 24px;
+    }
+
+    .pricing-price {
+      font-size: 5.5rem;
+      font-weight: 900;
+      letter-spacing: -0.05em;
+      line-height: 1;
+      color: #fff;
+      margin-bottom: 6px;
+    }
+
+    .pricing-price sup { font-size: 2rem; vertical-align: super; letter-spacing: 0; }
+    .pricing-sub { color: var(--muted2); font-size: 0.9rem; margin-bottom: 36px; }
+
+    .perks {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      text-align: left;
+      margin-bottom: 40px;
+    }
+
+    .perk {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 0.9rem;
+      color: var(--text);
+    }
+
+    .perk-icon {
+      width: 22px; height: 22px;
+      background: rgba(6,182,212,0.15);
+      border: 1px solid rgba(6,182,212,0.3);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.7rem;
+      color: var(--cyan);
+      flex-shrink: 0;
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 36px 48px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    footer small { color: var(--muted); font-size: 0.82rem; }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (max-width: 768px) {
+      nav { padding: 0 20px; }
+      .nav-links { display: none; }
+      .browser-body { grid-template-columns: 1fr; height: auto; }
+      .demo-chat { display: none; }
+      .demo-site { height: 260px; }
+      .vs-grid { grid-template-columns: 1fr; }
+      .stat { padding: 24px; }
+      footer { padding: 24px; flex-direction: column; align-items: center; text-align: center; }
+      .pricing-card { padding: 36px 24px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav>
+    <a href="/" class="logo">Build<span>AI</span></a>
+    <ul class="nav-links">
+      <li><a href="#how">How it works</a></li>
+      <li><a href="#features">Features</a></li>
+      <li><a href="#vs">vs. Agencies</a></li>
+      <li><a href="#pricing">Pricing</a></li>
+    </ul>
+    <a href="/builder" class="btn btn-primary">Build My Website Free →</a>
+  </nav>
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero-glow"></div>
+    <div class="hero-grid"></div>
+
+    <div class="hero-eyebrow">
+      <span class="live-dot"></span>
+      AI Website Builder — 100% Free
+    </div>
+
+    <h1>
+      Your dream website.<br />
+      <em>Built by AI. In seconds.</em>
+    </h1>
+
+    <p class="hero-sub">
+      Describe your website and watch AI generate a complete, stunning,
+      mobile-ready site — instantly. No agency. No waiting weeks. No $1,500 bills.
+    </p>
+
+    <div class="hero-actions">
+      <a href="/builder" class="btn btn-primary btn-xl">✦ Start Building Free</a>
+      <a href="#how" class="btn btn-ghost btn-xl">See How It Works</a>
+    </div>
+
+    <p class="hero-note">No account · No credit card · <span>Always free</span></p>
+
+    <div class="preview-wrap">
+      <div class="browser">
+        <div class="browser-bar">
+          <span class="dot dot-r"></span>
+          <span class="dot dot-y"></span>
+          <span class="dot dot-g"></span>
+          <div class="browser-addr">buildai.app/builder</div>
+        </div>
+        <div class="browser-body">
+          <div class="demo-chat">
+            <div class="demo-label">AI Chat</div>
+            <div class="demo-msg">
+              "Build a landing page for my plumbing business called Rapid Plumbers — professional, dark blue theme, with services, reviews, and a contact form."
+            </div>
+            <div class="demo-msg reply">Got it! Building your Rapid Plumbers website now...</div>
+            <div class="demo-typing">
+              <span></span><span></span><span></span>
+            </div>
+          </div>
+          <div class="demo-site" style="position: relative; overflow: hidden;">
+            <div class="demo-site-nav" style="position: absolute; top: 0; left: 0; right: 0; padding: 12px 24px; display: flex; justify-content: space-between; font-size: 0.7rem; color: rgba(255,255,255,0.4); background: rgba(0,0,0,0.3);">
+              <span style="font-weight: 800; color: rgba(255,255,255,0.8);">🔧 Rapid Plumbers</span>
+              <span>Services · Reviews · Contact</span>
+            </div>
+            <div class="demo-site-inner">
+              <div class="demo-site-badge">⚡ 24/7 Emergency Service</div>
+              <div class="demo-site" style="background: none; gap: 10px; padding: 0;">
+                <h2 style="font-size: 1.5rem;">Fast. Reliable. Local.</h2>
+                <p>Professional plumbing services in your area. Licensed & insured.</p>
+              </div>
+              <div class="demo-site-btn">Get a Free Quote →</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STATS -->
+  <div class="stats-bar">
+    <div class="stat">
+      <div class="stat-num"><span>~10s</span></div>
+      <div class="stat-label">To build your site</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num"><span>$0</span></div>
+      <div class="stat-label">Forever. Always.</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num"><span>∞</span></div>
+      <div class="stat-label">Websites, no limits</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num"><span>100%</span></div>
+      <div class="stat-label">Code you own</div>
+    </div>
+  </div>
+
+  <!-- HOW IT WORKS -->
+  <div class="section" id="how">
+    <div class="eyebrow">How it works</div>
+    <h2>Three steps.<br />One perfect website.</h2>
+    <p class="section-sub">No design skills, no coding knowledge, no expensive agency retainer. Just describe and build.</p>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <h3>Describe your website</h3>
+        <p>Tell the AI your business name, industry, design style, colors, and what sections you want. Be as specific or brief as you like.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <h3>AI builds it instantly</h3>
+        <p>Powered by Claude AI, the builder generates a complete, professional HTML/CSS site with animations, responsive layout, and real content.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <h3>Refine & download</h3>
+        <p>Chat to request any changes. When you're happy, download a single clean HTML file and host it anywhere — Netlify, GitHub Pages, or your own server.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- FEATURES -->
+  <div class="section" id="features" style="padding-top: 0;">
+    <div class="eyebrow">Features</div>
+    <h2>Everything an agency<br />charges thousands for.</h2>
+    <p class="section-sub">BuildAI generates professional, conversion-focused sites with all the features your business needs.</p>
+    <div class="features">
+      <div class="feat">
+        <div class="feat-icon">⚡</div>
+        <h3>Instant Generation</h3>
+        <p>Your website is ready in under 15 seconds. Not days, not weeks — seconds.</p>
+      </div>
+      <div class="feat">
+        <div class="feat-icon">💬</div>
+        <h3>Chat to Refine</h3>
+        <p>Unhappy with something? Just type it. The AI updates the site based on your feedback, instantly.</p>
+      </div>
+      <div class="feat">
+        <div class="feat-icon">📱</div>
+        <h3>Mobile Responsive</h3>
+        <p>Every generated site is fully responsive. Looks perfect on phones, tablets, and desktops.</p>
+      </div>
+      <div class="feat">
+        <div class="feat-icon">🎨</div>
+        <h3>Pro Design System</h3>
+        <p>Modern typography, proper color theory, smooth animations, and pixel-perfect spacing — like a real agency.</p>
+      </div>
+      <div class="feat">
+        <div class="feat-icon">📦</div>
+        <h3>Download Clean Code</h3>
+        <p>Export a single, self-contained HTML file. No proprietary platform. Deploy anywhere, forever.</p>
+      </div>
+      <div class="feat">
+        <div class="feat-icon">🔓</div>
+        <h3>You Own Everything</h3>
+        <p>Zero lock-in. No monthly subscription to keep your site live. The code is yours, period.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- VS AGENCIES -->
+  <div class="section" id="vs" style="padding-top: 0;">
+    <div class="eyebrow">BuildAI vs. Agencies</div>
+    <h2>Why pay $1,500 when<br />AI does it free?</h2>
+    <p class="section-sub">Traditional web agencies charge thousands and take weeks. BuildAI delivers in seconds, for nothing.</p>
+    <div class="vs-grid">
+      <div class="vs-card us">
+        <div class="vs-label">✦ BuildAI</div>
+        <div class="vs-item">
+          <span class="check">✓</span>
+          <div class="label"><strong>$0 — completely free</strong><span>No hidden fees, no subscriptions</span></div>
+        </div>
+        <div class="vs-item">
+          <span class="check">✓</span>
+          <div class="label"><strong>Ready in ~10 seconds</strong><span>Not days or weeks</span></div>
+        </div>
+        <div class="vs-item">
+          <span class="check">✓</span>
+          <div class="label"><strong>Unlimited revisions</strong><span>Just type what you want changed</span></div>
+        </div>
+        <div class="vs-item">
+          <span class="check">✓</span>
+          <div class="label"><strong>You own the code</strong><span>Download and host anywhere</span></div>
+        </div>
+        <div class="vs-item">
+          <span class="check">✓</span>
+          <div class="label"><strong>No account required</strong><span>Open the builder and go</span></div>
+        </div>
+      </div>
+      <div class="vs-card">
+        <div class="vs-label">Traditional Agency</div>
+        <div class="vs-item">
+          <span class="cross">✗</span>
+          <div class="label"><strong>$800–$1,500/month</strong><span>Or $300+ one-time, still expensive</span></div>
+        </div>
+        <div class="vs-item">
+          <span class="cross">✗</span>
+          <div class="label"><strong>1–4 weeks delivery</strong><span>Briefs, revisions, approvals...</span></div>
+        </div>
+        <div class="vs-item">
+          <span class="cross">✗</span>
+          <div class="label"><strong>Limited revisions</strong><span>Extra changes cost extra</span></div>
+        </div>
+        <div class="vs-item">
+          <span class="cross">✗</span>
+          <div class="label"><strong>Often locked in</strong><span>Proprietary CMS or platform</span></div>
+        </div>
+        <div class="vs-item">
+          <span class="cross">✗</span>
+          <div class="label"><strong>Long onboarding</strong><span>Calls, forms, contracts</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PRICING -->
+  <div class="section" id="pricing" style="padding-top: 0; text-align: center;">
+    <div class="eyebrow">Pricing</div>
+    <h2>Honest pricing.<br />One price. Forever.</h2>
+    <p class="section-sub" style="margin: 0 auto 48px;">No tiers, no upsells, no "pro plan." BuildAI is free because the web should be accessible to everyone.</p>
+    <div class="pricing-card">
+      <div class="pricing-tag">Always Free</div>
+      <div class="pricing-price"><sup>$</sup>0</div>
+      <p class="pricing-sub">Per month · Per website · Per anything</p>
+      <div class="perks">
+        <div class="perk">
+          <div class="perk-icon">✓</div>
+          Unlimited website generations
+        </div>
+        <div class="perk">
+          <div class="perk-icon">✓</div>
+          Full HTML/CSS/JS code export
+        </div>
+        <div class="perk">
+          <div class="perk-icon">✓</div>
+          AI chat refinements — iterate endlessly
+        </div>
+        <div class="perk">
+          <div class="perk-icon">✓</div>
+          Live in-browser preview
+        </div>
+        <div class="perk">
+          <div class="perk-icon">✓</div>
+          No watermarks, no branding
+        </div>
+        <div class="perk">
+          <div class="perk-icon">✓</div>
+          No account or sign-up required
+        </div>
+      </div>
+      <a href="/builder" class="btn btn-primary" style="width: 100%; justify-content: center; padding: 15px; font-size: 1rem; border-radius: 10px;">
+        Build My Website Now — Free →
+      </a>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer>
+    <a href="/" class="logo">Build<span>AI</span></a>
+    <small>Built with Claude AI · Free forever · You own your code</small>
+    <small>© 2026 BuildAI · No account needed</small>
+  </footer>
+
+</body>
+</html>
