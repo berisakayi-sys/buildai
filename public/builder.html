@@ -668,12 +668,14 @@
         });
 
         if (!res.ok) {
-          const err = await res.json();
-          throw new Error(err.error || 'Server error');
+          let errMsg = `Server error (${res.status})`;
+          try { const e = await res.json(); errMsg = e.error || errMsg; } catch {}
+          throw new Error(errMsg);
         }
 
         const reader = res.body.getReader();
         const decoder = new TextDecoder();
+        let streamError = null;
 
         while (true) {
           const { done, value } = await reader.read();
@@ -686,27 +688,29 @@
               if (data === '[DONE]') break;
               try {
                 const parsed = JSON.parse(data);
-                if (parsed.error) throw new Error(parsed.error);
+                if (parsed.error) { streamError = parsed.error; break; }
                 if (parsed.text) fullResponse += parsed.text;
               } catch {}
             }
           }
+          if (streamError) break;
         }
+
+        if (streamError) throw new Error(streamError);
 
         removeTypingIndicator();
 
         // Parse JSON response from AI
         let parsed;
         try {
-          // Extract JSON from response (AI might wrap it in markdown)
           const jsonMatch = fullResponse.match(/\{[\s\S]*\}/);
           if (jsonMatch) {
             parsed = JSON.parse(jsonMatch[0]);
           } else {
-            throw new Error('No JSON in response');
+            throw new Error('No JSON in response — the AI returned an unexpected format. Try again.');
           }
-        } catch {
-          addMessage('ai', fullResponse || 'Something went wrong. Please try again.', 'error');
+        } catch (parseErr) {
+          addMessage('ai', parseErr.message, 'error');
           setStatus('', 'Error — try again');
           isGenerating = false;
           sendBtn.disabled = false;
