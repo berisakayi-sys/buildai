@@ -1,6 +1,6 @@
 require('dotenv').config();
 const express = require('express');
-const Anthropic = require('@anthropic-ai/sdk');
+const OpenAI = require('openai');
 const cors = require('cors');
 const path = require('path');
 
@@ -11,7 +11,7 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 const SYSTEM_PROMPT = `You are an expert web developer and UI/UX designer. Your job is to generate complete, beautiful, production-ready websites from user descriptions.
 
@@ -51,8 +51,8 @@ app.post('/api/generate', async (req, res) => {
     return res.status(400).json({ error: 'Messages array required' });
   }
 
-  if (!process.env.ANTHROPIC_API_KEY) {
-    return res.status(500).json({ error: 'API key not configured. Add ANTHROPIC_API_KEY to your .env file.' });
+  if (!process.env.OPENAI_API_KEY) {
+    return res.status(500).json({ error: 'API key not configured. Add OPENAI_API_KEY to your Railway variables.' });
   }
 
   res.setHeader('Content-Type', 'text/event-stream');
@@ -60,23 +60,27 @@ app.post('/api/generate', async (req, res) => {
   res.setHeader('Connection', 'keep-alive');
 
   try {
-    const stream = await client.messages.stream({
-      model: 'claude-sonnet-4-6',
+    const stream = await client.chat.completions.create({
+      model: 'gpt-4o-mini',
       max_tokens: 16000,
-      system: SYSTEM_PROMPT,
-      messages: messages,
+      stream: true,
+      messages: [
+        { role: 'system', content: SYSTEM_PROMPT },
+        ...messages,
+      ],
     });
 
     for await (const chunk of stream) {
-      if (chunk.type === 'content_block_delta' && chunk.delta.type === 'text_delta') {
-        res.write(`data: ${JSON.stringify({ text: chunk.delta.text })}\n\n`);
+      const text = chunk.choices[0]?.delta?.content || '';
+      if (text) {
+        res.write(`data: ${JSON.stringify({ text })}\n\n`);
       }
     }
 
     res.write('data: [DONE]\n\n');
     res.end();
   } catch (err) {
-    console.error('Claude API error:', err.message);
+    console.error('OpenAI API error:', err.message);
     res.write(`data: ${JSON.stringify({ error: err.message })}\n\n`);
     res.end();
   }
@@ -91,7 +95,7 @@ app.get('*', (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`\n🚀 AI Website Builder running at http://localhost:${PORT}\n`)
-console.log(`   Landing page:  http://localhost:${PORT}/`)
-console.log(`   AI Builder:    http://localhost:${PORT}/builder\n`);
+  console.log(`\n🚀 AI Website Builder running at http://localhost:${PORT}`);
+  console.log(`   Landing page:  http://localhost:${PORT}/`);
+  console.log(`   AI Builder:    http://localhost:${PORT}/builder\n`);
 });
