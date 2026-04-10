@@ -1,6 +1,6 @@
 require('dotenv').config();
 const express = require('express');
-const OpenAI = require('openai');
+const Groq = require('groq-sdk');
 const cors = require('cors');
 const path = require('path');
 
@@ -11,7 +11,7 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+const client = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
 const SYSTEM_PROMPT = `You are an expert web developer and UI/UX designer. Your job is to generate complete, beautiful, production-ready websites from user descriptions.
 
@@ -51,8 +51,8 @@ app.post('/api/generate', async (req, res) => {
     return res.status(400).json({ error: 'Messages array required' });
   }
 
-  if (!process.env.OPENAI_API_KEY) {
-    return res.status(500).json({ error: 'API key not configured. Add OPENAI_API_KEY to your Railway variables.' });
+  if (!process.env.GROQ_API_KEY) {
+    return res.status(500).json({ error: 'API key not configured. Add GROQ_API_KEY to your Railway variables.' });
   }
 
   res.setHeader('Content-Type', 'text/event-stream');
@@ -61,7 +61,7 @@ app.post('/api/generate', async (req, res) => {
 
   try {
     const stream = await client.chat.completions.create({
-      model: 'gpt-4o-mini',
+      model: 'qwen-qwq-32b',
       max_tokens: 16000,
       stream: true,
       messages: [
