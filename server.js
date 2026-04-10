@@ -1,6 +1,6 @@
 require('dotenv').config();
 const express = require('express');
-const Groq = require('groq-sdk');
+const { GoogleGenerativeAI } = require('@google/generative-ai');
 const cors = require('cors');
 const path = require('path');
 
@@ -10,8 +10,6 @@ const PORT = process.env.PORT || 4000;
 app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
-
-const client = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
 const SYSTEM_PROMPT = `You are an expert web developer and UI/UX designer. Your job is to generate complete, beautiful, production-ready websites from user descriptions.
 
@@ -43,7 +41,6 @@ If the user asks a question (not requesting a site), respond with a helpful mess
   "description": "<your helpful response here>"
 }`;
 
-// Streaming endpoint
 app.post('/api/generate', async (req, res) => {
   const { messages } = req.body;
 
@@ -51,8 +48,8 @@ app.post('/api/generate', async (req, res) => {
     return res.status(400).json({ error: 'Messages array required' });
   }
 
-  if (!process.env.GROQ_API_KEY) {
-    return res.status(500).json({ error: 'API key not configured. Add GROQ_API_KEY to your Railway variables.' });
+  if (!process.env.GOOGLE_API_KEY) {
+    return res.status(500).json({ error: 'API key not configured. Add GOOGLE_API_KEY to your Railway variables.' });
   }
 
   res.setHeader('Content-Type', 'text/event-stream');
@@ -60,18 +57,25 @@ app.post('/api/generate', async (req, res) => {
   res.setHeader('Connection', 'keep-alive');
 
   try {
-    const stream = await client.chat.completions.create({
-      model: 'qwen/qwen3-32b',
-      max_tokens: 5000,
-      stream: true,
-      messages: [
-        { role: 'system', content: SYSTEM_PROMPT },
-        ...messages,
-      ],
+    const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY);
+    const model = genAI.getGenerativeModel({
+      model: 'gemini-2.0-flash',
+      systemInstruction: SYSTEM_PROMPT,
     });
 
-    for await (const chunk of stream) {
-      const text = chunk.choices[0]?.delta?.content || '';
+    // Convert messages to Gemini format
+    const history = messages.slice(0, -1).map(m => ({
+      role: m.role === 'assistant' ? 'model' : 'user',
+      parts: [{ text: m.content }],
+    }));
+
+    const lastMessage = messages[messages.length - 1].content;
+
+    const chat = model.startChat({ history });
+    const result = await chat.sendMessageStream(lastMessage);
+
+    for await (const chunk of result.stream) {
+      const text = chunk.text();
       if (text) {
         res.write(`data: ${JSON.stringify({ text })}\n\n`);
       }
@@ -80,7 +84,7 @@ app.post('/api/generate', async (req, res) => {
     res.write('data: [DONE]\n\n');
     res.end();
   } catch (err) {
-    console.error('OpenAI API error:', err.message);
+    console.error('Google AI error:', err.message);
     res.write(`data: ${JSON.stringify({ error: err.message })}\n\n`);
     res.end();
   }
