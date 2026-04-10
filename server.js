@@ -61,7 +61,7 @@ app.post('/api/generate', async (req, res) => {
 
   try {
     const stream = await client.chat.completions.create({
-      model: 'qwen-qwq-32b',
+      model: 'qwen3-32b',
       max_tokens: 16000,
       stream: true,
       messages: [
