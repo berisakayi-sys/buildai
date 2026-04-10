@@ -13,7 +13,9 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 const SYSTEM_PROMPT = `You are an expert web developer and UI/UX designer. Your job is to generate complete, beautiful, production-ready websites from user descriptions.
 
-When the user describes a website they want, you MUST respond with ONLY a valid JSON object in this exact format:
+CRITICAL: You must respond with ONLY raw JSON. No markdown, no code fences, no explanation, no thinking text. Just the raw JSON object and nothing else.
+
+When the user describes a website they want, respond with ONLY this JSON (no extra text before or after):
 {
   "html": "<the complete HTML file as a string>",
   "title": "<short title of what was built>",
@@ -73,7 +75,10 @@ app.post('/api/generate', async (req, res) => {
 
     const chat = model.startChat({ history });
     const result = await chat.sendMessage(lastMessage);
-    const text = result.response.text();
+    let text = result.response.text();
+
+    // Strip markdown code fences if Gemini wraps response in ```json ... ```
+    text = text.replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/```\s*$/i, '').trim();
 
     res.write(`data: ${JSON.stringify({ text })}\n\n`);
     res.write('data: [DONE]\n\n');
