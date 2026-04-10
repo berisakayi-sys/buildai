@@ -72,15 +72,10 @@ app.post('/api/generate', async (req, res) => {
     const lastMessage = messages[messages.length - 1].content;
 
     const chat = model.startChat({ history });
-    const result = await chat.sendMessageStream(lastMessage);
+    const result = await chat.sendMessage(lastMessage);
+    const text = result.response.text();
 
-    for await (const chunk of result.stream) {
-      const text = chunk.text();
-      if (text) {
-        res.write(`data: ${JSON.stringify({ text })}\n\n`);
-      }
-    }
-
+    res.write(`data: ${JSON.stringify({ text })}\n\n`);
     res.write('data: [DONE]\n\n');
     res.end();
   } catch (err) {
