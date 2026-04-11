@@ -11,37 +11,20 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-const SYSTEM_PROMPT = `You are an expert web developer and UI/UX designer. Your job is to generate complete, beautiful, production-ready websites from user descriptions.
+const SYSTEM_PROMPT = `You are an expert web developer and UI/UX designer. Generate complete, beautiful websites.
 
-CRITICAL: You must respond with ONLY raw JSON. No markdown, no code fences, no explanation, no thinking text. Just the raw JSON object and nothing else.
+You MUST respond with ONLY a JSON object. No markdown, no code blocks, no extra text.
 
-When the user describes a website they want, respond with ONLY this JSON (no extra text before or after):
-{
-  "html": "<the complete HTML file as a string>",
-  "title": "<short title of what was built>",
-  "description": "<one sentence describing what was built>"
-}
+Format:
+{"html":"<full HTML here>","title":"Site Title","description":"One sentence description"}
 
-Rules for the generated HTML:
-- Generate a COMPLETE single HTML file with all CSS and JavaScript embedded
-- Make it visually stunning with modern design: gradients, animations, clean typography
-- Use a cohesive color palette based on the site's purpose
-- Include smooth hover effects, transitions, and micro-interactions
-- Make it fully responsive (mobile-first)
-- Use modern CSS features: flexbox, grid, custom properties, animations
-- Add realistic placeholder content that fits the website type
-- Include a navigation bar, hero section, and at least 3 content sections
-- Make fonts and icons load from CDN (Google Fonts, Font Awesome)
-- NO external JavaScript frameworks — pure HTML/CSS/JS only
-- The site should look like it was made by a professional agency
-
-If the user asks to modify or update the site, generate a complete new version with the requested changes.
-If the user asks a question (not requesting a site), respond with a helpful message in this JSON format:
-{
-  "html": null,
-  "title": null,
-  "description": "<your helpful response here>"
-}`;
+HTML rules:
+- Complete single HTML file with embedded CSS and JS
+- Visually stunning: gradients, animations, modern typography
+- Fully responsive (mobile-first)
+- Navigation bar, hero section, at least 3 content sections
+- Load fonts from Google Fonts CDN
+- No external JS frameworks`;
 
 app.post('/api/generate', async (req, res) => {
   const { messages } = req.body;
@@ -64,11 +47,10 @@ app.post('/api/generate', async (req, res) => {
       model: 'gemini-2.5-flash',
       systemInstruction: SYSTEM_PROMPT,
       generationConfig: {
-        thinkingConfig: { thinkingBudget: 0 },
+        responseMimeType: 'application/json',
       },
     });
 
-    // Convert messages to Gemini format
     const history = messages.slice(0, -1).map(m => ({
       role: m.role === 'assistant' ? 'model' : 'user',
       parts: [{ text: m.content }],
@@ -78,20 +60,40 @@ app.post('/api/generate', async (req, res) => {
 
     const chat = model.startChat({ history });
     const result = await chat.sendMessage(lastMessage);
-    let text = result.response.text();
+    let raw = result.response.text().trim();
 
-    console.log('=== RAW GEMINI RESPONSE (first 500 chars) ===');
-    console.log(text.substring(0, 500));
-    console.log('=== END ===');
+    console.log('RAW (first 300):', raw.substring(0, 300));
 
-    // Strip markdown code fences
-    text = text.replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/```\s*$/i, '').trim();
+    // Strip code fences
+    raw = raw.replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/```\s*$/i, '').trim();
 
-    // If Gemini returned JSON without outer braces, add them
-    if (!text.startsWith('{')) text = '{' + text;
-    if (!text.endsWith('}')) text = text + '}';
+    // Ensure it starts and ends with braces
+    if (!raw.startsWith('{')) raw = '{' + raw;
+    if (!raw.endsWith('}')) raw = raw + '}';
 
-    res.write(`data: ${JSON.stringify({ text })}\n\n`);
+    // Validate it parses correctly
+    let parsed;
+    try {
+      parsed = JSON.parse(raw);
+    } catch (e) {
+      // Try to extract html/title/description manually
+      const htmlMatch = raw.match(/"html"\s*:\s*"([\s\S]*?)(?:"\s*,\s*"title"|"\s*})/);
+      const titleMatch = raw.match(/"title"\s*:\s*"([^"]+)"/);
+      const descMatch = raw.match(/"description"\s*:\s*"([^"]+)"/);
+
+      if (htmlMatch) {
+        parsed = {
+          html: htmlMatch[1].replace(/\\n/g, '\n').replace(/\\"/g, '"').replace(/\\\\/g, '\\'),
+          title: titleMatch ? titleMatch[1] : 'Generated Website',
+          description: descMatch ? descMatch[1] : 'Website generated successfully',
+        };
+        raw = JSON.stringify(parsed);
+      } else {
+        throw new Error('Could not parse Gemini response as JSON');
+      }
+    }
+
+    res.write(`data: ${JSON.stringify({ text: raw })}\n\n`);
     res.write('data: [DONE]\n\n');
     res.end();
   } catch (err) {
