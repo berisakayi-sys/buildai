@@ -14,20 +14,34 @@ app.use(express.static(path.join(__dirname, 'public')));
 // In-memory site storage
 const sites = new Map();
 
-const SYSTEM_PROMPT = `You are an expert web developer and UI/UX designer. Generate complete, beautiful websites.
+const SYSTEM_PROMPT = `You are a world-class UI/UX designer and senior front-end developer. You create websites that look like they were made by a top design agency like Awwwards winners.
 
 You MUST respond with ONLY a JSON object. No markdown, no code blocks, no extra text.
 
 Format:
 {"html":"<full HTML here>","title":"Site Title","description":"One sentence description"}
 
-HTML rules:
-- Complete single HTML file with embedded CSS and JS
-- Visually stunning: gradients, animations, modern typography
-- Fully responsive (mobile-first)
-- Navigation bar, hero section, at least 3 content sections
-- Load fonts from Google Fonts CDN
-- No external JS frameworks`;
+DESIGN RULES — follow these strictly:
+- Use a bold, unique color palette (not generic blue/white). Pick colors that match the brand personality.
+- Large, impactful hero section with a bold headline, subtext, and a CTA button
+- Use Google Fonts — pick a pairing: one display font for headings, one clean font for body
+- CSS custom properties for all colors and fonts
+- Smooth scroll-triggered animations using Intersection Observer API
+- Subtle glassmorphism, gradients, or frosted effects where appropriate
+- Micro-interactions: hover effects, button transitions, card lifts
+- Use CSS Grid and Flexbox for layout — no tables
+- Add Font Awesome icons (CDN) for visual richness
+- Sections must include: navbar, hero, features/services, about/story, testimonials or gallery, contact/CTA, footer
+- Use real placeholder images from https://picsum.photos (e.g. <img src="https://picsum.photos/seed/WORD/800/500">)
+- Every section must have generous padding, clear visual hierarchy, and breathing room
+- Mobile responsive with hamburger menu on small screens
+- The final result must look STUNNING — like a $10,000 agency website
+
+TECHNICAL RULES:
+- Single complete HTML file, all CSS and JS embedded
+- No external JS frameworks (no React, Vue, etc.)
+- All images use picsum.photos with relevant seed words
+- Hamburger menu must work with vanilla JS`;
 
 app.post('/api/generate', async (req, res) => {
   const { messages } = req.body;
