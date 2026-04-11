@@ -8,8 +8,11 @@ const app = express();
 const PORT = process.env.PORT || 4000;
 
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: '5mb' }));
 app.use(express.static(path.join(__dirname, 'public')));
+
+// In-memory site storage
+const sites = new Map();
 
 const SYSTEM_PROMPT = `You are an expert web developer and UI/UX designer. Generate complete, beautiful websites.
 
@@ -75,6 +78,31 @@ app.post('/api/generate', async (req, res) => {
     console.error('Google AI error:', err.message);
     res.status(500).json({ error: err.message });
   }
+});
+
+// Publish a site
+app.post('/api/publish', (req, res) => {
+  const { html, title } = req.body;
+  if (!html) return res.status(400).json({ error: 'No HTML provided' });
+
+  // Generate slug from title
+  const slug = (title || 'my-site')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '')
+    .substring(0, 40) + '-' + Math.random().toString(36).substring(2, 7);
+
+  sites.set(slug, { html, title, createdAt: new Date() });
+
+  res.json({ slug, url: `/site/${slug}` });
+});
+
+// Serve a published site
+app.get('/site/:slug', (req, res) => {
+  const site = sites.get(req.params.slug);
+  if (!site) return res.status(404).send('<h1>Site not found</h1><p>This site may have expired.</p>');
+  res.setHeader('Content-Type', 'text/html');
+  res.send(site.html);
 });
 
 app.get('/builder', (req, res) => {

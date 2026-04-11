@@ -123,6 +123,36 @@
     .btn-download:hover { background: rgba(52,211,153,0.2); }
     .btn-download:disabled { opacity: 0.4; cursor: not-allowed; }
 
+    .btn-publish {
+      background: rgba(124,58,237,0.15);
+      color: var(--purple-light);
+      border: 1px solid rgba(124,58,237,0.3);
+    }
+    .btn-publish:hover { background: rgba(124,58,237,0.25); }
+    .btn-publish:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    .publish-toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(80px);
+      background: #1e1b4b;
+      border: 1px solid rgba(124,58,237,0.4);
+      border-radius: 12px;
+      padding: 14px 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 0.85rem;
+      z-index: 999;
+      transition: transform 0.3s ease;
+      max-width: 480px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+    }
+    .publish-toast.show { transform: translateX(-50%) translateY(0); }
+    .publish-toast a { color: var(--purple-light); font-weight: 700; word-break: break-all; }
+    .publish-toast-close { cursor: pointer; color: var(--muted); margin-left: auto; flex-shrink: 0; font-size: 1rem; }
+
     /* ── MAIN LAYOUT ── */
     .workspace {
       display: flex;
@@ -480,8 +510,16 @@
     </div>
     <div class="topbar-actions">
       <button class="btn btn-ghost" id="btn-new" onclick="newProject()">+ New</button>
+      <button class="btn btn-publish" id="btn-publish" disabled onclick="publishSite()">🌐 Publish</button>
       <button class="btn btn-download" id="btn-download" disabled onclick="downloadSite()">⬇ Download</button>
     </div>
+  </div>
+
+  <!-- PUBLISH TOAST -->
+  <div class="publish-toast" id="publish-toast">
+    <span>🌐</span>
+    <span>Your site is live at: <a id="publish-link" href="#" target="_blank"></a></span>
+    <span class="publish-toast-close" onclick="document.getElementById('publish-toast').classList.remove('show')">✕</span>
   </div>
 
   <!-- WORKSPACE -->
@@ -640,6 +678,7 @@
       codeContent.textContent = html;
       currentHtml = html;
       downloadBtn.disabled = false;
+      document.getElementById('btn-publish').disabled = false;
       setStatus('ready', 'Website ready');
     }
 
@@ -717,6 +756,34 @@
       }
     }
 
+    async function publishSite() {
+      if (!currentHtml) return;
+      const btn = document.getElementById('btn-publish');
+      btn.disabled = true;
+      btn.textContent = 'Publishing...';
+
+      try {
+        const res = await fetch('/api/publish', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ html: currentHtml, title: siteTitle.textContent }),
+        });
+        const data = await res.json();
+        if (data.error) throw new Error(data.error);
+
+        const fullUrl = window.location.origin + data.url;
+        const link = document.getElementById('publish-link');
+        link.href = fullUrl;
+        link.textContent = fullUrl;
+        document.getElementById('publish-toast').classList.add('show');
+      } catch (err) {
+        alert('Publish failed: ' + err.message);
+      }
+
+      btn.disabled = false;
+      btn.textContent = '🌐 Publish';
+    }
+
     function downloadSite() {
       if (!currentHtml) return;
       const blob = new Blob([currentHtml], { type: 'text/html' });
@@ -746,6 +813,7 @@
       codeContent.textContent = '';
       siteTitle.textContent = 'No website generated yet';
       downloadBtn.disabled = true;
+      document.getElementById('btn-publish').disabled = true;
       setStatus('', 'Waiting for prompt...');
       switchTab('preview');
     }
