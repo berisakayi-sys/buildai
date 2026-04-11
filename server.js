@@ -81,7 +81,11 @@ app.post('/api/generate', async (req, res) => {
     const result = await chat.sendMessage(lastMessage);
     let text = result.response.text();
 
-    // Strip markdown code fences if Gemini wraps response in ```json ... ```
+    console.log('=== RAW GEMINI RESPONSE (first 500 chars) ===');
+    console.log(text.substring(0, 500));
+    console.log('=== END ===');
+
+    // Strip markdown code fences
     text = text.replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/```\s*$/i, '').trim();
 
     res.write(`data: ${JSON.stringify({ text })}\n\n`);
