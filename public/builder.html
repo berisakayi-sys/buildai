@@ -131,6 +131,73 @@
     .btn-publish:hover { background: rgba(124,58,237,0.25); }
     .btn-publish:disabled { opacity: 0.4; cursor: not-allowed; }
 
+    .btn-save {
+      background: rgba(59,130,246,0.12);
+      color: #60a5fa;
+      border: 1px solid rgba(59,130,246,0.25);
+    }
+    .btn-save:hover { background: rgba(59,130,246,0.22); }
+    .btn-save:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    /* Projects drawer */
+    .projects-drawer {
+      position: fixed;
+      top: 54px; right: 0; bottom: 0;
+      width: 300px;
+      background: var(--surface2);
+      border-left: 1px solid var(--border);
+      z-index: 50;
+      display: none;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .projects-drawer.open { display: flex; }
+    .projects-header {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.85rem;
+      font-weight: 700;
+    }
+    .projects-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .project-item {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 14px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .project-item:hover { border-color: rgba(59,130,246,0.4); background: rgba(59,130,246,0.06); }
+    .project-item h4 { font-size: 0.85rem; font-weight: 700; margin-bottom: 4px; }
+    .project-item p { font-size: 0.75rem; color: var(--muted); }
+    .project-item-actions { display: flex; gap: 6px; margin-top: 8px; }
+    .project-item-actions button { font-size: 0.72rem; padding: 3px 8px; border-radius: 5px; border: 1px solid var(--border); background: transparent; color: var(--muted2); cursor: pointer; }
+    .project-item-actions button:hover { color: var(--text); }
+    .project-item-actions .del:hover { color: #f87171; border-color: rgba(248,113,113,0.3); }
+    .login-prompt {
+      padding: 24px;
+      text-align: center;
+      color: var(--muted2);
+      font-size: 0.85rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+    .login-prompt a {
+      display: flex; align-items: center; gap: 7px;
+      background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12);
+      color: #fff; padding: 8px 16px; border-radius: 8px;
+      font-size: 0.82rem; font-weight: 600; text-decoration: none;
+    }
+
     .publish-toast {
       position: fixed;
       bottom: 24px;
@@ -510,9 +577,18 @@
     </div>
     <div class="topbar-actions">
       <button class="btn btn-ghost" id="btn-new" onclick="newProject()">+ New</button>
+      <button class="btn btn-ghost" id="btn-projects" onclick="toggleProjects()" style="display:none;">📁 Projects</button>
+      <button class="btn btn-save" id="btn-save" disabled onclick="saveProject()">💾 Save</button>
       <button class="btn btn-publish" id="btn-publish" disabled onclick="publishSite()">🌐 Publish</button>
       <button class="btn btn-download" id="btn-download" disabled onclick="downloadSite()">⬇ Download</button>
+      <div id="topbar-user"></div>
     </div>
+  </div>
+
+  <!-- PROJECTS DRAWER -->
+  <div class="projects-drawer" id="projects-drawer">
+    <div class="projects-header">📁 My Projects</div>
+    <div class="projects-list" id="projects-list"></div>
   </div>
 
   <!-- PUBLISH TOAST -->
@@ -597,6 +673,25 @@
     let conversationHistory = [];
     let currentHtml = null;
     let isGenerating = false;
+    let currentUser = null;
+    let currentProjectId = null;
+
+    // Load user on startup
+    fetch('/api/me').then(r => r.json()).then(({ user }) => {
+      currentUser = user;
+      const el = document.getElementById('topbar-user');
+      if (user) {
+        el.innerHTML = `<div style="display:flex;align-items:center;gap:8px;margin-left:4px;">
+          <img src="${user.avatar}" title="${user.name}" style="width:30px;height:30px;border-radius:50%;border:2px solid rgba(59,130,246,0.4);" />
+          <a href="/auth/logout" style="color:var(--muted);font-size:0.75rem;text-decoration:none;">Logout</a>
+        </div>`;
+        document.getElementById('btn-projects').style.display = 'flex';
+      } else {
+        el.innerHTML = `<a href="/auth/google" style="display:flex;align-items:center;gap:6px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);color:#fff;padding:6px 12px;border-radius:7px;font-size:0.78rem;font-weight:600;text-decoration:none;white-space:nowrap;">
+          <img src="https://www.google.com/favicon.ico" style="width:13px;height:13px;"> Sign in to save
+        </a>`;
+      }
+    });
 
     const messagesEl = document.getElementById('messages');
     const inputEl = document.getElementById('user-input');
@@ -679,6 +774,7 @@
       currentHtml = html;
       downloadBtn.disabled = false;
       document.getElementById('btn-publish').disabled = false;
+      document.getElementById('btn-save').disabled = false;
       setStatus('ready', 'Website ready');
     }
 
@@ -756,6 +852,88 @@
       }
     }
 
+    async function saveProject() {
+      if (!currentHtml) return;
+      if (!currentUser) { window.location.href = '/auth/google'; return; }
+
+      const btn = document.getElementById('btn-save');
+      btn.disabled = true;
+      btn.textContent = 'Saving...';
+
+      try {
+        const body = { title: siteTitle.textContent, description: '', html: currentHtml };
+        let res, data;
+        if (currentProjectId) {
+          res = await fetch(`/api/projects/${currentProjectId}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+        } else {
+          res = await fetch('/api/projects', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+        }
+        data = await res.json();
+        currentProjectId = data.id;
+        btn.textContent = '✓ Saved';
+        setTimeout(() => { btn.textContent = '💾 Save'; btn.disabled = false; }, 2000);
+      } catch (err) {
+        btn.textContent = '💾 Save';
+        btn.disabled = false;
+        alert('Save failed: ' + err.message);
+      }
+    }
+
+    async function toggleProjects() {
+      const drawer = document.getElementById('projects-drawer');
+      if (drawer.classList.toggle('open')) {
+        await loadProjects();
+      }
+    }
+
+    async function loadProjects() {
+      const list = document.getElementById('projects-list');
+      if (!currentUser) {
+        list.innerHTML = `<div class="login-prompt">
+          <p>Sign in to save and load your projects</p>
+          <a href="/auth/google"><img src="https://www.google.com/favicon.ico" style="width:13px;"> Sign in with Google</a>
+        </div>`;
+        return;
+      }
+      list.innerHTML = '<div style="padding:12px;color:var(--muted);font-size:0.82rem;">Loading...</div>';
+      const res = await fetch('/api/projects');
+      const projects = await res.json();
+      if (!projects.length) {
+        list.innerHTML = '<div style="padding:12px;color:var(--muted);font-size:0.82rem;">No saved projects yet.</div>';
+        return;
+      }
+      list.innerHTML = projects.map(p => `
+        <div class="project-item">
+          <h4>${p.title}</h4>
+          <p>${new Date(p.updated_at).toLocaleDateString()}</p>
+          <div class="project-item-actions">
+            <button onclick="loadProject(${p.id})">Open</button>
+            <button class="del" onclick="deleteProject(${p.id}, this)">Delete</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    async function loadProject(id) {
+      const res = await fetch(`/api/projects/${id}`);
+      const project = await res.json();
+      currentProjectId = project.id;
+      currentHtml = project.html;
+      siteTitle.textContent = project.title;
+      showPreview(project.html);
+      document.getElementById('btn-save').disabled = false;
+      document.getElementById('btn-publish').disabled = false;
+      document.getElementById('btn-download').disabled = false;
+      document.getElementById('projects-drawer').classList.remove('open');
+      addMessage('ai', `✅ Loaded project: "${project.title}"`, 'success');
+    }
+
+    async function deleteProject(id, btn) {
+      if (!confirm('Delete this project?')) return;
+      await fetch(`/api/projects/${id}`, { method: 'DELETE' });
+      btn.closest('.project-item').remove();
+    }
+
     async function publishSite() {
       if (!currentHtml) return;
       const btn = document.getElementById('btn-publish');
@@ -814,6 +992,8 @@
       siteTitle.textContent = 'No website generated yet';
       downloadBtn.disabled = true;
       document.getElementById('btn-publish').disabled = true;
+      document.getElementById('btn-save').disabled = true;
+      currentProjectId = null;
       setStatus('', 'Waiting for prompt...');
       switchTab('preview');
     }

@@ -660,8 +660,26 @@
       <li><a href="#vs">vs. Agencies</a></li>
       <li><a href="#pricing">Pricing</a></li>
     </ul>
-    <a href="/builder" class="btn btn-primary">Build My Website Free →</a>
+    <div style="display:flex;align-items:center;gap:10px;">
+      <a href="/builder" class="btn btn-primary">Build My Website Free →</a>
+      <div id="nav-user"></div>
+    </div>
   </nav>
+  <script>
+    fetch('/api/me').then(r=>r.json()).then(({user})=>{
+      const el = document.getElementById('nav-user');
+      if (user) {
+        el.innerHTML = `<div style="display:flex;align-items:center;gap:8px;">
+          <img src="${user.avatar}" style="width:32px;height:32px;border-radius:50%;border:2px solid rgba(14,165,233,0.4);" />
+          <a href="/auth/logout" style="color:var(--muted2);font-size:0.82rem;text-decoration:none;">Logout</a>
+        </div>`;
+      } else {
+        el.innerHTML = `<a href="/auth/google" style="display:flex;align-items:center;gap:7px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);color:#fff;padding:7px 14px;border-radius:8px;font-size:0.82rem;font-weight:600;text-decoration:none;">
+          <img src="https://www.google.com/favicon.ico" style="width:14px;height:14px;"> Sign in with Google
+        </a>`;
+      }
+    });
+  </script>
 
   <!-- HERO -->
   <div class="hero">
