@@ -64,7 +64,6 @@ app.post('/api/generate', async (req, res) => {
       model: 'gemini-2.5-flash',
       systemInstruction: SYSTEM_PROMPT,
       generationConfig: {
-        responseMimeType: 'application/json',
         thinkingConfig: { thinkingBudget: 0 },
       },
     });
@@ -87,6 +86,10 @@ app.post('/api/generate', async (req, res) => {
 
     // Strip markdown code fences
     text = text.replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/```\s*$/i, '').trim();
+
+    // If Gemini returned JSON without outer braces, add them
+    if (!text.startsWith('{')) text = '{' + text;
+    if (!text.endsWith('}')) text = text + '}';
 
     res.write(`data: ${JSON.stringify({ text })}\n\n`);
     res.write('data: [DONE]\n\n');
