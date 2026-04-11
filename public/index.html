@@ -637,15 +637,22 @@
     }
 
     @media (max-width: 768px) {
-      nav { padding: 0 20px; }
+      nav { padding: 0 16px; height: 56px; }
       .nav-links { display: none; }
+      nav > div { gap: 8px; }
+      .btn { padding: 8px 14px; font-size: 0.8rem; }
       .browser-body { grid-template-columns: 1fr; height: auto; }
       .demo-chat { display: none; }
-      .demo-site { height: 260px; }
+      .demo-site { height: 240px; }
       .vs-grid { grid-template-columns: 1fr; }
-      .stat { padding: 24px; }
-      footer { padding: 24px; flex-direction: column; align-items: center; text-align: center; }
-      .pricing-card { padding: 36px 24px; }
+      .stats-bar { flex-direction: row; flex-wrap: wrap; }
+      .stat { padding: 20px 16px; min-width: 50%; border-right: none; border-bottom: 1px solid var(--border); }
+      .section { padding: 60px 16px; }
+      h2 { font-size: 1.7rem; }
+      footer { padding: 20px 16px; flex-direction: column; align-items: center; text-align: center; gap: 8px; }
+      .pricing-card { padding: 32px 20px; }
+      .perks { gap: 10px; }
+      .preview-wrap { margin-top: 40px; }
     }
   </style>
 </head>
