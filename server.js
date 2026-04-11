@@ -50,10 +50,17 @@ app.post('/api/generate', async (req, res) => {
       },
     });
 
-    const history = messages.slice(0, -1).map(m => ({
-      role: m.role === 'assistant' ? 'model' : 'user',
-      parts: [{ text: m.content }],
-    }));
+    const history = messages.slice(0, -1).map(m => {
+      let content = m.content;
+      // Strip the html field from assistant messages to keep history small
+      if (m.role === 'assistant') {
+        try {
+          const p = JSON.parse(content);
+          content = JSON.stringify({ title: p.title, description: p.description, html: '[previous website]' });
+        } catch {}
+      }
+      return { role: m.role === 'assistant' ? 'model' : 'user', parts: [{ text: content }] };
+    });
 
     const lastMessage = messages[messages.length - 1].content;
 
