@@ -37,10 +37,6 @@ app.post('/api/generate', async (req, res) => {
     return res.status(500).json({ error: 'API key not configured. Add GOOGLE_API_KEY to your Railway variables.' });
   }
 
-  res.setHeader('Content-Type', 'text/event-stream');
-  res.setHeader('Cache-Control', 'no-cache');
-  res.setHeader('Connection', 'keep-alive');
-
   try {
     const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY);
     const model = genAI.getGenerativeModel({
@@ -62,44 +58,22 @@ app.post('/api/generate', async (req, res) => {
     const result = await chat.sendMessage(lastMessage);
     let raw = result.response.text().trim();
 
-    console.log('RAW (first 300):', raw.substring(0, 300));
-
     // Strip code fences
     raw = raw.replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/```\s*$/i, '').trim();
-
-    // Ensure it starts and ends with braces
     if (!raw.startsWith('{')) raw = '{' + raw;
     if (!raw.endsWith('}')) raw = raw + '}';
 
-    // Validate it parses correctly
     let parsed;
     try {
       parsed = JSON.parse(raw);
     } catch (e) {
-      // Try to extract html/title/description manually
-      const htmlMatch = raw.match(/"html"\s*:\s*"([\s\S]*?)(?:"\s*,\s*"title"|"\s*})/);
-      const titleMatch = raw.match(/"title"\s*:\s*"([^"]+)"/);
-      const descMatch = raw.match(/"description"\s*:\s*"([^"]+)"/);
-
-      if (htmlMatch) {
-        parsed = {
-          html: htmlMatch[1].replace(/\\n/g, '\n').replace(/\\"/g, '"').replace(/\\\\/g, '\\'),
-          title: titleMatch ? titleMatch[1] : 'Generated Website',
-          description: descMatch ? descMatch[1] : 'Website generated successfully',
-        };
-        raw = JSON.stringify(parsed);
-      } else {
-        throw new Error('Could not parse Gemini response as JSON');
-      }
+      return res.status(500).json({ error: 'AI returned invalid JSON. Please try again.' });
     }
 
-    res.write(`data: ${JSON.stringify({ text: raw })}\n\n`);
-    res.write('data: [DONE]\n\n');
-    res.end();
+    res.json(parsed);
   } catch (err) {
     console.error('Google AI error:', err.message);
-    res.write(`data: ${JSON.stringify({ error: err.message })}\n\n`);
-    res.end();
+    res.status(500).json({ error: err.message });
   }
 });
 

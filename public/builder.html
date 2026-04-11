@@ -658,8 +658,6 @@
       const typingEl = addTypingIndicator();
       setStatus('building', 'AI is building your website...');
 
-      let fullResponse = '';
-
       try {
         const res = await fetch('/api/generate', {
           method: 'POST',
@@ -667,57 +665,15 @@
           body: JSON.stringify({ messages: conversationHistory }),
         });
 
-        if (!res.ok) {
-          let errMsg = `Server error (${res.status})`;
-          try { const e = await res.json(); errMsg = e.error || errMsg; } catch {}
-          throw new Error(errMsg);
+        const parsed = await res.json();
+
+        if (!res.ok || parsed.error) {
+          throw new Error(parsed.error || `Server error (${res.status})`);
         }
-
-        const reader = res.body.getReader();
-        const decoder = new TextDecoder();
-        let streamError = null;
-
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
-          const chunk = decoder.decode(value);
-          const lines = chunk.split('\n');
-          for (const line of lines) {
-            if (line.startsWith('data: ')) {
-              const data = line.slice(6).trim();
-              if (data === '[DONE]') break;
-              try {
-                const parsed = JSON.parse(data);
-                if (parsed.error) { streamError = parsed.error; break; }
-                if (parsed.text) fullResponse += parsed.text;
-              } catch {}
-            }
-          }
-          if (streamError) break;
-        }
-
-        if (streamError) throw new Error(streamError);
 
         removeTypingIndicator();
 
-        // Parse JSON response from AI
-        let parsed;
-        try {
-          const jsonMatch = fullResponse.match(/\{[\s\S]*\}/);
-          if (jsonMatch) {
-            parsed = JSON.parse(jsonMatch[0]);
-          } else {
-            throw new Error('No JSON in response — the AI returned an unexpected format. Try again.');
-          }
-        } catch (parseErr) {
-          addMessage('ai', parseErr.message, 'error');
-          setStatus('', 'Error — try again');
-          isGenerating = false;
-          sendBtn.disabled = false;
-          return;
-        }
-
-        conversationHistory.push({ role: 'assistant', content: fullResponse });
+        conversationHistory.push({ role: 'assistant', content: JSON.stringify(parsed) });
 
         if (parsed.html) {
           showPreview(parsed.html);
