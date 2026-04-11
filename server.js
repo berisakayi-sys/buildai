@@ -13,31 +13,38 @@ const app = express();
 const PORT = process.env.PORT || 4000;
 
 // ── DATABASE ──
-const pool = new Pool({ connectionString: process.env.DATABASE_URL, ssl: { rejectUnauthorized: false } });
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: process.env.DATABASE_URL ? { rejectUnauthorized: false } : false,
+});
 
 async function initDB() {
-  await pool.query(`
-    CREATE TABLE IF NOT EXISTS users (
-      id SERIAL PRIMARY KEY,
-      google_id VARCHAR(255) UNIQUE NOT NULL,
-      email VARCHAR(255),
-      name VARCHAR(255),
-      avatar VARCHAR(500),
-      created_at TIMESTAMP DEFAULT NOW()
-    );
-    CREATE TABLE IF NOT EXISTS projects (
-      id SERIAL PRIMARY KEY,
-      user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
-      title VARCHAR(255),
-      description TEXT,
-      html TEXT,
-      updated_at TIMESTAMP DEFAULT NOW(),
-      created_at TIMESTAMP DEFAULT NOW()
-    );
-  `);
-  console.log('Database ready');
+  try {
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS users (
+        id SERIAL PRIMARY KEY,
+        google_id VARCHAR(255) UNIQUE NOT NULL,
+        email VARCHAR(255),
+        name VARCHAR(255),
+        avatar VARCHAR(500),
+        created_at TIMESTAMP DEFAULT NOW()
+      );
+      CREATE TABLE IF NOT EXISTS projects (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+        title VARCHAR(255),
+        description TEXT,
+        html TEXT,
+        updated_at TIMESTAMP DEFAULT NOW(),
+        created_at TIMESTAMP DEFAULT NOW()
+      );
+    `);
+    console.log('Database ready');
+  } catch (err) {
+    console.error('DB init error:', err.message);
+  }
 }
-initDB().catch(console.error);
+initDB();
 
 // ── MIDDLEWARE ──
 app.use(cors());
@@ -45,11 +52,11 @@ app.use(express.json({ limit: '5mb' }));
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use(session({
-  store: new PgSession({ pool, createTableIfMissing: true }),
+  store: new PgSession({ pool, createTableIfMissing: true, errorLog: console.error }),
   secret: process.env.SESSION_SECRET || 'buildai-secret-change-me',
   resave: false,
   saveUninitialized: false,
-  cookie: { maxAge: 30 * 24 * 60 * 60 * 1000 }, // 30 days
+  cookie: { maxAge: 30 * 24 * 60 * 60 * 1000, secure: false },
 }));
 
 app.use(passport.initialize());
@@ -87,9 +94,15 @@ passport.deserializeUser(async (id, done) => {
 app.get('/auth/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
 
 app.get('/auth/google/callback',
-  passport.authenticate('google', { failureRedirect: '/' }),
+  passport.authenticate('google', { failureRedirect: '/?error=auth' }),
   (req, res) => res.redirect('/builder')
 );
+
+// Global error handler
+app.use((err, req, res, next) => {
+  console.error('Server error:', err.message);
+  res.status(500).json({ error: err.message });
+});
 
 app.get('/auth/logout', (req, res) => {
   req.logout(() => res.redirect('/'));
