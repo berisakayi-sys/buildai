@@ -701,9 +701,7 @@
     let currentUser = null;
     let currentProjectId = null;
 
-    // Load user on startup
-    fetch('/api/me').then(r => r.json()).then(({ user }) => {
-      currentUser = user;
+    function renderTopbarUser(user) {
       const el = document.getElementById('topbar-user');
       if (user) {
         el.innerHTML = `<div style="display:flex;align-items:center;gap:8px;margin-left:4px;">
@@ -716,7 +714,19 @@
           <img src="https://www.google.com/favicon.ico" style="width:13px;height:13px;"> Sign in to save
         </a>`;
       }
-    });
+    }
+
+    // Load user on startup
+    fetch('/api/me')
+      .then(r => r.json())
+      .then(({ user }) => {
+        currentUser = user;
+        renderTopbarUser(user);
+      })
+      .catch(() => {
+        currentUser = null;
+        renderTopbarUser(null);
+      });
 
     const messagesEl = document.getElementById('messages');
     const inputEl = document.getElementById('user-input');
@@ -728,6 +738,13 @@
     const siteTitle = document.getElementById('site-title');
     const codeContent = document.getElementById('code-content');
     const downloadBtn = document.getElementById('btn-download');
+
+    const startupError = new URLSearchParams(window.location.search).get('error');
+    if (startupError === 'database') {
+      addMessage('ai', 'Google sign-in and saved projects are unavailable until DATABASE_URL is configured.', 'error');
+    } else if (startupError === 'google-auth') {
+      addMessage('ai', 'Google sign-in is unavailable until GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET are configured.', 'error');
+    }
 
     // Auto-resize textarea
     inputEl.addEventListener('input', () => {

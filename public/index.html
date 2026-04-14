@@ -674,7 +674,7 @@
     </div>
   </nav>
   <script>
-    fetch('/api/me').then(r=>r.json()).then(({user})=>{
+    function renderNavUser(user) {
       const el = document.getElementById('nav-user');
       if (user) {
         el.innerHTML = `<div style="display:flex;align-items:center;gap:8px;">
@@ -686,7 +686,12 @@
           <img src="https://www.google.com/favicon.ico" style="width:14px;height:14px;"> Sign in with Google
         </a>`;
       }
-    });
+    }
+
+    fetch('/api/me')
+      .then(r => r.json())
+      .then(({ user }) => renderNavUser(user))
+      .catch(() => renderNavUser(null));
   </script>
 
   <!-- HERO -->

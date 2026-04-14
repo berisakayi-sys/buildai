@@ -3,7 +3,7 @@ const express = require('express');
 const session = require('express-session');
 const passport = require('passport');
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
-const { GoogleGenerativeAI } = require('@google/generative-ai');
+const Anthropic = require('@anthropic-ai/sdk');
 const { Pool } = require('pg');
 const PgSession = require('connect-pg-simple')(session);
 const cors = require('cors');
@@ -11,14 +11,24 @@ const path = require('path');
 
 const app = express();
 const PORT = process.env.PORT || 4000;
+const hasDatabase = Boolean(process.env.DATABASE_URL);
 
 // ── DATABASE ──
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: process.env.DATABASE_URL ? { rejectUnauthorized: false } : false,
-});
+let pool = null;
+let sessionStore = null;
+
+if (hasDatabase) {
+  pool = new Pool({
+    connectionString: process.env.DATABASE_URL,
+    ssl: { rejectUnauthorized: false },
+  });
+  sessionStore = new PgSession({ pool, createTableIfMissing: true, errorLog: console.error });
+} else {
+  console.warn('DATABASE_URL not set. Using in-memory sessions and disabling saved projects.');
+}
 
 async function initDB() {
+  if (!pool) return;
   try {
     await pool.query(`
       CREATE TABLE IF NOT EXISTS users (
@@ -51,13 +61,18 @@ app.use(cors());
 app.use(express.json({ limit: '5mb' }));
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.use(session({
-  store: new PgSession({ pool, createTableIfMissing: true, errorLog: console.error }),
+const sessionConfig = {
   secret: process.env.SESSION_SECRET || 'buildai-secret-change-me',
   resave: false,
   saveUninitialized: false,
   cookie: { maxAge: 30 * 24 * 60 * 60 * 1000, secure: false },
-}));
+};
+
+if (sessionStore) {
+  sessionConfig.store = sessionStore;
+}
+
+app.use(session(sessionConfig));
 
 app.use(passport.initialize());
 app.use(passport.session());
@@ -68,6 +83,7 @@ passport.use(new GoogleStrategy({
   clientSecret: process.env.GOOGLE_CLIENT_SECRET,
   callbackURL: process.env.CALLBACK_URL || '/auth/google/callback',
 }, async (accessToken, refreshToken, profile, done) => {
+  if (!pool) return done(null, false);
   try {
     const email = profile.emails?.[0]?.value;
     const avatar = profile.photos?.[0]?.value;
@@ -84,6 +100,7 @@ passport.use(new GoogleStrategy({
 
 passport.serializeUser((user, done) => done(null, user.id));
 passport.deserializeUser(async (id, done) => {
+  if (!pool) return done(null, false);
   try {
     const res = await pool.query('SELECT * FROM users WHERE id=$1', [id]);
     done(null, res.rows[0] || false);
@@ -91,17 +108,26 @@ passport.deserializeUser(async (id, done) => {
 });
 
 // ── AUTH ROUTES ──
-app.get('/auth/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
+function requireGoogleAuthSetup(req, res, next) {
+  if (!pool) return res.redirect('/builder?error=database');
+  if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
+    return res.redirect('/builder?error=google-auth');
+  }
+  next();
+}
+
+app.get('/auth/google', requireGoogleAuthSetup, passport.authenticate('google', { scope: ['profile', 'email'] }));
 
 app.get('/auth/google/callback',
+  requireGoogleAuthSetup,
   passport.authenticate('google', { failureRedirect: '/?error=auth' }),
   (req, res) => res.redirect('/builder')
 );
 
 // Global error handler
 app.use((err, req, res, next) => {
-  console.error('Server error:', err.message);
-  res.status(500).json({ error: err.message });
+  console.error('Server error:', err);
+  res.status(500).send(`<h1>Something went wrong</h1><p>${err.message || 'Unknown error'}</p><a href="/">Go home</a>`);
 });
 
 app.get('/auth/logout', (req, res) => {
@@ -119,7 +145,16 @@ function requireAuth(req, res, next) {
   next();
 }
 
-app.get('/api/projects', requireAuth, async (req, res) => {
+function requireDatabase(req, res, next) {
+  if (!pool) {
+    return res.status(503).json({
+      error: 'Database is not configured. Add DATABASE_URL to enable saved projects and Google sign-in.',
+    });
+  }
+  next();
+}
+
+app.get('/api/projects', requireDatabase, requireAuth, async (req, res) => {
   const result = await pool.query(
     'SELECT id, title, description, updated_at FROM projects WHERE user_id=$1 ORDER BY updated_at DESC',
     [req.user.id]
@@ -127,7 +162,7 @@ app.get('/api/projects', requireAuth, async (req, res) => {
   res.json(result.rows);
 });
 
-app.post('/api/projects', requireAuth, async (req, res) => {
+app.post('/api/projects', requireDatabase, requireAuth, async (req, res) => {
   const { title, description, html } = req.body;
   const result = await pool.query(
     `INSERT INTO projects (user_id, title, description, html)
@@ -137,7 +172,7 @@ app.post('/api/projects', requireAuth, async (req, res) => {
   res.json(result.rows[0]);
 });
 
-app.put('/api/projects/:id', requireAuth, async (req, res) => {
+app.put('/api/projects/:id', requireDatabase, requireAuth, async (req, res) => {
   const { title, description, html } = req.body;
   const result = await pool.query(
     `UPDATE projects SET title=$1, description=$2, html=$3, updated_at=NOW()
@@ -148,7 +183,7 @@ app.put('/api/projects/:id', requireAuth, async (req, res) => {
   res.json(result.rows[0]);
 });
 
-app.get('/api/projects/:id', requireAuth, async (req, res) => {
+app.get('/api/projects/:id', requireDatabase, requireAuth, async (req, res) => {
   const result = await pool.query(
     'SELECT * FROM projects WHERE id=$1 AND user_id=$2',
     [req.params.id, req.user.id]
@@ -157,7 +192,7 @@ app.get('/api/projects/:id', requireAuth, async (req, res) => {
   res.json(result.rows[0]);
 });
 
-app.delete('/api/projects/:id', requireAuth, async (req, res) => {
+app.delete('/api/projects/:id', requireDatabase, requireAuth, async (req, res) => {
   await pool.query('DELETE FROM projects WHERE id=$1 AND user_id=$2', [req.params.id, req.user.id]);
   res.json({ ok: true });
 });
@@ -195,17 +230,12 @@ TECHNICAL RULES:
 app.post('/api/generate', async (req, res) => {
   const { messages } = req.body;
   if (!messages || !Array.isArray(messages)) return res.status(400).json({ error: 'Messages array required' });
-  if (!process.env.GOOGLE_API_KEY) return res.status(500).json({ error: 'GOOGLE_API_KEY not set in Railway variables' });
+  if (!process.env.ANTHROPIC_API_KEY) return res.status(500).json({ error: 'ANTHROPIC_API_KEY not set in Railway variables' });
 
   try {
-    const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY);
-    const model = genAI.getGenerativeModel({
-      model: 'gemini-2.5-flash',
-      systemInstruction: SYSTEM_PROMPT,
-      generationConfig: { responseMimeType: 'application/json' },
-    });
+    const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
-    const history = messages.slice(0, -1).map(m => {
+    const claudeMessages = messages.map(m => {
       let content = m.content;
       if (m.role === 'assistant') {
         try {
@@ -213,14 +243,17 @@ app.post('/api/generate', async (req, res) => {
           content = JSON.stringify({ title: p.title, description: p.description, html: '[previous website]' });
         } catch {}
       }
-      return { role: m.role === 'assistant' ? 'model' : 'user', parts: [{ text: content }] };
+      return { role: m.role === 'assistant' ? 'assistant' : 'user', content };
     });
 
-    const lastMessage = messages[messages.length - 1].content;
-    const chat = model.startChat({ history });
-    const result = await chat.sendMessage(lastMessage);
-    let raw = result.response.text().trim();
+    const result = await client.messages.create({
+      model: 'claude-sonnet-4-6',
+      max_tokens: 8000,
+      system: SYSTEM_PROMPT,
+      messages: claudeMessages,
+    });
 
+    let raw = result.content[0].text.trim();
     raw = raw.replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/```\s*$/i, '').trim();
     if (!raw.startsWith('{')) raw = '{' + raw;
     if (!raw.endsWith('}')) raw = raw + '}';
@@ -231,8 +264,8 @@ app.post('/api/generate', async (req, res) => {
 
     res.json(parsed);
   } catch (err) {
-    console.error('Google AI error:', err.message);
-    res.status(500).json({ error: err.message });
+    console.error('Claude API error:', err.message);
+    res.status(500).json({ error: err.message || 'Unknown error' });
   }
 });
 
@@ -259,6 +292,12 @@ app.get('/site/:slug', (req, res) => {
 // ── PAGES ──
 app.get('/builder', (req, res) => res.sendFile(path.join(__dirname, 'public', 'builder.html')));
 app.get('*', (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
+
+app.use((err, req, res, next) => {
+  const message = err?.message || 'Unexpected server error';
+  console.error('Server error:', message);
+  res.status(500).json({ error: message });
+});
 
 app.listen(PORT, () => {
   console.log(`\n🚀 AI Website Builder running at http://localhost:${PORT}`);

@@ -1,6 +1,6 @@
 # BuildAI — Free AI Website Builder
 
-A free, open-source AI website builder powered by Claude. Describe any website and get a complete, professional HTML/CSS/JS site in seconds.
+A free, open-source AI website builder powered by Gemini. Describe any website and get a complete, professional HTML/CSS/JS site in seconds.
 
 ## Deploy to Railway (recommended)
 
@@ -9,18 +9,26 @@ A free, open-source AI website builder powered by Claude. Describe any website a
 3. Select this repo
 4. In Railway, go to **Variables** → add:
    ```
-   ANTHROPIC_API_KEY = your_key_here
+   GOOGLE_API_KEY = your_key_here
+   ```
+   Optional for saved projects and Google sign-in:
+   ```
+   DATABASE_URL = your_postgres_connection_string
+   GOOGLE_CLIENT_ID = your_google_oauth_client_id
+   GOOGLE_CLIENT_SECRET = your_google_oauth_client_secret
+   SESSION_SECRET = a_long_random_secret
+   CALLBACK_URL = https://your-domain.com/auth/google/callback
    ```
 5. Railway auto-deploys. Your site is live!
 
-Get your API key at: https://console.anthropic.com
+Get your Gemini API key from Google AI Studio.
 
 ## Run locally (requires Node.js)
 
 ```bash
 npm install
 cp .env.example .env
-# Edit .env and add your ANTHROPIC_API_KEY
+# Edit .env and add your GOOGLE_API_KEY
 npm start
 ```
 
