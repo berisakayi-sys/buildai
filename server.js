@@ -200,7 +200,7 @@ app.delete('/api/projects/:id', requireDatabase, requireAuth, async (req, res) =
 // ── AI GENERATION ──
 const SYSTEM_PROMPT = `You are a world-class UI/UX designer and senior front-end developer. You design websites at the level of top Dribbble shots — the kind that get thousands of likes and go trending. Every site you build should look like it could be featured on Dribbble, Awwwards, or Behance.
 
-You MUST respond with ONLY a JSON object. No markdown, no code blocks, no extra text.
+CRITICAL OUTPUT RULE: You MUST respond with ONLY a raw JSON object. Absolutely no markdown, no code fences, no backticks, no explanations, no text before or after the JSON. Your entire response must start with { and end with }. Any extra text will break the parser.
 
 Format:
 {"html":"<full HTML here>","title":"Site Title","description":"One sentence description"}
@@ -287,13 +287,41 @@ app.post('/api/generate', async (req, res) => {
     });
 
     let raw = result.choices[0].message.content.trim();
-    raw = raw.replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/```\s*$/i, '').trim();
-    if (!raw.startsWith('{')) raw = '{' + raw;
-    if (!raw.endsWith('}')) raw = raw + '}';
 
+    // Strip markdown fences
+    raw = raw.replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/```\s*$/i, '').trim();
+
+    // Try direct parse first
     let parsed;
-    try { parsed = JSON.parse(raw); }
-    catch (e) { return res.status(500).json({ error: 'AI returned invalid JSON. Please try again.' }); }
+    try {
+      parsed = JSON.parse(raw);
+    } catch (_) {
+      // Extract the outermost {...} block (handles text before/after JSON)
+      const match = raw.match(/\{[\s\S]*\}/);
+      if (match) {
+        try {
+          parsed = JSON.parse(match[0]);
+        } catch (_2) {
+          // Last resort: pull out fields manually
+          const htmlMatch = raw.match(/"html"\s*:\s*"([\s\S]*?)"\s*,\s*"title"/);
+          const titleMatch = raw.match(/"title"\s*:\s*"([^"]+)"/);
+          const descMatch = raw.match(/"description"\s*:\s*"([^"]+)"/);
+          if (htmlMatch && titleMatch) {
+            parsed = {
+              html: htmlMatch[1].replace(/\\n/g, '\n').replace(/\\"/g, '"').replace(/\\\\/g, '\\'),
+              title: titleMatch[1],
+              description: descMatch ? descMatch[1] : '',
+            };
+          } else {
+            console.error('Raw AI response:', raw.substring(0, 500));
+            return res.status(500).json({ error: 'AI returned invalid JSON. Please try again.' });
+          }
+        }
+      } else {
+        console.error('Raw AI response:', raw.substring(0, 500));
+        return res.status(500).json({ error: 'AI returned invalid JSON. Please try again.' });
+      }
+    }
 
     res.json(parsed);
   } catch (err) {
