@@ -254,7 +254,7 @@ app.post('/api/generate', async (req, res) => {
     });
 
     const result = await client.chat.completions.create({
-      model: 'deepseek/deepseek-chat-v3-0324:free',
+      model: 'openrouter/auto',
       max_tokens: 8000,
       messages: [{ role: 'system', content: SYSTEM_PROMPT }, ...chatMessages],
     });
