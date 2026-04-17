@@ -3,7 +3,7 @@ const express = require('express');
 const session = require('express-session');
 const passport = require('passport');
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
-const Anthropic = require('@anthropic-ai/sdk');
+const { GoogleGenerativeAI } = require('@google/generative-ai');
 const { Pool } = require('pg');
 const PgSession = require('connect-pg-simple')(session);
 const cors = require('cors');
@@ -230,12 +230,17 @@ TECHNICAL RULES:
 app.post('/api/generate', async (req, res) => {
   const { messages } = req.body;
   if (!messages || !Array.isArray(messages)) return res.status(400).json({ error: 'Messages array required' });
-  if (!process.env.ANTHROPIC_API_KEY) return res.status(500).json({ error: 'ANTHROPIC_API_KEY not set in Railway variables' });
+  if (!process.env.GOOGLE_API_KEY) return res.status(500).json({ error: 'GOOGLE_API_KEY not set in Railway variables' });
 
   try {
-    const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+    const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY);
+    const model = genAI.getGenerativeModel({
+      model: 'gemini-2.5-flash',
+      systemInstruction: SYSTEM_PROMPT,
+      generationConfig: { responseMimeType: 'application/json' },
+    });
 
-    const claudeMessages = messages.map(m => {
+    const history = messages.slice(0, -1).map(m => {
       let content = m.content;
       if (m.role === 'assistant') {
         try {
@@ -243,17 +248,14 @@ app.post('/api/generate', async (req, res) => {
           content = JSON.stringify({ title: p.title, description: p.description, html: '[previous website]' });
         } catch {}
       }
-      return { role: m.role === 'assistant' ? 'assistant' : 'user', content };
+      return { role: m.role === 'assistant' ? 'model' : 'user', parts: [{ text: content }] };
     });
 
-    const result = await client.messages.create({
-      model: 'claude-sonnet-4-6',
-      max_tokens: 8000,
-      system: SYSTEM_PROMPT,
-      messages: claudeMessages,
-    });
+    const lastMessage = messages[messages.length - 1].content;
+    const chat = model.startChat({ history });
+    const result = await chat.sendMessage(lastMessage);
+    let raw = result.response.text().trim();
 
-    let raw = result.content[0].text.trim();
     raw = raw.replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/```\s*$/i, '').trim();
     if (!raw.startsWith('{')) raw = '{' + raw;
     if (!raw.endsWith('}')) raw = raw + '}';
@@ -264,7 +266,7 @@ app.post('/api/generate', async (req, res) => {
 
     res.json(parsed);
   } catch (err) {
-    console.error('Claude API error:', err.message);
+    console.error('Google AI error:', err.message);
     res.status(500).json({ error: err.message || 'Unknown error' });
   }
 });
