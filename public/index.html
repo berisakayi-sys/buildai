@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>BuildAI — Free AI Website Builder</title>
+  <title>BuildAI — Free AI Creative Suite</title>
   <link rel="icon" href="/Icon.png" type="image/png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
@@ -12,17 +12,20 @@
 
     :root {
       --bg: #050507;
-      --surface: #0a0a0f;
+      --surface: rgba(10,10,15,0.85);
       --border: rgba(255,255,255,0.07);
+      --border2: rgba(255,255,255,0.12);
       --blue: #0ea5e9;
       --cyan: #06b6d4;
-      --blue-dark: #0284c7;
       --purple: #7c3aed;
+      --purple-light: #a78bfa;
+      --green: #34d399;
+      --pink: #ec4899;
+      --orange: #f97316;
+      --yellow: #eab308;
       --text: #f8fafc;
       --muted: #64748b;
       --muted2: #94a3b8;
-      --card: rgba(255,255,255,0.03);
-      --card-hover: rgba(14,165,233,0.06);
     }
 
     html { scroll-behavior: smooth; }
@@ -34,6 +37,30 @@
       line-height: 1.6;
     }
 
+    /* Ambient background */
+    body::before {
+      content: '';
+      position: fixed;
+      top: -200px; left: -200px;
+      width: 700px; height: 700px;
+      background: radial-gradient(circle, rgba(14,165,233,0.12) 0%, transparent 65%);
+      pointer-events: none;
+      z-index: 0;
+      animation: drift1 20s ease-in-out infinite alternate;
+    }
+    body::after {
+      content: '';
+      position: fixed;
+      bottom: -200px; right: -100px;
+      width: 600px; height: 600px;
+      background: radial-gradient(circle, rgba(124,58,237,0.1) 0%, transparent 65%);
+      pointer-events: none;
+      z-index: 0;
+      animation: drift2 25s ease-in-out infinite alternate;
+    }
+    @keyframes drift1 { to { transform: translate(80px, 100px); } }
+    @keyframes drift2 { to { transform: translate(-60px, -80px); } }
+
     /* ── NAV ── */
     nav {
       position: fixed;
@@ -44,46 +71,31 @@
       justify-content: space-between;
       padding: 0 48px;
       height: 64px;
-      background: rgba(5,5,7,0.85);
+      background: rgba(5,5,7,0.8);
       backdrop-filter: blur(24px);
-      border-bottom: 1px solid var(--border);
-    }
-
-    .logo {
-      font-size: 1.35rem;
-      font-weight: 900;
-      color: #fff;
-      text-decoration: none;
-      letter-spacing: -0.02em;
-    }
-
-    .logo span {
-      background: linear-gradient(135deg, var(--blue), var(--cyan));
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
+      -webkit-backdrop-filter: blur(24px);
+      border-bottom: 1px solid rgba(255,255,255,0.06);
     }
 
     .nav-links {
       display: flex;
-      gap: 36px;
+      gap: 32px;
       list-style: none;
     }
 
     .nav-links a {
       color: var(--muted2);
       text-decoration: none;
-      font-size: 0.88rem;
+      font-size: 0.87rem;
       font-weight: 500;
       transition: color 0.2s;
     }
-
     .nav-links a:hover { color: var(--text); }
 
     .btn {
-      padding: 10px 22px;
-      border-radius: 8px;
-      font-size: 0.88rem;
+      padding: 9px 20px;
+      border-radius: 9px;
+      font-size: 0.87rem;
       font-weight: 700;
       cursor: pointer;
       text-decoration: none;
@@ -97,20 +109,17 @@
     .btn-primary {
       background: linear-gradient(135deg, var(--blue), var(--cyan));
       color: #fff;
-      box-shadow: 0 0 24px rgba(14,165,233,0.35);
+      box-shadow: 0 0 22px rgba(14,165,233,0.35);
     }
-
-    .btn-primary:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 0 36px rgba(14,165,233,0.55);
-    }
+    .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 0 34px rgba(14,165,233,0.55); }
 
     .btn-ghost {
-      background: transparent;
+      background: rgba(255,255,255,0.05);
+      backdrop-filter: blur(8px);
       color: var(--muted2);
-      border: 1px solid var(--border);
+      border: 1px solid rgba(255,255,255,0.08);
     }
-    .btn-ghost:hover { color: var(--text); border-color: rgba(255,255,255,0.18); }
+    .btn-ghost:hover { color: var(--text); background: rgba(255,255,255,0.09); }
 
     /* ── HERO ── */
     .hero {
@@ -122,45 +131,35 @@
       text-align: center;
       padding: 120px 24px 80px;
       position: relative;
-      overflow: hidden;
+      z-index: 1;
     }
 
-    .hero-glow {
-      position: absolute;
-      inset: 0;
-      background:
-        radial-gradient(ellipse 70% 50% at 50% 0%, rgba(14,165,233,0.18) 0%, transparent 60%),
-        radial-gradient(ellipse 50% 40% at 20% 80%, rgba(6,182,212,0.1) 0%, transparent 50%),
-        radial-gradient(ellipse 40% 30% at 80% 60%, rgba(124,58,237,0.08) 0%, transparent 40%);
-      pointer-events: none;
-    }
-
-    /* Grid lines */
     .hero-grid {
       position: absolute;
       inset: 0;
       background-image:
-        linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+        linear-gradient(rgba(255,255,255,0.018) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.018) 1px, transparent 1px);
       background-size: 60px 60px;
       pointer-events: none;
-      mask-image: radial-gradient(ellipse at center, transparent 20%, black 80%);
+      mask-image: radial-gradient(ellipse at center, transparent 30%, black 80%);
     }
 
     .hero-eyebrow {
       display: inline-flex;
       align-items: center;
       gap: 10px;
-      background: rgba(14,165,233,0.1);
-      border: 1px solid rgba(14,165,233,0.25);
+      background: rgba(14,165,233,0.08);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(14,165,233,0.2);
       color: var(--blue);
       padding: 6px 18px;
       border-radius: 100px;
-      font-size: 0.8rem;
+      font-size: 0.78rem;
       font-weight: 700;
-      letter-spacing: 0.05em;
+      letter-spacing: 0.06em;
       text-transform: uppercase;
-      margin-bottom: 32px;
+      margin-bottom: 28px;
       animation: fadeUp 0.5s ease both;
     }
 
@@ -171,232 +170,313 @@
       box-shadow: 0 0 8px var(--cyan);
       animation: blink 2s infinite;
     }
-
-    @keyframes blink {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.2; }
-    }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
 
     h1 {
       font-size: clamp(2.8rem, 7vw, 5.8rem);
       font-weight: 900;
       line-height: 1.05;
       letter-spacing: -0.035em;
-      margin-bottom: 28px;
+      margin-bottom: 24px;
       animation: fadeUp 0.5s 0.1s ease both;
     }
 
     h1 em {
       font-style: normal;
-      background: linear-gradient(135deg, var(--blue) 0%, var(--cyan) 60%, #a78bfa 100%);
+      background: linear-gradient(135deg, var(--blue) 0%, var(--cyan) 50%, var(--purple-light) 100%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
     }
 
     .hero-sub {
-      font-size: clamp(1rem, 2.2vw, 1.22rem);
+      font-size: clamp(1rem, 2vw, 1.18rem);
       color: var(--muted2);
-      max-width: 580px;
-      margin: 0 auto 48px;
+      max-width: 560px;
+      margin: 0 auto 44px;
       line-height: 1.7;
       animation: fadeUp 0.5s 0.2s ease both;
     }
 
     .hero-actions {
       display: flex;
-      gap: 14px;
+      gap: 12px;
       justify-content: center;
       flex-wrap: wrap;
-      margin-bottom: 20px;
+      margin-bottom: 16px;
       animation: fadeUp 0.5s 0.3s ease both;
     }
 
-    .btn-xl { padding: 15px 36px; font-size: 1rem; border-radius: 10px; }
+    .btn-xl { padding: 14px 34px; font-size: 0.98rem; border-radius: 11px; }
 
     .hero-note {
-      font-size: 0.8rem;
+      font-size: 0.78rem;
       color: var(--muted);
       animation: fadeUp 0.5s 0.4s ease both;
     }
-
     .hero-note span { color: var(--cyan); }
 
-    /* ── PREVIEW ── */
-    .preview-wrap {
-      margin-top: 72px;
-      width: 100%;
-      max-width: 960px;
-      animation: fadeUp 0.7s 0.5s ease both;
+    /* ── TOOLS SECTION ── */
+    .tools-section {
+      position: relative;
+      z-index: 1;
+      padding: 0 24px 100px;
+      max-width: 1200px;
+      margin: 0 auto;
     }
 
-    .browser {
-      background: #0d0d14;
-      border: 1px solid rgba(255,255,255,0.08);
-      border-radius: 14px;
-      overflow: hidden;
-      box-shadow:
-        0 50px 120px rgba(0,0,0,0.7),
-        0 0 0 1px rgba(255,255,255,0.04),
-        0 0 60px rgba(14,165,233,0.08);
+    .section-label {
+      text-align: center;
+      margin-bottom: 48px;
     }
 
-    .browser-bar {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 12px 18px;
-      background: rgba(255,255,255,0.025);
-      border-bottom: 1px solid rgba(255,255,255,0.06);
+    .eyebrow {
+      font-size: 0.74rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--blue);
+      margin-bottom: 12px;
     }
 
-    .dot { width: 11px; height: 11px; border-radius: 50%; }
-    .dot-r { background: #ff5f57; }
-    .dot-y { background: #febc2e; }
-    .dot-g { background: #28c840; }
-
-    .browser-addr {
-      flex: 1;
-      background: rgba(255,255,255,0.04);
-      border-radius: 5px;
-      padding: 5px 14px;
-      font-size: 0.75rem;
-      color: var(--muted);
-      margin: 0 14px;
+    .section-label h2 {
+      font-size: clamp(1.8rem, 4vw, 2.8rem);
+      font-weight: 900;
+      letter-spacing: -0.03em;
+      line-height: 1.1;
+      margin-bottom: 12px;
     }
 
-    .browser-body {
+    .section-label p {
+      color: var(--muted2);
+      font-size: 1rem;
+      max-width: 480px;
+      margin: 0 auto;
+    }
+
+    /* Tools grid */
+    .tools-grid {
       display: grid;
-      grid-template-columns: 340px 1fr;
-      height: 420px;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
     }
 
-    .demo-chat {
-      border-right: 1px solid rgba(255,255,255,0.06);
-      padding: 18px;
+    /* Featured tool - website builder takes 2 cols x 2 rows */
+    .tool-card {
+      background: rgba(255,255,255,0.03);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 18px;
+      padding: 26px;
+      text-decoration: none;
+      color: var(--text);
       display: flex;
       flex-direction: column;
       gap: 12px;
-      background: rgba(0,0,0,0.3);
+      transition: all 0.25s;
+      position: relative;
+      overflow: hidden;
+      cursor: pointer;
     }
 
-    .demo-label {
+    .tool-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      transition: opacity 0.3s;
+      border-radius: 18px;
+    }
+
+    .tool-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 12px 40px rgba(0,0,0,0.4);
+    }
+
+    .tool-card:hover::before { opacity: 1; }
+
+    .tool-card.featured {
+      grid-column: span 2;
+      grid-row: span 2;
+      padding: 36px;
+      background: rgba(14,165,233,0.06);
+      border-color: rgba(14,165,233,0.2);
+    }
+    .tool-card.featured::before {
+      background: radial-gradient(ellipse at 20% 20%, rgba(14,165,233,0.08), transparent 60%);
+    }
+    .tool-card.featured:hover { border-color: rgba(14,165,233,0.4); box-shadow: 0 16px 50px rgba(0,0,0,0.5), 0 0 0 1px rgba(14,165,233,0.15); }
+
+    .tool-card.purple { background: rgba(124,58,237,0.05); border-color: rgba(124,58,237,0.15); }
+    .tool-card.purple::before { background: radial-gradient(ellipse at 20% 20%, rgba(124,58,237,0.08), transparent 60%); }
+    .tool-card.purple:hover { border-color: rgba(124,58,237,0.35); box-shadow: 0 12px 40px rgba(0,0,0,0.4), 0 0 0 1px rgba(124,58,237,0.12); }
+
+    .tool-card.green { background: rgba(52,211,153,0.04); border-color: rgba(52,211,153,0.14); }
+    .tool-card.green::before { background: radial-gradient(ellipse at 20% 20%, rgba(52,211,153,0.07), transparent 60%); }
+    .tool-card.green:hover { border-color: rgba(52,211,153,0.3); }
+
+    .tool-card.pink { background: rgba(236,72,153,0.04); border-color: rgba(236,72,153,0.14); }
+    .tool-card.pink::before { background: radial-gradient(ellipse at 20% 20%, rgba(236,72,153,0.07), transparent 60%); }
+    .tool-card.pink:hover { border-color: rgba(236,72,153,0.3); }
+
+    .tool-card.orange { background: rgba(249,115,22,0.04); border-color: rgba(249,115,22,0.14); }
+    .tool-card.orange::before { background: radial-gradient(ellipse at 20% 20%, rgba(249,115,22,0.07), transparent 60%); }
+    .tool-card.orange:hover { border-color: rgba(249,115,22,0.3); }
+
+    .tool-card.yellow { background: rgba(234,179,8,0.04); border-color: rgba(234,179,8,0.14); }
+    .tool-card.yellow::before { background: radial-gradient(ellipse at 20% 20%, rgba(234,179,8,0.07), transparent 60%); }
+    .tool-card.yellow:hover { border-color: rgba(234,179,8,0.3); }
+
+    .tool-card.cyan { background: rgba(6,182,212,0.04); border-color: rgba(6,182,212,0.14); }
+    .tool-card.cyan::before { background: radial-gradient(ellipse at 20% 20%, rgba(6,182,212,0.07), transparent 60%); }
+    .tool-card.cyan:hover { border-color: rgba(6,182,212,0.3); }
+
+    .tool-icon {
+      width: 48px; height: 48px;
+      border-radius: 13px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.4rem;
+      flex-shrink: 0;
+    }
+
+    .tool-card.featured .tool-icon { width: 60px; height: 60px; font-size: 1.8rem; border-radius: 16px; }
+
+    .tool-icon.blue-ic { background: rgba(14,165,233,0.15); border: 1px solid rgba(14,165,233,0.25); }
+    .tool-icon.purple-ic { background: rgba(124,58,237,0.15); border: 1px solid rgba(124,58,237,0.25); }
+    .tool-icon.green-ic { background: rgba(52,211,153,0.15); border: 1px solid rgba(52,211,153,0.25); }
+    .tool-icon.pink-ic { background: rgba(236,72,153,0.15); border: 1px solid rgba(236,72,153,0.25); }
+    .tool-icon.orange-ic { background: rgba(249,115,22,0.15); border: 1px solid rgba(249,115,22,0.25); }
+    .tool-icon.yellow-ic { background: rgba(234,179,8,0.15); border: 1px solid rgba(234,179,8,0.25); }
+    .tool-icon.cyan-ic { background: rgba(6,182,212,0.15); border: 1px solid rgba(6,182,212,0.25); }
+    .tool-icon.red-ic { background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.25); }
+
+    .tool-name {
+      font-size: 0.95rem;
+      font-weight: 700;
+      line-height: 1.3;
+    }
+
+    .tool-card.featured .tool-name { font-size: 1.35rem; margin-top: 4px; }
+
+    .tool-desc {
+      font-size: 0.8rem;
+      color: var(--muted2);
+      line-height: 1.55;
+    }
+
+    .tool-card.featured .tool-desc { font-size: 0.92rem; max-width: 320px; }
+
+    .tool-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 3px 10px;
+      border-radius: 100px;
       font-size: 0.68rem;
       font-weight: 700;
-      letter-spacing: 0.1em;
+      letter-spacing: 0.04em;
       text-transform: uppercase;
-      color: var(--muted);
+      width: fit-content;
+      margin-top: auto;
     }
 
-    .demo-msg {
-      background: rgba(14,165,233,0.1);
-      border: 1px solid rgba(14,165,233,0.2);
-      color: var(--blue);
-      border-radius: 10px;
-      padding: 10px 14px;
-      font-size: 0.82rem;
-      line-height: 1.5;
+    .badge-live {
+      background: rgba(52,211,153,0.12);
+      border: 1px solid rgba(52,211,153,0.25);
+      color: var(--green);
     }
 
-    .demo-msg.reply {
-      background: rgba(255,255,255,0.04);
-      border-color: rgba(255,255,255,0.06);
+    .badge-soon {
+      background: rgba(100,116,139,0.1);
+      border: 1px solid rgba(100,116,139,0.2);
       color: var(--muted2);
     }
 
-    .demo-typing {
-      display: flex;
-      gap: 5px;
-      padding: 10px 14px;
-      background: rgba(255,255,255,0.04);
-      border: 1px solid rgba(255,255,255,0.06);
+    .badge-new {
+      background: rgba(14,165,233,0.12);
+      border: 1px solid rgba(14,165,233,0.25);
+      color: var(--blue);
+    }
+
+    .tool-arrow {
+      position: absolute;
+      bottom: 24px; right: 24px;
+      width: 32px; height: 32px;
+      background: rgba(255,255,255,0.06);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.85rem;
+      opacity: 0;
+      transform: translateX(-4px);
+      transition: all 0.2s;
+    }
+    .tool-card:hover .tool-arrow { opacity: 1; transform: translateX(0); }
+
+    .tool-card.featured .cta-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: linear-gradient(135deg, var(--blue), var(--cyan));
+      color: #fff;
+      padding: 11px 24px;
       border-radius: 10px;
+      font-size: 0.88rem;
+      font-weight: 700;
+      text-decoration: none;
+      box-shadow: 0 0 20px rgba(14,165,233,0.3);
+      transition: all 0.2s;
+      margin-top: 8px;
       width: fit-content;
     }
+    .tool-card.featured .cta-btn:hover { box-shadow: 0 0 30px rgba(14,165,233,0.5); transform: translateY(-1px); }
 
-    .demo-typing span {
-      width: 6px; height: 6px;
-      background: var(--blue);
-      border-radius: 50%;
-      animation: bounce 1.2s infinite;
-    }
-    .demo-typing span:nth-child(2) { animation-delay: 0.15s; }
-    .demo-typing span:nth-child(3) { animation-delay: 0.3s; }
-
-    @keyframes bounce {
-      0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
-      30% { transform: translateY(-5px); opacity: 1; }
-    }
-
-    .demo-site {
-      background: linear-gradient(160deg, #0f172a 0%, #1e1b4b 100%);
+    /* Featured card decorative preview */
+    .featured-preview {
+      margin-top: 8px;
+      background: rgba(0,0,0,0.3);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 12px;
+      padding: 14px 16px;
       display: flex;
       flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      color: white;
-      font-family: sans-serif;
-      padding: 32px;
-      text-align: center;
-      gap: 12px;
+      gap: 8px;
     }
 
-    .demo-site-nav {
-      position: absolute;
-      top: 0; left: 0; right: 0;
-      padding: 12px 24px;
-      display: flex;
-      justify-content: space-between;
-      font-size: 0.7rem;
-      color: rgba(255,255,255,0.5);
+    .fp-bar {
+      height: 8px;
+      border-radius: 4px;
+      background: rgba(14,165,233,0.25);
     }
-
-    .demo-site-inner { position: relative; width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; }
-
-    .demo-site-badge {
-      background: rgba(14,165,233,0.2);
-      border: 1px solid rgba(14,165,233,0.3);
-      color: #7dd3fc;
-      padding: 4px 14px;
-      border-radius: 100px;
-      font-size: 0.7rem;
-      font-weight: 700;
-    }
-
-    .demo-site h2 { font-size: 1.6rem; font-weight: 800; letter-spacing: -0.02em; }
-    .demo-site p { font-size: 0.82rem; color: rgba(255,255,255,0.55); max-width: 220px; }
-
-    .demo-site-btn {
-      background: linear-gradient(135deg, #0ea5e9, #06b6d4);
-      color: white;
-      padding: 8px 20px;
-      border-radius: 6px;
-      font-size: 0.75rem;
-      font-weight: 700;
-    }
+    .fp-bar:nth-child(2) { width: 75%; background: rgba(14,165,233,0.15); }
+    .fp-bar:nth-child(3) { width: 55%; background: rgba(14,165,233,0.1); }
 
     /* ── STATS ── */
     .stats-bar {
+      position: relative;
+      z-index: 1;
       display: flex;
       justify-content: center;
       gap: 0;
       border-top: 1px solid var(--border);
       border-bottom: 1px solid var(--border);
       flex-wrap: wrap;
+      background: rgba(5,5,7,0.6);
+      backdrop-filter: blur(8px);
     }
 
     .stat {
-      padding: 36px 48px;
+      padding: 32px 40px;
       text-align: center;
       border-right: 1px solid var(--border);
       flex: 1;
-      min-width: 160px;
+      min-width: 150px;
     }
-
     .stat:last-child { border-right: none; }
 
     .stat-num {
-      font-size: 2.4rem;
+      font-size: 2.2rem;
       font-weight: 900;
       letter-spacing: -0.03em;
       color: #fff;
@@ -411,216 +491,66 @@
       background-clip: text;
     }
 
-    .stat-label { color: var(--muted); font-size: 0.82rem; }
+    .stat-label { color: var(--muted); font-size: 0.8rem; }
 
-    /* ── SECTIONS ── */
-    .section { padding: 100px 24px; max-width: 1100px; margin: 0 auto; }
-
-    .eyebrow {
-      font-size: 0.75rem;
-      font-weight: 700;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      color: var(--blue);
-      margin-bottom: 16px;
+    /* ── HOW IT WORKS ── */
+    .section {
+      padding: 90px 24px;
+      max-width: 1100px;
+      margin: 0 auto;
+      position: relative;
+      z-index: 1;
     }
 
     h2 {
-      font-size: clamp(1.9rem, 4vw, 3rem);
+      font-size: clamp(1.8rem, 4vw, 2.8rem);
       font-weight: 900;
       letter-spacing: -0.03em;
       line-height: 1.1;
-      margin-bottom: 16px;
+      margin-bottom: 14px;
     }
 
     .section-sub {
       color: var(--muted2);
-      font-size: 1.05rem;
+      font-size: 1rem;
       max-width: 500px;
-      margin-bottom: 60px;
+      margin-bottom: 52px;
       line-height: 1.65;
     }
 
-    /* ── HOW IT WORKS ── */
     .steps {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
       gap: 1px;
       border: 1px solid var(--border);
-      border-radius: 16px;
+      border-radius: 18px;
       overflow: hidden;
     }
 
     .step {
-      padding: 36px;
-      background: var(--card);
+      padding: 34px;
+      background: rgba(255,255,255,0.02);
       transition: background 0.3s;
-      position: relative;
     }
-
-    .step:hover { background: var(--card-hover); }
+    .step:hover { background: rgba(14,165,233,0.04); }
 
     .step-num {
-      width: 36px; height: 36px;
+      width: 34px; height: 34px;
       background: linear-gradient(135deg, var(--blue), var(--cyan));
       border-radius: 8px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 0.85rem;
-      font-weight: 800;
-      margin-bottom: 20px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.82rem; font-weight: 800;
+      margin-bottom: 18px;
+      box-shadow: 0 0 14px rgba(14,165,233,0.3);
     }
 
-    .step h3 { font-size: 1.05rem; font-weight: 700; margin-bottom: 10px; }
-    .step p { color: var(--muted2); font-size: 0.875rem; line-height: 1.6; }
-
-    /* ── FEATURES ── */
-    .features {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 16px;
-    }
-
-    .feat {
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 28px;
-      background: var(--card);
-      transition: all 0.25s;
-    }
-
-    .feat:hover {
-      border-color: rgba(14,165,233,0.3);
-      background: var(--card-hover);
-      transform: translateY(-3px);
-    }
-
-    .feat-icon { font-size: 1.6rem; margin-bottom: 14px; }
-    .feat h3 { font-size: 0.95rem; font-weight: 700; margin-bottom: 8px; }
-    .feat p { color: var(--muted2); font-size: 0.84rem; line-height: 1.6; }
-
-    /* ── VS SECTION ── */
-    .vs-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 20px;
-    }
-
-    .vs-card {
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 32px;
-      background: var(--card);
-    }
-
-    .vs-card.us {
-      border-color: rgba(14,165,233,0.3);
-      background: rgba(14,165,233,0.04);
-    }
-
-    .vs-label {
-      font-size: 0.7rem;
-      font-weight: 800;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      margin-bottom: 20px;
-    }
-
-    .vs-card.us .vs-label { color: var(--cyan); }
-    .vs-card:not(.us) .vs-label { color: var(--muted); }
-
-    .vs-item {
-      display: flex;
-      align-items: flex-start;
-      gap: 10px;
-      margin-bottom: 14px;
-      font-size: 0.88rem;
-    }
-
-    .vs-item .check { color: var(--cyan); flex-shrink: 0; font-size: 0.9rem; }
-    .vs-item .cross { color: #ef4444; flex-shrink: 0; font-size: 0.9rem; }
-    .vs-item .label { line-height: 1.4; }
-    .vs-item .label strong { color: var(--text); display: block; margin-bottom: 2px; }
-    .vs-item .label span { color: var(--muted2); font-size: 0.8rem; }
-
-    /* ── PRICING ── */
-    .pricing-card {
-      max-width: 540px;
-      margin: 0 auto;
-      border: 1px solid rgba(14,165,233,0.3);
-      border-radius: 20px;
-      padding: 52px 48px;
-      background: rgba(14,165,233,0.04);
-      text-align: center;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .pricing-card::before {
-      content: '';
-      position: absolute;
-      top: 0; left: 0; right: 0;
-      height: 3px;
-      background: linear-gradient(90deg, var(--blue), var(--cyan));
-    }
-
-    .pricing-tag {
-      display: inline-block;
-      background: linear-gradient(135deg, var(--blue), var(--cyan));
-      color: white;
-      font-size: 0.7rem;
-      font-weight: 800;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      padding: 4px 14px;
-      border-radius: 100px;
-      margin-bottom: 24px;
-    }
-
-    .pricing-price {
-      font-size: 5.5rem;
-      font-weight: 900;
-      letter-spacing: -0.05em;
-      line-height: 1;
-      color: #fff;
-      margin-bottom: 6px;
-    }
-
-    .pricing-price sup { font-size: 2rem; vertical-align: super; letter-spacing: 0; }
-    .pricing-sub { color: var(--muted2); font-size: 0.9rem; margin-bottom: 36px; }
-
-    .perks {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      text-align: left;
-      margin-bottom: 40px;
-    }
-
-    .perk {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      font-size: 0.9rem;
-      color: var(--text);
-    }
-
-    .perk-icon {
-      width: 22px; height: 22px;
-      background: rgba(6,182,212,0.15);
-      border: 1px solid rgba(6,182,212,0.3);
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 0.7rem;
-      color: var(--cyan);
-      flex-shrink: 0;
-    }
+    .step h3 { font-size: 1rem; font-weight: 700; margin-bottom: 10px; }
+    .step p { color: var(--muted2); font-size: 0.85rem; line-height: 1.6; }
 
     /* ── FOOTER ── */
     footer {
+      position: relative;
+      z-index: 1;
       border-top: 1px solid var(--border);
       padding: 36px 48px;
       display: flex;
@@ -628,32 +558,32 @@
       justify-content: space-between;
       flex-wrap: wrap;
       gap: 16px;
+      background: rgba(5,5,7,0.7);
+      backdrop-filter: blur(12px);
     }
 
-    footer small { color: var(--muted); font-size: 0.82rem; }
+    footer small { color: var(--muted); font-size: 0.8rem; }
 
     @keyframes fadeUp {
-      from { opacity: 0; transform: translateY(20px); }
+      from { opacity: 0; transform: translateY(18px); }
       to { opacity: 1; transform: translateY(0); }
     }
 
-    @media (max-width: 768px) {
+    @media (max-width: 900px) {
+      .tools-grid { grid-template-columns: repeat(2, 1fr); }
+      .tool-card.featured { grid-column: span 2; grid-row: span 1; }
+    }
+
+    @media (max-width: 640px) {
       nav { padding: 0 16px; height: 56px; }
       .nav-links { display: none; }
-      nav > div { gap: 8px; }
       .btn { padding: 8px 14px; font-size: 0.8rem; }
-      .browser-body { grid-template-columns: 1fr; height: auto; }
-      .demo-chat { display: none; }
-      .demo-site { height: 240px; }
-      .vs-grid { grid-template-columns: 1fr; }
-      .stats-bar { flex-direction: row; flex-wrap: wrap; }
-      .stat { padding: 20px 16px; min-width: 50%; border-right: none; border-bottom: 1px solid var(--border); }
+      .tools-grid { grid-template-columns: 1fr; }
+      .tool-card.featured { grid-column: span 1; }
+      .stat { padding: 22px 16px; min-width: 50%; border-right: none; border-bottom: 1px solid var(--border); }
       .section { padding: 60px 16px; }
+      footer { padding: 24px 16px; flex-direction: column; align-items: center; text-align: center; }
       h2 { font-size: 1.7rem; }
-      footer { padding: 20px 16px; flex-direction: column; align-items: center; text-align: center; gap: 8px; }
-      .pricing-card { padding: 32px 20px; }
-      .perks { gap: 10px; }
-      .preview-wrap { margin-top: 40px; }
     }
   </style>
 </head>
@@ -661,106 +591,67 @@
 
   <!-- NAV -->
   <nav>
-    <a href="/"><img src="/logo.png" style="height:52px;width:auto;" alt="BuildAI" /></a>
+    <a href="/"><img src="/logo.png" style="height:50px;width:auto;" alt="BuildAI" /></a>
     <ul class="nav-links">
+      <li><a href="#tools">Tools</a></li>
       <li><a href="#how">How it works</a></li>
-      <li><a href="#features">Features</a></li>
-      <li><a href="#vs">vs. Agencies</a></li>
-      <li><a href="#pricing">Pricing</a></li>
+      <li><a href="/builder">Builder</a></li>
     </ul>
     <div style="display:flex;align-items:center;gap:10px;">
-      <a href="/builder" class="btn btn-primary">Build My Website Free →</a>
+      <a href="/builder" class="btn btn-primary">Open Builder →</a>
       <div id="nav-user"></div>
     </div>
   </nav>
+
   <script>
     function renderNavUser(user) {
       const el = document.getElementById('nav-user');
       if (user) {
         el.innerHTML = `<div style="display:flex;align-items:center;gap:8px;">
-          <img src="${user.avatar}" style="width:32px;height:32px;border-radius:50%;border:2px solid rgba(14,165,233,0.4);" />
-          <a href="/auth/logout" style="color:var(--muted2);font-size:0.82rem;text-decoration:none;">Logout</a>
+          <img src="${user.avatar}" style="width:30px;height:30px;border-radius:50%;border:2px solid rgba(14,165,233,0.4);box-shadow:0 0 10px rgba(14,165,233,0.25);" />
+          <a href="/auth/logout" style="color:var(--muted2);font-size:0.8rem;text-decoration:none;">Logout</a>
         </div>`;
       } else {
-        el.innerHTML = `<a href="/auth/google" style="display:flex;align-items:center;gap:7px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);color:#fff;padding:7px 14px;border-radius:8px;font-size:0.82rem;font-weight:600;text-decoration:none;">
-          <img src="https://www.google.com/favicon.ico" style="width:14px;height:14px;"> Sign in with Google
+        el.innerHTML = `<a href="/auth/google" style="display:flex;align-items:center;gap:7px;background:rgba(255,255,255,0.05);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,0.1);color:#fff;padding:7px 14px;border-radius:8px;font-size:0.8rem;font-weight:600;text-decoration:none;">
+          <img src="https://www.google.com/favicon.ico" style="width:13px;height:13px;"> Sign in
         </a>`;
       }
     }
-
-    fetch('/api/me')
-      .then(r => r.json())
-      .then(({ user }) => renderNavUser(user))
-      .catch(() => renderNavUser(null));
+    fetch('/api/me').then(r=>r.json()).then(({user})=>renderNavUser(user)).catch(()=>renderNavUser(null));
   </script>
 
   <!-- HERO -->
   <div class="hero">
-    <div class="hero-glow"></div>
     <div class="hero-grid"></div>
 
     <div class="hero-eyebrow">
       <span class="live-dot"></span>
-      AI Website Builder — 100% Free
+      13 Free AI Tools · No Account Needed
     </div>
 
     <h1>
-      Your dream website.<br />
-      <em>Built by AI. In seconds.</em>
+      The free AI suite<br />
+      <em>for creators & builders.</em>
     </h1>
 
     <p class="hero-sub">
-      Describe your website and watch AI generate a complete, stunning,
-      mobile-ready site — instantly. No agency. No waiting weeks. No $1,500 bills.
+      Build websites, chat with AI, create logos, write content, generate images, and more — all free, all in one place.
     </p>
 
     <div class="hero-actions">
       <a href="/builder" class="btn btn-primary btn-xl">✦ Start Building Free</a>
-      <a href="#how" class="btn btn-ghost btn-xl">See How It Works</a>
+      <a href="#tools" class="btn btn-ghost btn-xl">See All Tools</a>
     </div>
 
     <p class="hero-note">No account · No credit card · <span>Always free</span></p>
-
-    <div class="preview-wrap">
-      <div class="browser">
-        <div class="browser-bar">
-          <span class="dot dot-r"></span>
-          <span class="dot dot-y"></span>
-          <span class="dot dot-g"></span>
-          <div class="browser-addr">buildai.app/builder</div>
-        </div>
-        <div class="browser-body">
-          <div class="demo-chat">
-            <div class="demo-label">AI Chat</div>
-            <div class="demo-msg">
-              "Build a landing page for my plumbing business called Rapid Plumbers — professional, dark blue theme, with services, reviews, and a contact form."
-            </div>
-            <div class="demo-msg reply">Got it! Building your Rapid Plumbers website now...</div>
-            <div class="demo-typing">
-              <span></span><span></span><span></span>
-            </div>
-          </div>
-          <div class="demo-site" style="position: relative; overflow: hidden;">
-            <div class="demo-site-nav" style="position: absolute; top: 0; left: 0; right: 0; padding: 12px 24px; display: flex; justify-content: space-between; font-size: 0.7rem; color: rgba(255,255,255,0.4); background: rgba(0,0,0,0.3);">
-              <span style="font-weight: 800; color: rgba(255,255,255,0.8);">🔧 Rapid Plumbers</span>
-              <span>Services · Reviews · Contact</span>
-            </div>
-            <div class="demo-site-inner">
-              <div class="demo-site-badge">⚡ 24/7 Emergency Service</div>
-              <div class="demo-site" style="background: none; gap: 10px; padding: 0;">
-                <h2 style="font-size: 1.5rem;">Fast. Reliable. Local.</h2>
-                <p>Professional plumbing services in your area. Licensed & insured.</p>
-              </div>
-              <div class="demo-site-btn">Get a Free Quote →</div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
   </div>
 
   <!-- STATS -->
   <div class="stats-bar">
+    <div class="stat">
+      <div class="stat-num"><span>13</span></div>
+      <div class="stat-label">AI tools, free</div>
+    </div>
     <div class="stat">
       <div class="stat-num"><span>~10s</span></div>
       <div class="stat-label">To build your site</div>
@@ -770,180 +661,201 @@
       <div class="stat-label">Forever. Always.</div>
     </div>
     <div class="stat">
-      <div class="stat-num"><span>∞</span></div>
-      <div class="stat-label">Websites, no limits</div>
-    </div>
-    <div class="stat">
       <div class="stat-num"><span>100%</span></div>
       <div class="stat-label">Code you own</div>
     </div>
+  </div>
+
+  <!-- TOOLS GRID -->
+  <div class="tools-section" id="tools" style="padding-top: 90px;">
+    <div class="section-label">
+      <div class="eyebrow">AI Tools Suite</div>
+      <h2>Everything you need to<br />build, create & grow</h2>
+      <p>One platform. 13 powerful AI tools. All free, no limits.</p>
+    </div>
+
+    <div class="tools-grid">
+
+      <!-- FEATURED: Website Builder -->
+      <a href="/builder" class="tool-card featured">
+        <div class="tool-icon blue-ic">🌐</div>
+        <div class="tool-name">AI Website Builder</div>
+        <div class="tool-desc">Describe any website and get a complete, stunning, mobile-ready HTML site in seconds. Dark mode, glassmorphism design, Dribbble-quality layouts.</div>
+        <div class="featured-preview">
+          <div class="fp-bar"></div>
+          <div class="fp-bar"></div>
+          <div class="fp-bar"></div>
+        </div>
+        <span class="cta-btn">Build My Website Free →</span>
+        <div class="tool-badge badge-live">● Live</div>
+      </a>
+
+      <!-- AI Chat -->
+      <div class="tool-card purple" onclick="showSoon('AI Chat')">
+        <div class="tool-icon purple-ic">💬</div>
+        <div class="tool-name">AI Chat</div>
+        <div class="tool-desc">Chat with a powerful AI assistant for any task — writing, brainstorming, coding, or questions.</div>
+        <div class="tool-badge badge-soon">Coming Soon</div>
+        <div class="tool-arrow">→</div>
+      </div>
+
+      <!-- AI Logo Maker -->
+      <div class="tool-card pink" onclick="showSoon('AI Logo Maker')">
+        <div class="tool-icon pink-ic">✏️</div>
+        <div class="tool-name">AI Logo Maker</div>
+        <div class="tool-desc">Generate professional logos for your brand instantly. SVG & PNG export included.</div>
+        <div class="tool-badge badge-soon">Coming Soon</div>
+        <div class="tool-arrow">→</div>
+      </div>
+
+      <!-- AI Image Generator -->
+      <div class="tool-card cyan" onclick="showSoon('AI Image Generator')">
+        <div class="tool-icon cyan-ic">🖼️</div>
+        <div class="tool-name">AI Image Generator</div>
+        <div class="tool-desc">Turn your text descriptions into stunning, high-quality images in any style.</div>
+        <div class="tool-badge badge-soon">Coming Soon</div>
+        <div class="tool-arrow">→</div>
+      </div>
+
+      <!-- AI Content Writer -->
+      <div class="tool-card green" onclick="showSoon('AI Content Writer')">
+        <div class="tool-icon green-ic">📝</div>
+        <div class="tool-name">AI Content Writer</div>
+        <div class="tool-desc">Blog posts, landing page copy, product descriptions, and more — written by AI in seconds.</div>
+        <div class="tool-badge badge-soon">Coming Soon</div>
+        <div class="tool-arrow">→</div>
+      </div>
+
+      <!-- AI Resume Builder -->
+      <div class="tool-card orange" onclick="showSoon('AI Resume Builder')">
+        <div class="tool-icon orange-ic">📄</div>
+        <div class="tool-name">AI Resume Builder</div>
+        <div class="tool-desc">Create a standout resume and cover letter tailored to any job description, instantly.</div>
+        <div class="tool-badge badge-soon">Coming Soon</div>
+        <div class="tool-arrow">→</div>
+      </div>
+
+      <!-- AI Code Writer -->
+      <div class="tool-card purple" onclick="showSoon('AI Code Writer')">
+        <div class="tool-icon purple-ic">💻</div>
+        <div class="tool-name">AI Code Writer</div>
+        <div class="tool-desc">Generate, debug, and explain code in any language. Just describe what you need.</div>
+        <div class="tool-badge badge-soon">Coming Soon</div>
+        <div class="tool-arrow">→</div>
+      </div>
+
+      <!-- AI Email Writer -->
+      <div class="tool-card cyan" onclick="showSoon('AI Email Writer')">
+        <div class="tool-icon cyan-ic">📧</div>
+        <div class="tool-name">AI Email Writer</div>
+        <div class="tool-desc">Write professional emails, cold outreach, newsletters, and follow-ups in your tone.</div>
+        <div class="tool-badge badge-soon">Coming Soon</div>
+        <div class="tool-arrow">→</div>
+      </div>
+
+      <!-- AI Social Media -->
+      <div class="tool-card pink" onclick="showSoon('AI Social Media')">
+        <div class="tool-icon pink-ic">📱</div>
+        <div class="tool-name">AI Social Media</div>
+        <div class="tool-desc">Generate viral posts, captions, hashtags, and content calendars for Instagram, X, LinkedIn, and more.</div>
+        <div class="tool-badge badge-soon">Coming Soon</div>
+        <div class="tool-arrow">→</div>
+      </div>
+
+      <!-- AI Business Name Generator -->
+      <div class="tool-card yellow" onclick="showSoon('AI Business Name Generator')">
+        <div class="tool-icon yellow-ic">💡</div>
+        <div class="tool-name">AI Name Generator</div>
+        <div class="tool-desc">Find the perfect business name, domain ideas, and brand identity in seconds.</div>
+        <div class="tool-badge badge-soon">Coming Soon</div>
+        <div class="tool-arrow">→</div>
+      </div>
+
+      <!-- AI Color Palette -->
+      <div class="tool-card green" onclick="showSoon('AI Color Palette Generator')">
+        <div class="tool-icon green-ic">🎨</div>
+        <div class="tool-name">AI Color Palette</div>
+        <div class="tool-desc">Generate beautiful, on-brand color palettes with hex codes and usage guidelines.</div>
+        <div class="tool-badge badge-soon">Coming Soon</div>
+        <div class="tool-arrow">→</div>
+      </div>
+
+      <!-- AI SEO Writer -->
+      <div class="tool-card orange" onclick="showSoon('AI SEO Writer')">
+        <div class="tool-icon orange-ic">🔍</div>
+        <div class="tool-name">AI SEO Writer</div>
+        <div class="tool-desc">Write SEO-optimized blog posts, meta descriptions, and keyword-rich content that ranks.</div>
+        <div class="tool-badge badge-soon">Coming Soon</div>
+        <div class="tool-arrow">→</div>
+      </div>
+
+      <!-- AI Presentation Maker -->
+      <div class="tool-card purple" onclick="showSoon('AI Presentation Maker')">
+        <div class="tool-icon purple-ic">📊</div>
+        <div class="tool-name">AI Presentation</div>
+        <div class="tool-desc">Turn your ideas into polished slide decks instantly. Beautiful layouts, ready to present.</div>
+        <div class="tool-badge badge-soon">Coming Soon</div>
+        <div class="tool-arrow">→</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- COMING SOON TOAST -->
+  <div id="soon-toast" style="
+    position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%) translateY(100px);
+    background: rgba(10,10,20,0.92); backdrop-filter: blur(20px);
+    border: 1px solid rgba(255,255,255,0.1); border-radius: 14px;
+    padding: 14px 22px; display: flex; align-items: center; gap: 12px;
+    font-size: 0.88rem; z-index: 999; transition: transform 0.35s cubic-bezier(0.34,1.56,0.64,1);
+    box-shadow: 0 8px 40px rgba(0,0,0,0.5); white-space: nowrap;
+  ">
+    <span style="font-size:1.2rem;">🚀</span>
+    <span><strong id="soon-name"></strong> is coming soon — <a href="/builder" style="color:var(--cyan);text-decoration:none;font-weight:600;">try the Website Builder now</a></span>
   </div>
 
   <!-- HOW IT WORKS -->
   <div class="section" id="how">
     <div class="eyebrow">How it works</div>
     <h2>Three steps.<br />One perfect website.</h2>
-    <p class="section-sub">No design skills, no coding knowledge, no expensive agency retainer. Just describe and build.</p>
+    <p class="section-sub">No design skills, no coding, no agency. Just describe and build.</p>
     <div class="steps">
       <div class="step">
         <div class="step-num">1</div>
         <h3>Describe your website</h3>
-        <p>Tell the AI your business name, industry, design style, colors, and what sections you want. Be as specific or brief as you like.</p>
+        <p>Tell the AI your business name, industry, style preferences, and what sections you want. Be as specific or brief as you like.</p>
       </div>
       <div class="step">
         <div class="step-num">2</div>
         <h3>AI builds it instantly</h3>
-        <p>Powered by Google AI, the builder generates a complete, professional HTML/CSS site with animations, responsive layout, and real content.</p>
+        <p>The AI generates a complete, Dribbble-quality HTML/CSS site with dark mode, glassmorphism, animations, and real photos.</p>
       </div>
       <div class="step">
         <div class="step-num">3</div>
-        <h3>Refine & download</h3>
-        <p>Chat to request any changes. When you're happy, download a single clean HTML file and host it anywhere — Netlify, GitHub Pages, or your own server.</p>
+        <h3>Refine, publish & download</h3>
+        <p>Chat to request changes, edit the code directly, publish with a shareable link, or download a clean HTML file to host anywhere.</p>
       </div>
-    </div>
-  </div>
-
-  <!-- FEATURES -->
-  <div class="section" id="features" style="padding-top: 0;">
-    <div class="eyebrow">Features</div>
-    <h2>Everything an agency<br />charges thousands for.</h2>
-    <p class="section-sub">BuildAI generates professional, conversion-focused sites with all the features your business needs.</p>
-    <div class="features">
-      <div class="feat">
-        <div class="feat-icon">⚡</div>
-        <h3>Instant Generation</h3>
-        <p>Your website is ready in under 15 seconds. Not days, not weeks — seconds.</p>
-      </div>
-      <div class="feat">
-        <div class="feat-icon">💬</div>
-        <h3>Chat to Refine</h3>
-        <p>Unhappy with something? Just type it. The AI updates the site based on your feedback, instantly.</p>
-      </div>
-      <div class="feat">
-        <div class="feat-icon">📱</div>
-        <h3>Mobile Responsive</h3>
-        <p>Every generated site is fully responsive. Looks perfect on phones, tablets, and desktops.</p>
-      </div>
-      <div class="feat">
-        <div class="feat-icon">🎨</div>
-        <h3>Pro Design System</h3>
-        <p>Modern typography, proper color theory, smooth animations, and pixel-perfect spacing — like a real agency.</p>
-      </div>
-      <div class="feat">
-        <div class="feat-icon">📦</div>
-        <h3>Download Clean Code</h3>
-        <p>Export a single, self-contained HTML file. No proprietary platform. Deploy anywhere, forever.</p>
-      </div>
-      <div class="feat">
-        <div class="feat-icon">🔓</div>
-        <h3>You Own Everything</h3>
-        <p>Zero lock-in. No monthly subscription to keep your site live. The code is yours, period.</p>
-      </div>
-    </div>
-  </div>
-
-  <!-- VS AGENCIES -->
-  <div class="section" id="vs" style="padding-top: 0;">
-    <div class="eyebrow">BuildAI vs. Agencies</div>
-    <h2>Why pay $1,500 when<br />AI does it free?</h2>
-    <p class="section-sub">Traditional web agencies charge thousands and take weeks. BuildAI delivers in seconds, for nothing.</p>
-    <div class="vs-grid">
-      <div class="vs-card us">
-        <div class="vs-label">✦ BuildAI</div>
-        <div class="vs-item">
-          <span class="check">✓</span>
-          <div class="label"><strong>$0 — completely free</strong><span>No hidden fees, no subscriptions</span></div>
-        </div>
-        <div class="vs-item">
-          <span class="check">✓</span>
-          <div class="label"><strong>Ready in ~10 seconds</strong><span>Not days or weeks</span></div>
-        </div>
-        <div class="vs-item">
-          <span class="check">✓</span>
-          <div class="label"><strong>Unlimited revisions</strong><span>Just type what you want changed</span></div>
-        </div>
-        <div class="vs-item">
-          <span class="check">✓</span>
-          <div class="label"><strong>You own the code</strong><span>Download and host anywhere</span></div>
-        </div>
-        <div class="vs-item">
-          <span class="check">✓</span>
-          <div class="label"><strong>No account required</strong><span>Open the builder and go</span></div>
-        </div>
-      </div>
-      <div class="vs-card">
-        <div class="vs-label">Traditional Agency</div>
-        <div class="vs-item">
-          <span class="cross">✗</span>
-          <div class="label"><strong>$800–$1,500/month</strong><span>Or $300+ one-time, still expensive</span></div>
-        </div>
-        <div class="vs-item">
-          <span class="cross">✗</span>
-          <div class="label"><strong>1–4 weeks delivery</strong><span>Briefs, revisions, approvals...</span></div>
-        </div>
-        <div class="vs-item">
-          <span class="cross">✗</span>
-          <div class="label"><strong>Limited revisions</strong><span>Extra changes cost extra</span></div>
-        </div>
-        <div class="vs-item">
-          <span class="cross">✗</span>
-          <div class="label"><strong>Often locked in</strong><span>Proprietary CMS or platform</span></div>
-        </div>
-        <div class="vs-item">
-          <span class="cross">✗</span>
-          <div class="label"><strong>Long onboarding</strong><span>Calls, forms, contracts</span></div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- PRICING -->
-  <div class="section" id="pricing" style="padding-top: 0; text-align: center;">
-    <div class="eyebrow">Pricing</div>
-    <h2>Honest pricing.<br />One price. Forever.</h2>
-    <p class="section-sub" style="margin: 0 auto 48px;">No tiers, no upsells, no "pro plan." BuildAI is free because the web should be accessible to everyone.</p>
-    <div class="pricing-card">
-      <div class="pricing-tag">Always Free</div>
-      <div class="pricing-price"><sup>$</sup>0</div>
-      <p class="pricing-sub">Per month · Per website · Per anything</p>
-      <div class="perks">
-        <div class="perk">
-          <div class="perk-icon">✓</div>
-          Unlimited website generations
-        </div>
-        <div class="perk">
-          <div class="perk-icon">✓</div>
-          Full HTML/CSS/JS code export
-        </div>
-        <div class="perk">
-          <div class="perk-icon">✓</div>
-          AI chat refinements — iterate endlessly
-        </div>
-        <div class="perk">
-          <div class="perk-icon">✓</div>
-          Live in-browser preview
-        </div>
-        <div class="perk">
-          <div class="perk-icon">✓</div>
-          No watermarks, no branding
-        </div>
-        <div class="perk">
-          <div class="perk-icon">✓</div>
-          No account or sign-up required
-        </div>
-      </div>
-      <a href="/builder" class="btn btn-primary" style="width: 100%; justify-content: center; padding: 15px; font-size: 1rem; border-radius: 10px;">
-        Build My Website Now — Free →
-      </a>
     </div>
   </div>
 
   <!-- FOOTER -->
   <footer>
-    <a href="/"><img src="/logo.png" style="height:52px;width:auto;" alt="BuildAI" /></a>
-    <small>Built with Claude AI · Free forever · You own your code</small>
-    <small>© 2026 BuildAI · No account needed</small>
+    <a href="/"><img src="/logo.png" style="height:48px;width:auto;" alt="BuildAI" /></a>
+    <small>Free AI creative suite · No account needed · You own your code</small>
+    <small>© 2026 BuildAI</small>
   </footer>
+
+  <script>
+    function showSoon(name) {
+      document.getElementById('soon-name').textContent = name;
+      const toast = document.getElementById('soon-toast');
+      toast.style.transform = 'translateX(-50%) translateY(0)';
+      clearTimeout(window._soonTimer);
+      window._soonTimer = setTimeout(() => {
+        toast.style.transform = 'translateX(-50%) translateY(100px)';
+      }, 3500);
+    }
+  </script>
 
 </body>
 </html>
