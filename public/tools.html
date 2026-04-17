@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BuildAI — AI Tools</title>
+  <link rel="icon" href="/Icon.png" type="image/png" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #06060f; --border: rgba(255,255,255,0.07); --border2: rgba(255,255,255,0.12);
+      --purple: #7c3aed; --purple-light: #a78bfa; --blue: #3b82f6;
+      --green: #34d399; --pink: #ec4899; --orange: #f97316;
+      --yellow: #eab308; --cyan: #06b6d4; --red: #ef4444;
+      --text: #f1f5f9; --muted: #64748b; --muted2: #94a3b8;
+    }
+    html, body { height: 100%; font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); overflow: hidden; display: flex; flex-direction: column; }
+    body::before {
+      content: ''; position: fixed; top: -150px; right: -150px; width: 500px; height: 500px;
+      background: radial-gradient(circle, rgba(124,58,237,0.12) 0%, transparent 70%);
+      pointer-events: none; z-index: 0;
+    }
+
+    /* TOPBAR */
+    .topbar {
+      height: 56px; display: flex; align-items: center; justify-content: space-between;
+      padding: 0 24px; background: rgba(6,6,15,0.8); backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border); flex-shrink: 0; z-index: 10; gap: 12px;
+    }
+    .topbar-left { display: flex; align-items: center; gap: 14px; }
+    .back-btn {
+      display: flex; align-items: center; gap: 6px; color: var(--muted2); text-decoration: none;
+      font-size: 0.8rem; font-weight: 500; padding: 5px 10px; border-radius: 7px;
+      border: 1px solid var(--border); background: rgba(255,255,255,0.04); transition: all 0.2s;
+    }
+    .back-btn:hover { color: var(--text); background: rgba(255,255,255,0.08); }
+    .tool-title { font-size: 0.92rem; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+    #tool-icon-display { font-size: 1.2rem; }
+
+    /* WORKSPACE */
+    .workspace { display: flex; flex: 1; overflow: hidden; position: relative; z-index: 1; }
+
+    /* INPUT PANEL */
+    .input-panel {
+      width: 360px; flex-shrink: 0; display: flex; flex-direction: column;
+      border-right: 1px solid var(--border); background: rgba(9,9,18,0.7); backdrop-filter: blur(20px);
+    }
+
+    .panel-header { padding: 20px 20px 14px; border-bottom: 1px solid var(--border); }
+    .panel-header h3 { font-size: 0.9rem; font-weight: 700; margin-bottom: 4px; background: linear-gradient(135deg, #a78bfa, #60a5fa); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .panel-header p { font-size: 0.75rem; color: var(--muted); line-height: 1.5; }
+
+    .prompt-area { flex: 1; padding: 16px; display: flex; flex-direction: column; gap: 12px; overflow-y: auto; }
+
+    .prompt-label { font-size: 0.73rem; font-weight: 600; color: var(--muted2); text-transform: uppercase; letter-spacing: 0.08em; }
+
+    textarea.main-input {
+      width: 100%; background: rgba(255,255,255,0.04); backdrop-filter: blur(8px);
+      border: 1px solid rgba(255,255,255,0.1); border-radius: 12px;
+      color: var(--text); font-family: inherit; font-size: 0.85rem;
+      padding: 12px 14px; resize: none; outline: none; line-height: 1.55;
+      min-height: 140px; transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    textarea.main-input:focus { border-color: rgba(124,58,237,0.45); box-shadow: 0 0 0 3px rgba(124,58,237,0.1); }
+    textarea.main-input::placeholder { color: var(--muted); }
+
+    .example-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+    .chip {
+      background: rgba(124,58,237,0.08); border: 1px solid rgba(124,58,237,0.18);
+      color: var(--purple-light); padding: 5px 10px; border-radius: 100px;
+      font-size: 0.72rem; font-weight: 500; cursor: pointer; transition: all 0.2s;
+    }
+    .chip:hover { background: rgba(124,58,237,0.16); border-color: rgba(124,58,237,0.35); }
+
+    .generate-btn {
+      margin: 0 16px 16px; padding: 13px;
+      background: linear-gradient(135deg, var(--purple), var(--blue));
+      color: #fff; border: none; border-radius: 12px;
+      font-size: 0.9rem; font-weight: 700; cursor: pointer;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      transition: all 0.2s; box-shadow: 0 0 20px rgba(124,58,237,0.3);
+      flex-shrink: 0;
+    }
+    .generate-btn:hover { box-shadow: 0 0 30px rgba(124,58,237,0.5); transform: translateY(-1px); }
+    .generate-btn:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
+
+    /* OUTPUT PANEL */
+    .output-panel { flex: 1; display: flex; flex-direction: column; overflow: hidden; background: #0a0a12; }
+
+    .output-toolbar {
+      height: 46px; display: flex; align-items: center; justify-content: space-between;
+      padding: 0 16px; background: rgba(10,10,18,0.85); backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border); gap: 10px; flex-shrink: 0;
+    }
+
+    .output-tabs { display: flex; gap: 3px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.07); border-radius: 9px; padding: 3px; }
+    .otab { padding: 4px 14px; border-radius: 6px; font-size: 0.77rem; font-weight: 600; cursor: pointer; border: none; background: transparent; color: var(--muted); transition: all 0.2s; }
+    .otab.active { background: rgba(124,58,237,0.25); color: var(--purple-light); box-shadow: 0 0 10px rgba(124,58,237,0.2); }
+    .otab:hover:not(.active) { color: var(--text); }
+
+    .output-actions { display: flex; gap: 8px; }
+    .action-btn {
+      padding: 5px 12px; border-radius: 7px; font-size: 0.75rem; font-weight: 600;
+      border: 1px solid var(--border); background: rgba(255,255,255,0.04);
+      color: var(--muted2); cursor: pointer; transition: all 0.2s;
+    }
+    .action-btn:hover { color: var(--text); background: rgba(255,255,255,0.08); }
+    .action-btn.copy-btn:hover { color: var(--green); border-color: rgba(52,211,153,0.3); }
+
+    /* Output views */
+    .output-body { flex: 1; overflow: hidden; position: relative; display: flex; flex-direction: column; }
+
+    .text-output {
+      flex: 1; overflow-y: auto; padding: 24px; display: none;
+      scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.07) transparent;
+    }
+    .text-output.active { display: block; }
+    .text-content {
+      font-size: 0.88rem; line-height: 1.75; color: var(--text); white-space: pre-wrap;
+      max-width: 780px;
+    }
+    .text-content strong { color: #e2e8f0; }
+    .text-content code { background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.08); padding: 1px 6px; border-radius: 4px; font-family: 'Consolas',monospace; font-size: 0.82rem; }
+    .text-content pre { background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 16px; margin: 12px 0; overflow-x: auto; font-family: 'Consolas',monospace; font-size: 0.8rem; line-height: 1.6; }
+    .text-content h1, .text-content h2, .text-content h3 { margin: 16px 0 8px; color: #e2e8f0; }
+    .text-content ul, .text-content ol { padding-left: 20px; margin: 8px 0; }
+    .text-content li { margin: 4px 0; }
+
+    .preview-output { flex: 1; display: none; }
+    .preview-output.active { display: block; }
+    .preview-output iframe { width: 100%; height: 100%; border: none; }
+
+    /* Empty state */
+    .empty-state {
+      position: absolute; inset: 0; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; text-align: center; gap: 14px;
+      background: radial-gradient(ellipse at 50% 60%, rgba(124,58,237,0.06) 0%, transparent 60%), #0a0a12;
+    }
+    .empty-icon { font-size: 3rem; filter: drop-shadow(0 0 16px rgba(124,58,237,0.4)); animation: float 3s ease-in-out infinite; }
+    @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
+    .empty-state h3 { font-size: 1.1rem; font-weight: 700; color: var(--muted2); }
+    .empty-state p { font-size: 0.82rem; color: var(--muted); max-width: 280px; line-height: 1.6; }
+
+    .status-bar { display: flex; align-items: center; gap: 8px; font-size: 0.73rem; color: var(--muted); }
+    .sdot { width: 6px; height: 6px; border-radius: 50%; background: var(--muted); }
+    .sdot.ready { background: var(--green); box-shadow: 0 0 6px var(--green); }
+    .sdot.loading { background: var(--purple-light); box-shadow: 0 0 6px var(--purple-light); animation: pulse 1s infinite; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.07); border-radius: 4px; }
+
+    @media (max-width: 700px) {
+      .workspace { flex-direction: column; }
+      .input-panel { width: 100%; border-right: none; border-bottom: 1px solid var(--border); max-height: 45vh; }
+      .output-panel { min-height: 50vh; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="topbar">
+    <div class="topbar-left">
+      <a href="/" class="back-btn">← Home</a>
+      <div class="tool-title"><span id="tool-icon-display">🛠️</span> <span id="tool-name-display">AI Tool</span></div>
+    </div>
+    <div class="status-bar">
+      <span class="sdot" id="sdot"></span>
+      <span id="status-text">Ready</span>
+    </div>
+  </div>
+
+  <div class="workspace">
+
+    <!-- INPUT PANEL -->
+    <div class="input-panel">
+      <div class="panel-header">
+        <h3 id="panel-title">Describe what you need</h3>
+        <p id="panel-desc">Enter your prompt below and click Generate.</p>
+      </div>
+      <div class="prompt-area">
+        <div class="prompt-label">Your Prompt</div>
+        <textarea class="main-input" id="main-input" rows="6" placeholder="Describe what you want..."></textarea>
+        <div class="prompt-label">Quick Examples</div>
+        <div class="example-chips" id="chips"></div>
+      </div>
+      <button class="generate-btn" id="gen-btn" onclick="generate()">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+        Generate
+      </button>
+    </div>
+
+    <!-- OUTPUT PANEL -->
+    <div class="output-panel">
+      <div class="output-toolbar">
+        <div class="output-tabs" id="output-tabs">
+          <button class="otab active" id="tab-result" onclick="switchView('result')">Result</button>
+          <button class="otab" id="tab-preview" onclick="switchView('preview')" style="display:none;">Preview</button>
+        </div>
+        <div class="output-actions">
+          <button class="action-btn copy-btn" id="copy-btn" onclick="copyOutput()" style="display:none;">Copy</button>
+          <button class="action-btn" id="dl-btn" onclick="downloadOutput()" style="display:none;">Download</button>
+        </div>
+      </div>
+
+      <div class="output-body">
+        <div class="empty-state" id="empty-state">
+          <div class="empty-icon" id="empty-icon">✦</div>
+          <h3>Your output will appear here</h3>
+          <p id="empty-desc">Fill in your prompt on the left and click Generate.</p>
+        </div>
+
+        <div class="text-output" id="text-output">
+          <div class="text-content" id="text-content"></div>
+        </div>
+        <div class="preview-output" id="preview-output">
+          <iframe id="preview-frame"></iframe>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    const TOOLS = {
+      logo: {
+        name: 'AI Logo Maker', icon: '✏️',
+        title: 'Describe your brand',
+        desc: 'Tell us your business name, industry, style, and color preferences.',
+        placeholder: 'e.g. Logo for "Nova Tech" — a SaaS company, modern, dark purple and cyan colors, minimal and clean',
+        chips: ['Tech startup logo', 'Coffee shop logo', 'Fitness brand logo', 'Law firm logo'],
+        returns: 'svg',
+      },
+      content: {
+        name: 'AI Content Writer', icon: '📝',
+        title: 'What should I write?',
+        desc: 'Describe your topic, audience, tone, and length.',
+        placeholder: 'e.g. Write a 1000-word blog post about the benefits of remote work for small businesses, professional tone',
+        chips: ['Blog post about AI', 'Product description', 'About us page', 'Newsletter intro'],
+        returns: 'text',
+      },
+      resume: {
+        name: 'AI Resume Builder', icon: '📄',
+        title: 'Build your resume',
+        desc: 'Share your experience, skills, and the job you\'re targeting.',
+        placeholder: 'e.g. Software engineer with 5 years experience in React and Node.js, worked at Google and startups, targeting senior frontend roles',
+        chips: ['Software engineer resume', 'Marketing manager resume', 'Recent graduate resume', 'Freelancer CV'],
+        returns: 'html',
+      },
+      code: {
+        name: 'AI Code Writer', icon: '💻',
+        title: 'What code do you need?',
+        desc: 'Describe the functionality, language, and requirements.',
+        placeholder: 'e.g. Python script that reads a CSV file and generates a bar chart using matplotlib, save as PNG',
+        chips: ['REST API in Node.js', 'Python web scraper', 'React component', 'SQL query'],
+        returns: 'text',
+      },
+      email: {
+        name: 'AI Email Writer', icon: '📧',
+        title: 'What email do you need?',
+        desc: 'Describe the purpose, recipient, and tone.',
+        placeholder: 'e.g. Cold outreach email to a potential client introducing my web design agency, professional but friendly',
+        chips: ['Cold outreach email', 'Follow-up email', 'Job application email', 'Client proposal'],
+        returns: 'text',
+      },
+      social: {
+        name: 'AI Social Media', icon: '📱',
+        title: 'Create social media posts',
+        desc: 'Describe your topic, platform, and goal.',
+        placeholder: 'e.g. Instagram post promoting a new coffee blend at my cafe, warm and inviting vibe, include hashtags',
+        chips: ['Instagram product post', 'LinkedIn thought leadership', 'Twitter thread', 'TikTok caption'],
+        returns: 'text',
+      },
+      names: {
+        name: 'AI Name Generator', icon: '💡',
+        title: 'Find your brand name',
+        desc: 'Describe your business, values, and target audience.',
+        placeholder: 'e.g. Eco-friendly cleaning products startup, modern, appeals to millennials, needs a catchy .com domain',
+        chips: ['Tech startup names', 'Food brand names', 'Consulting firm names', 'App names'],
+        returns: 'text',
+      },
+      palette: {
+        name: 'AI Color Palette', icon: '🎨',
+        title: 'Generate a color palette',
+        desc: 'Describe your brand, mood, or industry.',
+        placeholder: 'e.g. Dark luxury palette for a high-end watch brand — deep navy, gold accents, sophisticated',
+        chips: ['Tech startup palette', 'Wellness brand colors', 'Dark luxury palette', 'Playful kids brand'],
+        returns: 'html',
+      },
+      seo: {
+        name: 'AI SEO Writer', icon: '🔍',
+        title: 'Write SEO content',
+        desc: 'Share your topic, target keywords, and target audience.',
+        placeholder: 'e.g. SEO blog post about "best project management tools 2025" targeting small business owners',
+        chips: ['SEO blog post', 'Product page SEO', 'Local SEO content', 'Meta descriptions'],
+        returns: 'text',
+      },
+      presentation: {
+        name: 'AI Presentation', icon: '📊',
+        title: 'Create a presentation',
+        desc: 'Describe your topic, audience, and how many slides you need.',
+        placeholder: 'e.g. 8-slide pitch deck for a food delivery startup targeting investors, include market size, problem, solution, traction',
+        chips: ['Startup pitch deck', 'Business proposal', 'Marketing strategy deck', 'Product demo slides'],
+        returns: 'html',
+      },
+      image: {
+        name: 'AI Image Prompts', icon: '🖼️',
+        title: 'Generate image prompts',
+        desc: 'Describe what you want to create — get detailed prompts for Midjourney, DALL-E, or Stable Diffusion.',
+        placeholder: 'e.g. Futuristic city skyline at sunset with neon lights and flying cars, cinematic style',
+        chips: ['Futuristic cityscape', 'Portrait photography', 'Product mockup', 'Fantasy landscape'],
+        returns: 'text',
+      },
+    };
+
+    const params = new URLSearchParams(window.location.search);
+    const toolKey = params.get('tool') || 'content';
+    const tool = TOOLS[toolKey] || TOOLS['content'];
+
+    // Set up UI for this tool
+    document.title = `BuildAI — ${tool.name}`;
+    document.getElementById('tool-icon-display').textContent = tool.icon;
+    document.getElementById('tool-name-display').textContent = tool.name;
+    document.getElementById('panel-title').textContent = tool.title;
+    document.getElementById('panel-desc').textContent = tool.desc;
+    document.getElementById('main-input').placeholder = tool.placeholder;
+    document.getElementById('empty-icon').textContent = tool.icon;
+    document.getElementById('empty-desc').textContent = `Fill in your prompt on the left and click Generate.`;
+
+    // Show preview tab for HTML tools
+    const isHtml = tool.returns === 'html' || tool.returns === 'svg';
+    if (isHtml) {
+      document.getElementById('tab-preview').style.display = '';
+    }
+
+    // Chips
+    const chipsEl = document.getElementById('chips');
+    tool.chips.forEach(c => {
+      const span = document.createElement('span');
+      span.className = 'chip';
+      span.textContent = c;
+      span.onclick = () => {
+        document.getElementById('main-input').value = c;
+      };
+      chipsEl.appendChild(span);
+    });
+
+    let currentOutput = '';
+    let currentReturns = '';
+
+    function setStatus(state, text) {
+      const dot = document.getElementById('sdot');
+      dot.className = 'sdot ' + state;
+      document.getElementById('status-text').textContent = text;
+    }
+
+    async function generate() {
+      const prompt = document.getElementById('main-input').value.trim();
+      if (!prompt) { document.getElementById('main-input').focus(); return; }
+
+      const btn = document.getElementById('gen-btn');
+      btn.disabled = true;
+      btn.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="animation:spin 1s linear infinite"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg> Generating...`;
+      setStatus('loading', 'Generating...');
+      document.getElementById('empty-state').style.display = 'none';
+      document.getElementById('copy-btn').style.display = 'none';
+      document.getElementById('dl-btn').style.display = 'none';
+
+      try {
+        const res = await fetch('/api/tool', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ tool: toolKey, messages: [{ role: 'user', content: prompt }] }),
+        });
+        const data = await res.json();
+        if (data.error) throw new Error(data.error);
+        currentOutput = data.output;
+        currentReturns = data.returns;
+        showOutput(data.output, data.returns);
+        setStatus('ready', 'Done');
+      } catch (err) {
+        document.getElementById('empty-state').style.display = 'flex';
+        document.getElementById('empty-state').querySelector('h3').textContent = 'Error occurred';
+        document.getElementById('empty-state').querySelector('p').textContent = err.message;
+        setStatus('', 'Error');
+      }
+
+      btn.disabled = false;
+      btn.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"/></svg> Generate`;
+    }
+
+    function showOutput(output, returns) {
+      document.getElementById('empty-state').style.display = 'none';
+
+      if (returns === 'html' || returns === 'svg') {
+        // Show in preview iframe
+        const html = returns === 'svg'
+          ? `<!DOCTYPE html><html><head><style>body{margin:0;background:#0a0a12;display:flex;align-items:center;justify-content:center;min-height:100vh;}svg{max-width:90%;max-height:90vh;}</style></head><body>${output}</body></html>`
+          : output;
+
+        const frame = document.getElementById('preview-frame');
+        frame.srcdoc = html;
+        document.getElementById('preview-output').classList.add('active');
+        document.getElementById('preview-output').style.display = 'block';
+        document.getElementById('text-output').classList.remove('active');
+        document.getElementById('text-output').style.display = 'none';
+
+        // Also put raw in text view
+        document.getElementById('text-content').textContent = output;
+
+        document.getElementById('tab-preview').classList.add('active');
+        document.getElementById('tab-result').classList.remove('active');
+
+        document.getElementById('dl-btn').style.display = '';
+        document.getElementById('copy-btn').style.display = '';
+      } else {
+        document.getElementById('text-content').innerHTML = formatText(output);
+        document.getElementById('text-output').classList.add('active');
+        document.getElementById('text-output').style.display = 'block';
+        document.getElementById('preview-output').classList.remove('active');
+        document.getElementById('preview-output').style.display = 'none';
+        document.getElementById('tab-result').classList.add('active');
+        document.getElementById('tab-preview').classList.remove('active');
+        document.getElementById('copy-btn').style.display = '';
+      }
+    }
+
+    function switchView(view) {
+      if (view === 'result') {
+        document.getElementById('text-output').style.display = 'block';
+        document.getElementById('text-output').classList.add('active');
+        document.getElementById('preview-output').style.display = 'none';
+        document.getElementById('preview-output').classList.remove('active');
+        document.getElementById('tab-result').classList.add('active');
+        document.getElementById('tab-preview').classList.remove('active');
+        // Show raw in text view
+        if (currentOutput && (currentReturns === 'html' || currentReturns === 'svg')) {
+          document.getElementById('text-content').textContent = currentOutput;
+        }
+      } else {
+        document.getElementById('preview-output').style.display = 'block';
+        document.getElementById('preview-output').classList.add('active');
+        document.getElementById('text-output').style.display = 'none';
+        document.getElementById('text-output').classList.remove('active');
+        document.getElementById('tab-preview').classList.add('active');
+        document.getElementById('tab-result').classList.remove('active');
+      }
+    }
+
+    function formatText(text) {
+      return text
+        .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+        .replace(/```(\w*)\n?([\s\S]*?)```/g, '<pre><code>$2</code></pre>')
+        .replace(/`([^`]+)`/g, '<code>$1</code>')
+        .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+        .replace(/^#{3} (.+)$/gm, '<h3>$1</h3>')
+        .replace(/^#{2} (.+)$/gm, '<h2>$1</h2>')
+        .replace(/^#{1} (.+)$/gm, '<h1>$1</h1>')
+        .replace(/\n/g, '<br>');
+    }
+
+    function copyOutput() {
+      navigator.clipboard.writeText(currentOutput);
+      const btn = document.getElementById('copy-btn');
+      btn.textContent = 'Copied!';
+      setTimeout(() => { btn.textContent = 'Copy'; }, 1800);
+    }
+
+    function downloadOutput() {
+      const ext = (currentReturns === 'svg') ? 'svg' : (currentReturns === 'html') ? 'html' : 'txt';
+      const blob = new Blob([currentOutput], { type: 'text/plain' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `buildai-${toolKey}.${ext}`;
+      a.click();
+    }
+
+    document.getElementById('main-input').addEventListener('keydown', e => {
+      if (e.key === 'Enter' && e.ctrlKey) generate();
+    });
+  </script>
+  <style>
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</body>
+</html>
