@@ -230,12 +230,16 @@ TECHNICAL RULES:
 app.post('/api/generate', async (req, res) => {
   const { messages } = req.body;
   if (!messages || !Array.isArray(messages)) return res.status(400).json({ error: 'Messages array required' });
-  if (!process.env.DEEPSEEK_API_KEY) return res.status(500).json({ error: 'DEEPSEEK_API_KEY not set in Railway variables' });
+  if (!process.env.OPENROUTER_API_KEY) return res.status(500).json({ error: 'OPENROUTER_API_KEY not set in Railway variables' });
 
   try {
     const client = new OpenAI({
-      apiKey: process.env.DEEPSEEK_API_KEY,
-      baseURL: 'https://api.deepseek.com',
+      apiKey: process.env.OPENROUTER_API_KEY,
+      baseURL: 'https://openrouter.ai/api/v1',
+      defaultHeaders: {
+        'HTTP-Referer': 'https://buildai-production-017c.up.railway.app',
+        'X-Title': 'BuildAI',
+      },
     });
 
     const chatMessages = messages.map(m => {
@@ -250,7 +254,7 @@ app.post('/api/generate', async (req, res) => {
     });
 
     const result = await client.chat.completions.create({
-      model: 'deepseek-chat',
+      model: 'deepseek/deepseek-chat-v3-0324:free',
       max_tokens: 8000,
       messages: [{ role: 'system', content: SYSTEM_PROMPT }, ...chatMessages],
     });
@@ -266,7 +270,7 @@ app.post('/api/generate', async (req, res) => {
 
     res.json(parsed);
   } catch (err) {
-    console.error('DeepSeek error:', err.message);
+    console.error('OpenRouter error:', err.message);
     res.status(500).json({ error: err.message || 'Unknown error' });
   }
 });
