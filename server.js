@@ -206,20 +206,24 @@ Format:
 {"html":"<full HTML here>","title":"Site Title","description":"One sentence description"}
 
 DESIGN RULES — follow these strictly:
-- Use a bold, unique color palette (not generic blue/white). Pick colors that match the brand personality.
-- Large, impactful hero section with a bold headline, subtext, and a CTA button
+- DARK MODE ONLY — all websites must use a dark background (deep blacks, dark grays, or near-black like #0a0a0a, #0f0f13, #0d0d1a). Never use white or light backgrounds.
+- Use glowing accent colors (neon cyan, electric purple, vivid blue, hot pink, or lime green) that pop against the dark background. Match the accent to the brand personality.
+- Use glassmorphism heavily: frosted glass cards with backdrop-filter: blur(12px), semi-transparent backgrounds (rgba(255,255,255,0.05) to 0.1), and glowing borders (1px solid rgba(255,255,255,0.1))
+- Hero section must have a dark gradient background with glowing colored orbs or blurred radial gradients in the background (use CSS radial-gradient and blur for depth)
+- Large, impactful hero section with a bold headline, subtext, and a glowing CTA button
+- CTA buttons must glow: use box-shadow with the accent color (e.g. box-shadow: 0 0 20px rgba(accentColor, 0.5))
 - Use Google Fonts — pick a pairing: one display font for headings, one clean font for body
 - CSS custom properties for all colors and fonts
-- Smooth scroll-triggered animations using Intersection Observer API
-- Subtle glassmorphism, gradients, or frosted effects where appropriate
-- Micro-interactions: hover effects, button transitions, card lifts
+- Smooth scroll-triggered animations using Intersection Observer API (fade up, slide in)
+- Micro-interactions: hover glow effects, button pulse transitions, card lift with glow
 - Use CSS Grid and Flexbox for layout — no tables
 - Add Font Awesome icons (CDN) for visual richness
+- Navbar must be dark and semi-transparent with backdrop-filter blur (sticky, glassmorphism style)
 - Sections must include: navbar, hero, features/services, about/story, testimonials or gallery, contact/CTA, footer
 - Use real placeholder images from https://picsum.photos (e.g. <img src="https://picsum.photos/seed/WORD/800/500">)
 - Every section must have generous padding, clear visual hierarchy, and breathing room
 - Mobile responsive with hamburger menu on small screens
-- The final result must look STUNNING — like a $10,000 agency website
+- The final result must look STUNNING — like a $10,000 dark-theme agency website
 
 TECHNICAL RULES:
 - Single complete HTML file, all CSS and JS embedded
