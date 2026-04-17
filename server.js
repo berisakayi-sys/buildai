@@ -220,7 +220,14 @@ DESIGN RULES — follow these strictly:
 - Add Font Awesome icons (CDN) for visual richness
 - Navbar must be dark and semi-transparent with backdrop-filter blur (sticky, glassmorphism style)
 - Sections must include: navbar, hero, features/services, about/story, testimonials or gallery, contact/CTA, footer
-- Use real placeholder images from https://picsum.photos (e.g. <img src="https://picsum.photos/seed/WORD/800/500">)
+- PHOTOS ARE MANDATORY — every section must have at least one image. No section should be text-only.
+- Hero: full-width background image or a large hero image alongside the headline
+- Features/services: each feature card must have an image or icon photo
+- About section: include a large atmospheric photo
+- Gallery/testimonials: grid of photos (at least 6 images)
+- All images use https://picsum.photos with a relevant seed word matching the brand/topic (e.g. <img src="https://picsum.photos/seed/coffee/800/500"> for a coffee site). Use varied seeds so all images look different.
+- Use different image sizes: hero 1200x600, cards 600x400, gallery 400x300, thumbnails 200x200
+- Images should have dark overlay or blend mode to fit the dark theme (e.g. mix-blend-mode: overlay or a semi-transparent dark overlay div)
 - Every section must have generous padding, clear visual hierarchy, and breathing room
 - Mobile responsive with hamburger menu on small screens
 - The final result must look STUNNING — like a $10,000 dark-theme agency website
@@ -228,7 +235,7 @@ DESIGN RULES — follow these strictly:
 TECHNICAL RULES:
 - Single complete HTML file, all CSS and JS embedded
 - No external JS frameworks (no React, Vue, etc.)
-- All images use picsum.photos with relevant seed words
+- All images use picsum.photos with relevant seed words — use at least 10 images total
 - Hamburger menu must work with vanilla JS`;
 
 app.post('/api/generate', async (req, res) => {
