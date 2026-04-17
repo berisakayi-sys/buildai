@@ -140,64 +140,162 @@
     .btn-save:hover { background: rgba(59,130,246,0.22); }
     .btn-save:disabled { opacity: 0.4; cursor: not-allowed; }
 
-    /* Projects drawer */
-    .projects-drawer {
+    /* Projects Dashboard */
+    .dashboard-overlay {
       position: fixed;
-      top: 54px; right: 0; bottom: 0;
-      width: 300px;
-      background: var(--surface2);
-      border-left: 1px solid var(--border);
-      z-index: 50;
+      inset: 0;
+      background: rgba(0,0,0,0.85);
+      backdrop-filter: blur(8px);
+      z-index: 100;
       display: none;
       flex-direction: column;
       overflow: hidden;
     }
-    .projects-drawer.open { display: flex; }
-    .projects-header {
-      padding: 16px 20px;
-      border-bottom: 1px solid var(--border);
-      font-size: 0.85rem;
-      font-weight: 700;
-    }
-    .projects-list {
-      flex: 1;
-      overflow-y: auto;
-      padding: 12px;
+    .dashboard-overlay.open { display: flex; }
+
+    .dashboard-header {
       display: flex;
-      flex-direction: column;
-      gap: 8px;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px 32px;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface);
+      flex-shrink: 0;
     }
-    .project-item {
-      background: rgba(255,255,255,0.04);
+    .dashboard-header h2 {
+      font-size: 1.15rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, #a78bfa, #60a5fa);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .dashboard-header-actions { display: flex; gap: 10px; align-items: center; }
+    .dashboard-close {
+      width: 34px; height: 34px;
+      border-radius: 8px;
+      background: rgba(255,255,255,0.06);
       border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 12px 14px;
+      color: var(--muted2);
       cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1rem;
       transition: all 0.2s;
     }
-    .project-item:hover { border-color: rgba(59,130,246,0.4); background: rgba(59,130,246,0.06); }
-    .project-item h4 { font-size: 0.85rem; font-weight: 700; margin-bottom: 4px; }
-    .project-item p { font-size: 0.75rem; color: var(--muted); }
-    .project-item-actions { display: flex; gap: 6px; margin-top: 8px; }
-    .project-item-actions button { font-size: 0.72rem; padding: 3px 8px; border-radius: 5px; border: 1px solid var(--border); background: transparent; color: var(--muted2); cursor: pointer; }
-    .project-item-actions button:hover { color: var(--text); }
-    .project-item-actions .del:hover { color: #f87171; border-color: rgba(248,113,113,0.3); }
+    .dashboard-close:hover { background: rgba(255,255,255,0.1); color: var(--text); }
+
+    .dashboard-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 32px;
+    }
+
+    .projects-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 20px;
+    }
+
+    .project-card {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      overflow: hidden;
+      transition: all 0.2s;
+      cursor: pointer;
+    }
+    .project-card:hover { border-color: rgba(124,58,237,0.4); transform: translateY(-3px); box-shadow: 0 8px 32px rgba(0,0,0,0.4); }
+
+    .project-card-thumb {
+      height: 140px;
+      background: linear-gradient(135deg, rgba(124,58,237,0.15), rgba(59,130,246,0.1));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-bottom: 1px solid var(--border);
+      font-size: 2.5rem;
+      position: relative;
+      overflow: hidden;
+    }
+    .project-card-thumb iframe {
+      width: 200%;
+      height: 200%;
+      border: none;
+      transform: scale(0.5);
+      transform-origin: top left;
+      pointer-events: none;
+      position: absolute;
+      top: 0; left: 0;
+    }
+
+    .project-card-info {
+      padding: 14px 16px;
+    }
+    .project-card-info h4 {
+      font-size: 0.9rem;
+      font-weight: 700;
+      margin-bottom: 4px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .project-card-info p {
+      font-size: 0.75rem;
+      color: var(--muted);
+      margin-bottom: 12px;
+    }
+    .project-card-actions {
+      display: flex;
+      gap: 8px;
+    }
+    .project-card-actions button {
+      flex: 1;
+      padding: 6px;
+      border-radius: 7px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      cursor: pointer;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--muted2);
+      transition: all 0.2s;
+    }
+    .project-card-actions .open-btn {
+      background: rgba(124,58,237,0.12);
+      color: var(--purple-light);
+      border-color: rgba(124,58,237,0.25);
+    }
+    .project-card-actions .open-btn:hover { background: rgba(124,58,237,0.25); }
+    .project-card-actions .del-btn:hover { color: #f87171; border-color: rgba(248,113,113,0.3); background: rgba(248,113,113,0.06); }
+
     .login-prompt {
-      padding: 24px;
+      padding: 48px 24px;
       text-align: center;
       color: var(--muted2);
-      font-size: 0.85rem;
+      font-size: 0.9rem;
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 12px;
+      gap: 16px;
     }
+    .login-prompt p { max-width: 320px; line-height: 1.6; }
     .login-prompt a {
       display: flex; align-items: center; gap: 7px;
       background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12);
-      color: #fff; padding: 8px 16px; border-radius: 8px;
-      font-size: 0.82rem; font-weight: 600; text-decoration: none;
+      color: #fff; padding: 10px 20px; border-radius: 9px;
+      font-size: 0.85rem; font-weight: 600; text-decoration: none;
+      transition: background 0.2s;
     }
+    .login-prompt a:hover { background: rgba(255,255,255,0.1); }
+
+    .dash-empty {
+      grid-column: 1/-1;
+      padding: 60px 24px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+    .dash-empty p { margin-top: 8px; font-size: 0.82rem; }
 
     .publish-toast {
       position: fixed;
@@ -483,21 +581,56 @@
 
     .code-view {
       flex: 1;
-      overflow: auto;
       display: none;
+      flex-direction: column;
       background: #0d1117;
-      padding: 20px;
-      scrollbar-width: thin;
-      scrollbar-color: rgba(255,255,255,0.08) transparent;
+      overflow: hidden;
     }
 
-    .code-view pre {
+    .code-editor-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 16px;
+      background: #161b22;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      flex-shrink: 0;
+      gap: 8px;
+    }
+
+    .code-editor-toolbar span {
+      font-size: 0.75rem;
+      color: var(--muted);
+    }
+
+    .btn-apply {
+      background: rgba(52,211,153,0.15);
+      color: var(--green);
+      border: 1px solid rgba(52,211,153,0.3);
+      padding: 5px 14px;
+      border-radius: 6px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-apply:hover { background: rgba(52,211,153,0.25); }
+
+    #code-editor {
+      flex: 1;
+      background: #0d1117;
+      color: #e2e8f0;
       font-family: 'Fira Code', 'Cascadia Code', 'Consolas', monospace;
       font-size: 0.78rem;
       line-height: 1.6;
-      color: #e2e8f0;
-      white-space: pre-wrap;
-      word-break: break-word;
+      padding: 16px 20px;
+      border: none;
+      outline: none;
+      resize: none;
+      width: 100%;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(255,255,255,0.08) transparent;
+      tab-size: 2;
     }
 
     /* Empty state */
@@ -610,10 +743,18 @@
     </div>
   </div>
 
-  <!-- PROJECTS DRAWER -->
-  <div class="projects-drawer" id="projects-drawer">
-    <div class="projects-header">📁 My Projects</div>
-    <div class="projects-list" id="projects-list"></div>
+  <!-- PROJECTS DASHBOARD -->
+  <div class="dashboard-overlay" id="dashboard-overlay">
+    <div class="dashboard-header">
+      <h2>📁 My Projects</h2>
+      <div class="dashboard-header-actions">
+        <button class="btn btn-primary" onclick="closeDashboard(); newProject();" style="padding:7px 16px;font-size:0.82rem;">+ New Project</button>
+        <button class="dashboard-close" onclick="closeDashboard()">✕</button>
+      </div>
+    </div>
+    <div class="dashboard-body">
+      <div class="projects-grid" id="projects-grid"></div>
+    </div>
   </div>
 
   <!-- PUBLISH TOAST -->
@@ -688,7 +829,11 @@
       </div>
 
       <div class="code-view" id="code-view">
-        <pre id="code-content"><!-- Code will appear here after generation --></pre>
+        <div class="code-editor-toolbar">
+          <span>Edit HTML · changes apply to preview</span>
+          <button class="btn-apply" onclick="applyCodeEdit()">▶ Apply Changes</button>
+        </div>
+        <textarea id="code-editor" spellcheck="false" placeholder="Your website HTML will appear here. You can edit it directly and click Apply Changes to update the preview."></textarea>
       </div>
     </div>
 
@@ -736,7 +881,6 @@
     const statusDot = document.getElementById('status-dot');
     const statusText = document.getElementById('status-text');
     const siteTitle = document.getElementById('site-title');
-    const codeContent = document.getElementById('code-content');
     const downloadBtn = document.getElementById('btn-download');
 
     const startupError = new URLSearchParams(window.location.search).get('error');
@@ -812,13 +956,45 @@
       const blob = new Blob([html], { type: 'text/html' });
       const url = URL.createObjectURL(blob);
       iframeEl.src = url;
-      codeContent.textContent = html;
+      document.getElementById('code-editor').value = html;
       currentHtml = html;
       downloadBtn.disabled = false;
       document.getElementById('btn-publish').disabled = false;
       document.getElementById('btn-save').disabled = false;
       setStatus('ready', 'Website ready');
     }
+
+    function applyCodeEdit() {
+      const html = document.getElementById('code-editor').value;
+      if (!html.trim()) return;
+      currentHtml = html;
+      emptyState.style.display = 'none';
+      iframeEl.style.display = 'block';
+      const blob = new Blob([html], { type: 'text/html' });
+      iframeEl.src = URL.createObjectURL(blob);
+      setStatus('ready', 'Code applied');
+      downloadBtn.disabled = false;
+      document.getElementById('btn-publish').disabled = false;
+      document.getElementById('btn-save').disabled = false;
+      // Flash the button green
+      const btn = document.querySelector('.btn-apply');
+      btn.textContent = '✓ Applied';
+      setTimeout(() => { btn.textContent = '▶ Apply Changes'; }, 1500);
+    }
+
+    // Tab key inserts spaces in code editor
+    document.addEventListener('DOMContentLoaded', () => {
+      const editor = document.getElementById('code-editor');
+      editor.addEventListener('keydown', (e) => {
+        if (e.key === 'Tab') {
+          e.preventDefault();
+          const start = editor.selectionStart;
+          const end = editor.selectionEnd;
+          editor.value = editor.value.substring(0, start) + '  ' + editor.value.substring(end);
+          editor.selectionStart = editor.selectionEnd = start + 2;
+        }
+      });
+    });
 
     async function sendMessage() {
       const text = inputEl.value.trim();
@@ -888,7 +1064,7 @@
         tabCode.classList.remove('active');
       } else {
         previewWrap.style.display = 'none';
-        codeView.style.display = 'block';
+        codeView.style.display = 'flex';
         tabPreview.classList.remove('active');
         tabCode.classList.add('active');
       }
@@ -922,38 +1098,58 @@
     }
 
     async function toggleProjects() {
-      const drawer = document.getElementById('projects-drawer');
-      if (drawer.classList.toggle('open')) {
-        await loadProjects();
-      }
+      const overlay = document.getElementById('dashboard-overlay');
+      overlay.classList.add('open');
+      await loadProjects();
     }
 
+    function closeDashboard() {
+      document.getElementById('dashboard-overlay').classList.remove('open');
+    }
+
+    // Close on backdrop click
+    document.getElementById('dashboard-overlay').addEventListener('click', (e) => {
+      if (e.target === document.getElementById('dashboard-overlay')) closeDashboard();
+    });
+
     async function loadProjects() {
-      const list = document.getElementById('projects-list');
+      const grid = document.getElementById('projects-grid');
       if (!currentUser) {
-        list.innerHTML = `<div class="login-prompt">
-          <p>Sign in to save and load your projects</p>
-          <a href="/auth/google"><img src="https://www.google.com/favicon.ico" style="width:13px;"> Sign in with Google</a>
+        grid.innerHTML = `<div class="login-prompt" style="grid-column:1/-1;">
+          <div style="font-size:2.5rem;">🔐</div>
+          <p>Sign in with Google to save and access your projects from any device.</p>
+          <a href="/auth/google"><img src="https://www.google.com/favicon.ico" style="width:14px;"> Sign in with Google</a>
         </div>`;
         return;
       }
-      list.innerHTML = '<div style="padding:12px;color:var(--muted);font-size:0.82rem;">Loading...</div>';
-      const res = await fetch('/api/projects');
-      const projects = await res.json();
-      if (!projects.length) {
-        list.innerHTML = '<div style="padding:12px;color:var(--muted);font-size:0.82rem;">No saved projects yet.</div>';
-        return;
-      }
-      list.innerHTML = projects.map(p => `
-        <div class="project-item">
-          <h4>${p.title}</h4>
-          <p>${new Date(p.updated_at).toLocaleDateString()}</p>
-          <div class="project-item-actions">
-            <button onclick="loadProject(${p.id})">Open</button>
-            <button class="del" onclick="deleteProject(${p.id}, this)">Delete</button>
+      grid.innerHTML = '<div style="grid-column:1/-1;padding:20px;color:var(--muted);font-size:0.85rem;">Loading projects...</div>';
+      try {
+        const res = await fetch('/api/projects');
+        const projects = await res.json();
+        if (!projects.length) {
+          grid.innerHTML = `<div class="dash-empty">
+            <div style="font-size:2.5rem;">✦</div>
+            <p>No saved projects yet.</p>
+            <p>Generate a website and hit <strong>Save</strong> to keep it here.</p>
+          </div>`;
+          return;
+        }
+        grid.innerHTML = projects.map(p => `
+          <div class="project-card">
+            <div class="project-card-thumb">✦</div>
+            <div class="project-card-info">
+              <h4>${escapeHtml(p.title)}</h4>
+              <p>Updated ${new Date(p.updated_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</p>
+              <div class="project-card-actions">
+                <button class="open-btn" onclick="loadProject(${p.id})">Open</button>
+                <button class="del-btn" onclick="deleteProject(${p.id}, this)">Delete</button>
+              </div>
+            </div>
           </div>
-        </div>
-      `).join('');
+        `).join('');
+      } catch (err) {
+        grid.innerHTML = `<div class="dash-empty">Failed to load projects.</div>`;
+      }
     }
 
     async function loadProject(id) {
@@ -966,14 +1162,14 @@
       document.getElementById('btn-save').disabled = false;
       document.getElementById('btn-publish').disabled = false;
       document.getElementById('btn-download').disabled = false;
-      document.getElementById('projects-drawer').classList.remove('open');
+      closeDashboard();
       addMessage('ai', `✅ Loaded project: "${project.title}"`, 'success');
     }
 
     async function deleteProject(id, btn) {
       if (!confirm('Delete this project?')) return;
       await fetch(`/api/projects/${id}`, { method: 'DELETE' });
-      btn.closest('.project-item').remove();
+      btn.closest('.project-card').remove();
     }
 
     async function publishSite() {
