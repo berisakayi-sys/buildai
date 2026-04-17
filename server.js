@@ -3,7 +3,7 @@ const express = require('express');
 const session = require('express-session');
 const passport = require('passport');
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
-const { GoogleGenerativeAI } = require('@google/generative-ai');
+const OpenAI = require('openai');
 const { Pool } = require('pg');
 const PgSession = require('connect-pg-simple')(session);
 const cors = require('cors');
@@ -230,17 +230,15 @@ TECHNICAL RULES:
 app.post('/api/generate', async (req, res) => {
   const { messages } = req.body;
   if (!messages || !Array.isArray(messages)) return res.status(400).json({ error: 'Messages array required' });
-  if (!process.env.GOOGLE_API_KEY) return res.status(500).json({ error: 'GOOGLE_API_KEY not set in Railway variables' });
+  if (!process.env.DEEPSEEK_API_KEY) return res.status(500).json({ error: 'DEEPSEEK_API_KEY not set in Railway variables' });
 
   try {
-    const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY);
-    const model = genAI.getGenerativeModel({
-      model: 'gemini-3.1-pro-preview',
-      systemInstruction: SYSTEM_PROMPT,
-      generationConfig: { responseMimeType: 'application/json' },
+    const client = new OpenAI({
+      apiKey: process.env.DEEPSEEK_API_KEY,
+      baseURL: 'https://api.deepseek.com',
     });
 
-    const history = messages.slice(0, -1).map(m => {
+    const chatMessages = messages.map(m => {
       let content = m.content;
       if (m.role === 'assistant') {
         try {
@@ -248,14 +246,16 @@ app.post('/api/generate', async (req, res) => {
           content = JSON.stringify({ title: p.title, description: p.description, html: '[previous website]' });
         } catch {}
       }
-      return { role: m.role === 'assistant' ? 'model' : 'user', parts: [{ text: content }] };
+      return { role: m.role === 'assistant' ? 'assistant' : 'user', content };
     });
 
-    const lastMessage = messages[messages.length - 1].content;
-    const chat = model.startChat({ history });
-    const result = await chat.sendMessage(lastMessage);
-    let raw = result.response.text().trim();
+    const result = await client.chat.completions.create({
+      model: 'deepseek-chat',
+      max_tokens: 8000,
+      messages: [{ role: 'system', content: SYSTEM_PROMPT }, ...chatMessages],
+    });
 
+    let raw = result.choices[0].message.content.trim();
     raw = raw.replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/```\s*$/i, '').trim();
     if (!raw.startsWith('{')) raw = '{' + raw;
     if (!raw.endsWith('}')) raw = raw + '}';
@@ -266,7 +266,7 @@ app.post('/api/generate', async (req, res) => {
 
     res.json(parsed);
   } catch (err) {
-    console.error('Google AI error:', err.message);
+    console.error('DeepSeek error:', err.message);
     res.status(500).json({ error: err.message || 'Unknown error' });
   }
 });
