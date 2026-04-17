@@ -405,6 +405,7 @@ app.post('/api/tool', async (req, res) => {
 app.get('/builder', (req, res) => res.sendFile(path.join(__dirname, 'public', 'builder.html')));
 app.get('/chat', (req, res) => res.sendFile(path.join(__dirname, 'public', 'chat.html')));
 app.get('/tools', (req, res) => res.sendFile(path.join(__dirname, 'public', 'tools.html')));
+app.get('/media-maker', (req, res) => res.sendFile(path.join(__dirname, 'public', 'media-maker.html')));
 app.get('*', (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
 
 app.use((err, req, res, next) => {

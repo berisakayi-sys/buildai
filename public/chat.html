@@ -9,12 +9,11 @@
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
-      --bg: #06060f; --surface: rgba(13,13,22,0.85); --border: rgba(255,255,255,0.07);
+      --bg: #06060f; --border: rgba(255,255,255,0.07);
       --purple: #7c3aed; --purple-light: #a78bfa; --blue: #3b82f6; --green: #34d399;
       --text: #f1f5f9; --muted: #64748b; --muted2: #94a3b8;
     }
-    html, body { height: 100%; overflow: hidden; font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); }
-    body { display: flex; flex-direction: column; }
+    html, body { height: 100%; overflow: hidden; font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); display: flex; flex-direction: column; }
     body::before {
       content: ''; position: fixed; top: -150px; left: -150px; width: 500px; height: 500px;
       background: radial-gradient(circle, rgba(124,58,237,0.15) 0%, transparent 70%);
@@ -35,7 +34,18 @@
     }
     .back-btn:hover { color: var(--text); background: rgba(255,255,255,0.08); }
     .tool-title { font-size: 0.92rem; font-weight: 700; display: flex; align-items: center; gap: 8px; }
-    .tool-icon-sm { font-size: 1.1rem; }
+
+    .topbar-right { display: flex; align-items: center; gap: 8px; }
+
+    .icon-btn {
+      width: 34px; height: 34px; border-radius: 9px; display: flex; align-items: center;
+      justify-content: center; border: 1px solid var(--border); background: rgba(255,255,255,0.04);
+      color: var(--muted2); cursor: pointer; transition: all 0.2s; font-size: 0.95rem;
+    }
+    .icon-btn:hover { background: rgba(255,255,255,0.09); color: var(--text); }
+    .icon-btn.active { background: rgba(124,58,237,0.2); border-color: rgba(124,58,237,0.4); color: var(--purple-light); }
+
+    .tts-label { font-size: 0.73rem; color: var(--muted); }
 
     .clear-btn {
       padding: 6px 14px; border-radius: 8px; font-size: 0.78rem; font-weight: 600;
@@ -45,7 +55,7 @@
     .clear-btn:hover { color: var(--text); background: rgba(255,255,255,0.08); }
 
     /* CHAT */
-    .chat-wrap { display: flex; flex: 1; overflow: hidden; position: relative; z-index: 1; max-width: 800px; width: 100%; margin: 0 auto; flex-direction: column; padding: 0 16px; }
+    .chat-wrap { display: flex; flex: 1; overflow: hidden; position: relative; z-index: 1; max-width: 820px; width: 100%; margin: 0 auto; flex-direction: column; padding: 0 20px; }
 
     .messages {
       flex: 1; overflow-y: auto; padding: 24px 0 16px;
@@ -53,9 +63,8 @@
       scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.07) transparent;
     }
 
-    .message { display: flex; gap: 12px; animation: fadeUp 0.2s ease; }
+    .message { display: flex; gap: 12px; animation: fadeUp 0.25s ease; }
     @keyframes fadeUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
-
     .message.user { flex-direction: row-reverse; }
 
     .avatar {
@@ -65,37 +74,34 @@
     .avatar.ai { background: linear-gradient(135deg, var(--purple), var(--blue)); box-shadow: 0 0 12px rgba(124,58,237,0.3); }
     .avatar.user { background: rgba(255,255,255,0.08); border: 1px solid var(--border); }
 
+    .bubble-wrap { display: flex; flex-direction: column; gap: 6px; max-width: 75%; }
+    .message.user .bubble-wrap { align-items: flex-end; }
+
     .bubble {
-      max-width: 75%; padding: 12px 16px; border-radius: 16px;
-      font-size: 0.88rem; line-height: 1.65;
-      backdrop-filter: blur(8px);
+      padding: 12px 16px; border-radius: 16px;
+      font-size: 0.88rem; line-height: 1.65; backdrop-filter: blur(8px);
     }
-    .message.ai .bubble {
-      background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
-      color: var(--text); border-radius: 4px 16px 16px 16px;
-    }
-    .message.user .bubble {
-      background: rgba(124,58,237,0.15); border: 1px solid rgba(124,58,237,0.25);
-      color: var(--text); border-radius: 16px 4px 16px 16px;
-    }
+    .message.ai .bubble { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); color: var(--text); border-radius: 4px 16px 16px 16px; }
+    .message.user .bubble { background: rgba(124,58,237,0.15); border: 1px solid rgba(124,58,237,0.25); color: var(--text); border-radius: 16px 4px 16px 16px; }
     .message.ai.error .bubble { border-color: rgba(239,68,68,0.25); background: rgba(239,68,68,0.06); color: #fca5a5; }
 
-    /* Markdown-like formatting */
+    .msg-actions { display: flex; gap: 6px; }
+    .msg-action {
+      padding: 3px 9px; border-radius: 6px; font-size: 0.7rem; font-weight: 600;
+      border: 1px solid var(--border); background: rgba(255,255,255,0.03);
+      color: var(--muted); cursor: pointer; transition: all 0.2s;
+    }
+    .msg-action:hover { color: var(--text); background: rgba(255,255,255,0.07); }
+    .msg-action.speaking { color: var(--purple-light); border-color: rgba(124,58,237,0.3); background: rgba(124,58,237,0.1); }
+
+    /* Markdown */
     .bubble strong { color: #e2e8f0; font-weight: 700; }
     .bubble em { color: var(--purple-light); font-style: italic; }
-    .bubble code {
-      background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.08);
-      padding: 1px 6px; border-radius: 4px; font-family: 'Consolas', monospace; font-size: 0.82rem;
-    }
-    .bubble pre {
-      background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.08);
-      border-radius: 10px; padding: 14px; margin: 8px 0; overflow-x: auto;
-      font-family: 'Consolas', monospace; font-size: 0.8rem; line-height: 1.6;
-    }
+    .bubble code { background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.08); padding: 1px 6px; border-radius: 4px; font-family: 'Consolas', monospace; font-size: 0.82rem; }
+    .bubble pre { background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 14px; margin: 8px 0; overflow-x: auto; font-family: 'Consolas', monospace; font-size: 0.8rem; line-height: 1.6; white-space: pre-wrap; }
     .bubble h1, .bubble h2, .bubble h3 { margin: 12px 0 6px; color: #e2e8f0; }
     .bubble ul, .bubble ol { padding-left: 20px; margin: 6px 0; }
     .bubble li { margin: 3px 0; }
-    .bubble p { margin: 6px 0; }
 
     .typing { display: flex; gap: 5px; padding: 12px 16px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 4px 16px 16px 16px; width: fit-content; }
     .typing span { width: 6px; height: 6px; background: var(--purple-light); border-radius: 50%; animation: bounce 1.2s infinite; }
@@ -104,34 +110,66 @@
     @keyframes bounce { 0%,60%,100%{transform:translateY(0);opacity:0.4} 30%{transform:translateY(-5px);opacity:1} }
 
     /* INPUT */
-    .input-area {
-      padding: 16px 0 20px; flex-shrink: 0;
-    }
+    .input-area { padding: 14px 0 20px; flex-shrink: 0; }
     .input-wrap {
-      display: flex; gap: 10px; align-items: flex-end;
+      display: flex; gap: 8px; align-items: flex-end;
       background: rgba(255,255,255,0.04); backdrop-filter: blur(12px);
       border: 1px solid rgba(255,255,255,0.1); border-radius: 16px;
-      padding: 10px 10px 10px 18px; transition: border-color 0.2s, box-shadow 0.2s;
+      padding: 8px 8px 8px 16px; transition: border-color 0.2s, box-shadow 0.2s;
     }
-    .input-wrap:focus-within {
-      border-color: rgba(124,58,237,0.45);
-      box-shadow: 0 0 0 3px rgba(124,58,237,0.1);
-    }
+    .input-wrap:focus-within { border-color: rgba(124,58,237,0.45); box-shadow: 0 0 0 3px rgba(124,58,237,0.1); }
+
     textarea {
       flex: 1; background: transparent; border: none; color: var(--text);
-      font-family: inherit; font-size: 0.88rem; padding: 4px 0; resize: none;
+      font-family: inherit; font-size: 0.88rem; padding: 6px 0; resize: none;
       outline: none; min-height: 38px; max-height: 180px; line-height: 1.5;
     }
     textarea::placeholder { color: var(--muted); }
+
+    .input-btns { display: flex; gap: 6px; align-items: flex-end; flex-shrink: 0; }
+
+    .mic-btn {
+      width: 40px; height: 40px; background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.1); border-radius: 11px;
+      color: var(--muted2); cursor: pointer; display: flex; align-items: center;
+      justify-content: center; font-size: 1rem; transition: all 0.2s;
+    }
+    .mic-btn:hover { background: rgba(255,255,255,0.1); color: var(--text); }
+    .mic-btn.recording {
+      background: rgba(239,68,68,0.2); border-color: rgba(239,68,68,0.5);
+      color: #f87171; animation: micPulse 1s infinite;
+    }
+    @keyframes micPulse { 0%,100%{box-shadow:0 0 0 0 rgba(239,68,68,0.3)} 50%{box-shadow:0 0 0 8px rgba(239,68,68,0)} }
+
     .send-btn {
       width: 40px; height: 40px; background: linear-gradient(135deg, var(--purple), var(--blue));
       border: none; border-radius: 11px; color: white; cursor: pointer;
-      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
       transition: all 0.2s; box-shadow: 0 0 14px rgba(124,58,237,0.35);
     }
     .send-btn:hover { transform: scale(1.06); box-shadow: 0 0 22px rgba(124,58,237,0.55); }
     .send-btn:disabled { opacity: 0.35; cursor: not-allowed; transform: none; }
-    .hint { font-size: 0.7rem; color: var(--muted); text-align: center; margin-top: 8px; }
+
+    .hint { font-size: 0.7rem; color: var(--muted); text-align: center; margin-top: 8px; display: flex; align-items: center; justify-content: center; gap: 12px; }
+    .hint span { display: flex; align-items: center; gap: 4px; }
+
+    /* Recording indicator */
+    .recording-bar {
+      display: none; align-items: center; gap: 10px; padding: 10px 16px;
+      background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.25);
+      border-radius: 12px; margin-bottom: 10px; font-size: 0.82rem; color: #f87171;
+    }
+    .recording-bar.show { display: flex; }
+    .rec-dot { width: 8px; height: 8px; background: #ef4444; border-radius: 50%; animation: blink 1s infinite; }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
+    .rec-waves { display: flex; gap: 3px; align-items: center; }
+    .rec-wave { width: 3px; background: #f87171; border-radius: 2px; animation: wave 0.8s ease-in-out infinite; }
+    .rec-wave:nth-child(1) { height: 8px; animation-delay: 0s; }
+    .rec-wave:nth-child(2) { height: 16px; animation-delay: 0.1s; }
+    .rec-wave:nth-child(3) { height: 10px; animation-delay: 0.2s; }
+    .rec-wave:nth-child(4) { height: 20px; animation-delay: 0.15s; }
+    .rec-wave:nth-child(5) { height: 8px; animation-delay: 0.05s; }
+    @keyframes wave { 0%,100%{transform:scaleY(1)} 50%{transform:scaleY(1.6)} }
 
     ::-webkit-scrollbar { width: 4px; }
     ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.07); border-radius: 4px; }
@@ -142,37 +180,167 @@
   <div class="topbar">
     <div class="topbar-left">
       <a href="/" class="back-btn">← Home</a>
-      <div class="tool-title"><span class="tool-icon-sm">💬</span> AI Chat</div>
+      <div class="tool-title">💬 AI Chat</div>
     </div>
-    <button class="clear-btn" onclick="clearChat()">Clear chat</button>
+    <div class="topbar-right">
+      <span class="tts-label">Auto-speak</span>
+      <button class="icon-btn" id="tts-toggle" onclick="toggleTTS()" title="Toggle auto-read responses">🔇</button>
+      <button class="clear-btn" onclick="clearChat()">Clear</button>
+    </div>
   </div>
 
   <div class="chat-wrap">
     <div class="messages" id="messages">
       <div class="message ai">
         <div class="avatar ai">✦</div>
-        <div class="bubble">Hi! I'm your AI assistant. Ask me anything — writing, coding, research, brainstorming, math, or just a conversation. What's on your mind?</div>
+        <div class="bubble-wrap">
+          <div class="bubble">Hi! I'm your AI assistant. Ask me anything — writing, coding, research, brainstorming, or just a conversation. You can also use the <strong>microphone</strong> to speak your message! 🎤</div>
+          <div class="msg-actions">
+            <button class="msg-action" onclick="speakText(this)">🔊 Speak</button>
+            <button class="msg-action" onclick="copyMsg(this)">Copy</button>
+          </div>
+        </div>
       </div>
     </div>
 
     <div class="input-area">
-      <div class="input-wrap">
-        <textarea id="input" placeholder="Ask me anything..." rows="1"></textarea>
-        <button class="send-btn" id="send-btn" onclick="send()">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
-        </button>
+      <div class="recording-bar" id="recording-bar">
+        <span class="rec-dot"></span>
+        <div class="rec-waves"><div class="rec-wave"></div><div class="rec-wave"></div><div class="rec-wave"></div><div class="rec-wave"></div><div class="rec-wave"></div></div>
+        <span>Listening... click mic to stop</span>
       </div>
-      <div class="hint">Enter to send · Shift+Enter for new line</div>
+      <div class="input-wrap">
+        <textarea id="input" placeholder="Ask me anything... or press the mic 🎤" rows="1"></textarea>
+        <div class="input-btns">
+          <button class="mic-btn" id="mic-btn" onclick="toggleMic()" title="Voice input">🎤</button>
+          <button class="send-btn" id="send-btn" onclick="send()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+          </button>
+        </div>
+      </div>
+      <div class="hint">
+        <span>⏎ Send</span>
+        <span>⇧⏎ New line</span>
+        <span>🎤 Voice input</span>
+      </div>
     </div>
   </div>
 
   <script>
     let history = [];
     let generating = false;
+    let autoSpeak = false;
+    let recognition = null;
+    let isRecording = false;
+    let currentSpeech = null;
+
     const messagesEl = document.getElementById('messages');
     const inputEl = document.getElementById('input');
     const sendBtn = document.getElementById('send-btn');
+    const micBtn = document.getElementById('mic-btn');
 
+    // ── TTS (Text-to-Speech) ──
+    function toggleTTS() {
+      autoSpeak = !autoSpeak;
+      const btn = document.getElementById('tts-toggle');
+      btn.textContent = autoSpeak ? '🔊' : '🔇';
+      btn.classList.toggle('active', autoSpeak);
+    }
+
+    function speakText(btn) {
+      window.speechSynthesis.cancel();
+      if (btn.classList.contains('speaking')) {
+        btn.classList.remove('speaking');
+        btn.textContent = '🔊 Speak';
+        return;
+      }
+      // Get text from sibling bubble
+      const bubble = btn.closest('.bubble-wrap').querySelector('.bubble');
+      const text = bubble.innerText;
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.rate = 1;
+      utterance.pitch = 1;
+      // Pick a good voice
+      const voices = speechSynthesis.getVoices();
+      const preferred = voices.find(v => v.lang === 'en-US' && v.name.includes('Google')) || voices.find(v => v.lang === 'en-US') || voices[0];
+      if (preferred) utterance.voice = preferred;
+
+      utterance.onstart = () => { btn.classList.add('speaking'); btn.textContent = '⏸ Stop'; };
+      utterance.onend = () => { btn.classList.remove('speaking'); btn.textContent = '🔊 Speak'; };
+      utterance.onerror = () => { btn.classList.remove('speaking'); btn.textContent = '🔊 Speak'; };
+      speechSynthesis.speak(utterance);
+    }
+
+    function autoSpeakText(text) {
+      window.speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.rate = 1;
+      const voices = speechSynthesis.getVoices();
+      const preferred = voices.find(v => v.lang === 'en-US' && v.name.includes('Google')) || voices.find(v => v.lang === 'en-US') || voices[0];
+      if (preferred) utterance.voice = preferred;
+      speechSynthesis.speak(utterance);
+    }
+
+    // Load voices (async in some browsers)
+    speechSynthesis.onvoiceschanged = () => {};
+
+    // ── SPEECH RECOGNITION ──
+    function setupRecognition() {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SpeechRecognition) return null;
+      const r = new SpeechRecognition();
+      r.continuous = false;
+      r.interimResults = true;
+      r.lang = 'en-US';
+
+      r.onresult = (e) => {
+        let interim = '', final = '';
+        for (let i = e.resultIndex; i < e.results.length; i++) {
+          if (e.results[i].isFinal) final += e.results[i][0].transcript;
+          else interim += e.results[i][0].transcript;
+        }
+        inputEl.value = final || interim;
+        inputEl.style.height = 'auto';
+        inputEl.style.height = Math.min(inputEl.scrollHeight, 180) + 'px';
+      };
+
+      r.onend = () => {
+        isRecording = false;
+        micBtn.classList.remove('recording');
+        document.getElementById('recording-bar').classList.remove('show');
+        if (inputEl.value.trim()) send();
+      };
+
+      r.onerror = (e) => {
+        isRecording = false;
+        micBtn.classList.remove('recording');
+        document.getElementById('recording-bar').classList.remove('show');
+        if (e.error !== 'no-speech') alert('Mic error: ' + e.error);
+      };
+      return r;
+    }
+
+    function toggleMic() {
+      if (!isRecording) {
+        if (!recognition) recognition = setupRecognition();
+        if (!recognition) { alert('Voice input is not supported in this browser. Try Chrome.'); return; }
+        window.speechSynthesis.cancel();
+        recognition.start();
+        isRecording = true;
+        micBtn.classList.add('recording');
+        document.getElementById('recording-bar').classList.add('show');
+        inputEl.value = '';
+        inputEl.placeholder = 'Listening...';
+      } else {
+        recognition.stop();
+        isRecording = false;
+        micBtn.classList.remove('recording');
+        document.getElementById('recording-bar').classList.remove('show');
+        inputEl.placeholder = 'Ask me anything... or press the mic 🎤';
+      }
+    }
+
+    // ── CHAT ──
     inputEl.addEventListener('input', () => {
       inputEl.style.height = 'auto';
       inputEl.style.height = Math.min(inputEl.scrollHeight, 180) + 'px';
@@ -187,30 +355,30 @@
       const avatar = document.createElement('div');
       avatar.className = `avatar ${role}`;
       avatar.textContent = role === 'ai' ? '✦' : '👤';
+      const bwrap = document.createElement('div');
+      bwrap.className = 'bubble-wrap';
       const bubble = document.createElement('div');
       bubble.className = 'bubble';
       bubble.innerHTML = formatText(content);
+      bwrap.appendChild(bubble);
+      if (role === 'ai') {
+        const actions = document.createElement('div');
+        actions.className = 'msg-actions';
+        actions.innerHTML = `<button class="msg-action" onclick="speakText(this)">🔊 Speak</button><button class="msg-action" onclick="copyMsg(this)">Copy</button>`;
+        bwrap.appendChild(actions);
+      }
       wrap.appendChild(avatar);
-      wrap.appendChild(bubble);
+      wrap.appendChild(bwrap);
       messagesEl.appendChild(wrap);
       messagesEl.scrollTop = messagesEl.scrollHeight;
       return wrap;
     }
 
-    function formatText(text) {
-      return text
-        .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
-        .replace(/```(\w*)\n?([\s\S]*?)```/g, '<pre><code>$2</code></pre>')
-        .replace(/`([^`]+)`/g, '<code>$1</code>')
-        .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
-        .replace(/\*([^*]+)\*/g, '<em>$1</em>')
-        .replace(/^### (.+)$/gm, '<h3>$1</h3>')
-        .replace(/^## (.+)$/gm, '<h2>$1</h2>')
-        .replace(/^# (.+)$/gm, '<h1>$1</h1>')
-        .replace(/^[-•] (.+)$/gm, '<li>$1</li>')
-        .replace(/(<li>.*<\/li>)/s, '<ul>$1</ul>')
-        .replace(/\n\n/g, '</p><p>')
-        .replace(/\n/g, '<br>');
+    function copyMsg(btn) {
+      const text = btn.closest('.bubble-wrap').querySelector('.bubble').innerText;
+      navigator.clipboard.writeText(text);
+      btn.textContent = 'Copied!';
+      setTimeout(() => btn.textContent = 'Copy', 1800);
     }
 
     function showTyping() {
@@ -222,6 +390,21 @@
       messagesEl.scrollTop = messagesEl.scrollHeight;
     }
 
+    function formatText(text) {
+      return text
+        .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+        .replace(/```(\w*)\n?([\s\S]*?)```/g,'<pre><code>$2</code></pre>')
+        .replace(/`([^`]+)`/g,'<code>$1</code>')
+        .replace(/\*\*([^*]+)\*\*/g,'<strong>$1</strong>')
+        .replace(/\*([^*]+)\*/g,'<em>$1</em>')
+        .replace(/^### (.+)$/gm,'<h3>$1</h3>')
+        .replace(/^## (.+)$/gm,'<h2>$1</h2>')
+        .replace(/^# (.+)$/gm,'<h1>$1</h1>')
+        .replace(/^[-•] (.+)$/gm,'<li>$1</li>')
+        .replace(/\n\n/g,'</p><p>')
+        .replace(/\n/g,'<br>');
+    }
+
     async function send() {
       const text = inputEl.value.trim();
       if (!text || generating) return;
@@ -229,6 +412,7 @@
       sendBtn.disabled = true;
       inputEl.value = '';
       inputEl.style.height = 'auto';
+      inputEl.placeholder = 'Ask me anything... or press the mic 🎤';
 
       addMsg('user', text);
       history.push({ role: 'user', content: text });
@@ -245,6 +429,7 @@
         if (data.error) throw new Error(data.error);
         history.push({ role: 'assistant', content: data.output });
         addMsg('ai', data.output);
+        if (autoSpeak) autoSpeakText(data.output);
       } catch (err) {
         document.getElementById('typing')?.remove();
         addMsg('ai', 'Error: ' + err.message, 'error');
@@ -255,8 +440,9 @@
     }
 
     function clearChat() {
+      window.speechSynthesis.cancel();
       history = [];
-      messagesEl.innerHTML = `<div class="message ai"><div class="avatar ai">✦</div><div class="bubble">Chat cleared! What would you like to talk about?</div></div>`;
+      messagesEl.innerHTML = `<div class="message ai"><div class="avatar ai">✦</div><div class="bubble-wrap"><div class="bubble">Chat cleared! What would you like to talk about?</div><div class="msg-actions"><button class="msg-action" onclick="speakText(this)">🔊 Speak</button><button class="msg-action" onclick="copyMsg(this)">Copy</button></div></div></div>`;
     }
   </script>
 </body>

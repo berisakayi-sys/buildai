@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BuildAI — Image & Video Maker</title>
+  <link rel="icon" href="/Icon.png" type="image/png" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #06060f; --border: rgba(255,255,255,0.07); --border2: rgba(255,255,255,0.12);
+      --purple: #7c3aed; --purple-light: #a78bfa; --blue: #3b82f6;
+      --green: #34d399; --pink: #ec4899; --cyan: #06b6d4;
+      --text: #f1f5f9; --muted: #64748b; --muted2: #94a3b8;
+    }
+    html, body { height: 100%; font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); display: flex; flex-direction: column; overflow: hidden; }
+    body::before {
+      content: ''; position: fixed; top: -100px; right: -100px; width: 500px; height: 500px;
+      background: radial-gradient(circle, rgba(236,72,153,0.1) 0%, transparent 70%);
+      pointer-events: none; z-index: 0;
+    }
+    body::after {
+      content: ''; position: fixed; bottom: -100px; left: -100px; width: 400px; height: 400px;
+      background: radial-gradient(circle, rgba(124,58,237,0.1) 0%, transparent 70%);
+      pointer-events: none; z-index: 0;
+    }
+
+    /* TOPBAR */
+    .topbar {
+      height: 56px; display: flex; align-items: center; justify-content: space-between;
+      padding: 0 24px; background: rgba(6,6,15,0.85); backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border); flex-shrink: 0; z-index: 10; gap: 12px;
+    }
+    .topbar-left { display: flex; align-items: center; gap: 14px; }
+    .back-btn {
+      display: flex; align-items: center; gap: 6px; color: var(--muted2); text-decoration: none;
+      font-size: 0.8rem; font-weight: 500; padding: 5px 10px; border-radius: 7px;
+      border: 1px solid var(--border); background: rgba(255,255,255,0.04); transition: all 0.2s;
+    }
+    .back-btn:hover { color: var(--text); background: rgba(255,255,255,0.08); }
+
+    /* TABS */
+    .page-tabs {
+      display: flex; gap: 3px; background: rgba(255,255,255,0.04);
+      border: 1px solid var(--border); border-radius: 10px; padding: 3px;
+    }
+    .ptab {
+      padding: 6px 18px; border-radius: 7px; font-size: 0.82rem; font-weight: 600;
+      cursor: pointer; border: none; background: transparent; color: var(--muted);
+      transition: all 0.2s; display: flex; align-items: center; gap: 6px;
+    }
+    .ptab.active { background: linear-gradient(135deg, rgba(124,58,237,0.3), rgba(59,130,246,0.2)); color: var(--purple-light); box-shadow: 0 0 12px rgba(124,58,237,0.2); }
+    .ptab:hover:not(.active) { color: var(--text); background: rgba(255,255,255,0.05); }
+
+    /* WORKSPACE */
+    .workspace { flex: 1; overflow: hidden; position: relative; z-index: 1; display: flex; flex-direction: column; }
+
+    /* ── IMAGE MAKER ── */
+    .image-page { display: none; flex: 1; flex-direction: column; overflow: hidden; }
+    .image-page.active { display: flex; }
+
+    .image-controls {
+      padding: 16px 24px; border-bottom: 1px solid var(--border);
+      background: rgba(9,9,18,0.7); backdrop-filter: blur(16px); flex-shrink: 0;
+      display: flex; flex-direction: column; gap: 12px;
+    }
+
+    .prompt-row { display: flex; gap: 10px; align-items: flex-end; }
+
+    .prompt-input-wrap {
+      flex: 1; display: flex; align-items: center;
+      background: rgba(255,255,255,0.04); backdrop-filter: blur(8px);
+      border: 1px solid rgba(255,255,255,0.1); border-radius: 13px;
+      padding: 10px 16px; gap: 10px; transition: all 0.2s;
+    }
+    .prompt-input-wrap:focus-within { border-color: rgba(236,72,153,0.45); box-shadow: 0 0 0 3px rgba(236,72,153,0.1); }
+    .prompt-input-wrap input {
+      flex: 1; background: transparent; border: none; color: var(--text);
+      font-family: inherit; font-size: 0.88rem; outline: none;
+    }
+    .prompt-input-wrap input::placeholder { color: var(--muted); }
+
+    .options-row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+
+    .opt-group { display: flex; flex-direction: column; gap: 4px; }
+    .opt-label { font-size: 0.68rem; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; }
+    .opt-select {
+      background: rgba(255,255,255,0.05); border: 1px solid var(--border);
+      color: var(--text); border-radius: 8px; padding: 6px 10px;
+      font-family: inherit; font-size: 0.8rem; cursor: pointer; outline: none;
+    }
+    .opt-select option { background: #0d0d14; }
+
+    .style-chips { display: flex; gap: 6px; flex-wrap: wrap; }
+    .style-chip {
+      padding: 5px 12px; border-radius: 100px; font-size: 0.75rem; font-weight: 600;
+      border: 1px solid var(--border); background: rgba(255,255,255,0.04);
+      color: var(--muted2); cursor: pointer; transition: all 0.2s;
+    }
+    .style-chip.active { background: rgba(236,72,153,0.15); border-color: rgba(236,72,153,0.35); color: var(--pink); }
+    .style-chip:hover:not(.active) { color: var(--text); background: rgba(255,255,255,0.07); }
+
+    .gen-btn {
+      padding: 10px 24px; border-radius: 11px; font-size: 0.88rem; font-weight: 700;
+      background: linear-gradient(135deg, var(--pink), var(--purple));
+      color: #fff; border: none; cursor: pointer; transition: all 0.2s;
+      display: flex; align-items: center; gap: 8px; white-space: nowrap;
+      box-shadow: 0 0 20px rgba(236,72,153,0.3); flex-shrink: 0;
+    }
+    .gen-btn:hover { box-shadow: 0 0 30px rgba(236,72,153,0.5); transform: translateY(-1px); }
+    .gen-btn:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
+
+    /* Image gallery */
+    .image-gallery { flex: 1; overflow-y: auto; padding: 20px 24px; scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.07) transparent; }
+
+    .gallery-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 16px; }
+
+    .img-card {
+      background: rgba(255,255,255,0.03); border: 1px solid var(--border);
+      border-radius: 14px; overflow: hidden; transition: all 0.2s;
+      animation: fadeUp 0.3s ease;
+    }
+    @keyframes fadeUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+    .img-card:hover { border-color: rgba(236,72,153,0.3); transform: translateY(-3px); box-shadow: 0 8px 30px rgba(0,0,0,0.4); }
+
+    .img-thumb {
+      width: 100%; aspect-ratio: 1; object-fit: cover; display: block;
+      background: rgba(255,255,255,0.03);
+    }
+    .img-thumb.loading { filter: blur(8px); transform: scale(1.05); }
+
+    .img-card-body { padding: 12px 14px; }
+    .img-prompt { font-size: 0.75rem; color: var(--muted2); line-height: 1.5; margin-bottom: 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .img-actions { display: flex; gap: 8px; }
+    .img-action {
+      flex: 1; padding: 6px; border-radius: 7px; font-size: 0.73rem; font-weight: 600;
+      border: 1px solid var(--border); background: transparent; color: var(--muted2);
+      cursor: pointer; transition: all 0.2s; text-align: center;
+    }
+    .img-action.dl { background: rgba(52,211,153,0.1); color: var(--green); border-color: rgba(52,211,153,0.2); }
+    .img-action.dl:hover { background: rgba(52,211,153,0.2); }
+    .img-action:hover { color: var(--text); background: rgba(255,255,255,0.07); }
+
+    .skeleton {
+      background: linear-gradient(90deg, rgba(255,255,255,0.04) 25%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.04) 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.5s infinite;
+      aspect-ratio: 1; border-radius: 0;
+    }
+    @keyframes shimmer { from{background-position:200% 0} to{background-position:-200% 0} }
+
+    .image-empty { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; color: var(--muted); text-align: center; padding: 40px; }
+    .image-empty .ei { font-size: 3rem; filter: drop-shadow(0 0 16px rgba(236,72,153,0.4)); animation: float 3s ease-in-out infinite; }
+    @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
+    .image-empty h3 { font-size: 1.1rem; color: var(--muted2); }
+    .image-empty p { font-size: 0.82rem; max-width: 300px; line-height: 1.6; }
+
+    /* ── VIDEO MAKER ── */
+    .video-page { display: none; flex: 1; overflow: hidden; }
+    .video-page.active { display: flex; }
+
+    .video-left {
+      width: 360px; flex-shrink: 0; display: flex; flex-direction: column;
+      border-right: 1px solid var(--border); background: rgba(9,9,18,0.7); backdrop-filter: blur(16px);
+    }
+    .video-left-header { padding: 18px 20px 14px; border-bottom: 1px solid var(--border); }
+    .video-left-header h3 { font-size: 0.9rem; font-weight: 700; background: linear-gradient(135deg, var(--cyan), var(--blue)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; margin-bottom: 3px; }
+    .video-left-header p { font-size: 0.73rem; color: var(--muted); line-height: 1.5; }
+
+    .video-form { flex: 1; padding: 16px; overflow-y: auto; display: flex; flex-direction: column; gap: 14px; }
+
+    .form-group { display: flex; flex-direction: column; gap: 6px; }
+    .form-label { font-size: 0.72rem; font-weight: 600; color: var(--muted2); text-transform: uppercase; letter-spacing: 0.08em; }
+    .form-textarea {
+      background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.09);
+      border-radius: 10px; color: var(--text); font-family: inherit; font-size: 0.84rem;
+      padding: 10px 12px; resize: none; outline: none; line-height: 1.55;
+      transition: border-color 0.2s;
+    }
+    .form-textarea:focus { border-color: rgba(6,182,212,0.4); }
+    .form-textarea::placeholder { color: var(--muted); }
+    .form-select {
+      background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.09);
+      color: var(--text); border-radius: 9px; padding: 8px 12px;
+      font-family: inherit; font-size: 0.83rem; cursor: pointer; outline: none;
+    }
+    .form-select option { background: #0d0d14; }
+
+    .type-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+    .type-chip {
+      padding: 5px 12px; border-radius: 100px; font-size: 0.74rem; font-weight: 600;
+      border: 1px solid var(--border); background: rgba(255,255,255,0.04);
+      color: var(--muted2); cursor: pointer; transition: all 0.2s;
+    }
+    .type-chip.active { background: rgba(6,182,212,0.12); border-color: rgba(6,182,212,0.3); color: var(--cyan); }
+    .type-chip:hover:not(.active) { color: var(--text); }
+
+    .video-gen-btn {
+      margin: 0 16px 16px; padding: 12px; border-radius: 11px; font-size: 0.88rem; font-weight: 700;
+      background: linear-gradient(135deg, var(--cyan), var(--blue));
+      color: #fff; border: none; cursor: pointer; transition: all 0.2s;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      box-shadow: 0 0 20px rgba(6,182,212,0.3); flex-shrink: 0;
+    }
+    .video-gen-btn:hover { box-shadow: 0 0 30px rgba(6,182,212,0.5); transform: translateY(-1px); }
+    .video-gen-btn:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
+
+    /* Video output */
+    .video-right { flex: 1; display: flex; flex-direction: column; overflow: hidden; background: #08080f; }
+    .video-output { flex: 1; overflow-y: auto; padding: 24px; scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.07) transparent; }
+
+    .script-empty { height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; color: var(--muted); text-align: center; }
+    .script-empty .ei { font-size: 3rem; filter: drop-shadow(0 0 16px rgba(6,182,212,0.4)); animation: float 3s ease-in-out infinite; }
+    .script-empty h3 { font-size: 1.1rem; color: var(--muted2); }
+    .script-empty p { font-size: 0.82rem; max-width: 300px; line-height: 1.6; }
+
+    .script-output { display: none; font-size: 0.88rem; line-height: 1.75; color: var(--text); }
+    .script-output.active { display: block; }
+
+    .scene-card {
+      background: rgba(255,255,255,0.03); border: 1px solid var(--border);
+      border-radius: 14px; padding: 18px 20px; margin-bottom: 16px;
+      transition: border-color 0.2s;
+    }
+    .scene-card:hover { border-color: rgba(6,182,212,0.25); }
+    .scene-num { font-size: 0.68rem; font-weight: 700; color: var(--cyan); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 6px; }
+    .scene-title { font-size: 0.95rem; font-weight: 700; margin-bottom: 8px; }
+    .scene-body { font-size: 0.84rem; color: var(--muted2); line-height: 1.65; white-space: pre-wrap; }
+
+    .script-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+    .script-header h2 { font-size: 1.1rem; font-weight: 800; }
+    .copy-script-btn {
+      padding: 6px 14px; border-radius: 8px; font-size: 0.78rem; font-weight: 600;
+      border: 1px solid var(--border); background: rgba(255,255,255,0.04);
+      color: var(--muted2); cursor: pointer; transition: all 0.2s;
+    }
+    .copy-script-btn:hover { color: var(--green); border-color: rgba(52,211,153,0.3); background: rgba(52,211,153,0.06); }
+
+    .raw-text-output { white-space: pre-wrap; font-size: 0.85rem; line-height: 1.75; color: var(--muted2); }
+    .raw-text-output strong { color: var(--text); }
+
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.07); border-radius: 4px; }
+
+    @media (max-width: 700px) {
+      .video-page { flex-direction: column; }
+      .video-left { width: 100%; border-right: none; border-bottom: 1px solid var(--border); max-height: 45vh; }
+      .options-row { gap: 6px; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="topbar">
+    <div class="topbar-left">
+      <a href="/" class="back-btn">← Home</a>
+      <div class="page-tabs">
+        <button class="ptab active" id="tab-img" onclick="switchPage('image')">🖼️ Image Maker</button>
+        <button class="ptab" id="tab-vid" onclick="switchPage('video')">🎬 Video Maker</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="workspace">
+
+    <!-- ── IMAGE MAKER ── -->
+    <div class="image-page active" id="image-page">
+
+      <div class="image-controls">
+        <div class="prompt-row">
+          <div class="prompt-input-wrap">
+            <span style="font-size:1.1rem;">🖼️</span>
+            <input id="img-prompt" type="text" placeholder="Describe the image you want to generate..." onkeydown="if(event.key==='Enter')generateImages()" />
+          </div>
+          <button class="gen-btn" id="img-btn" onclick="generateImages()">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+            Generate
+          </button>
+        </div>
+        <div class="options-row">
+          <div class="opt-group">
+            <div class="opt-label">Count</div>
+            <select class="opt-select" id="img-count">
+              <option value="1">1 image</option>
+              <option value="2">2 images</option>
+              <option value="4" selected>4 images</option>
+              <option value="6">6 images</option>
+            </select>
+          </div>
+          <div class="opt-group">
+            <div class="opt-label">Size</div>
+            <select class="opt-select" id="img-size">
+              <option value="512/512">Square (512×512)</option>
+              <option value="768/512">Landscape (768×512)</option>
+              <option value="512/768">Portrait (512×768)</option>
+              <option value="1024/576">Wide (1024×576)</option>
+            </select>
+          </div>
+          <div class="opt-group" style="flex:1;">
+            <div class="opt-label">Style</div>
+            <div class="style-chips" id="style-chips">
+              <span class="style-chip active" data-style="">Default</span>
+              <span class="style-chip" data-style="photorealistic, 4k, DSLR">Photorealistic</span>
+              <span class="style-chip" data-style="anime style, vivid colors">Anime</span>
+              <span class="style-chip" data-style="oil painting, classical art">Oil Painting</span>
+              <span class="style-chip" data-style="digital art, concept art">Digital Art</span>
+              <span class="style-chip" data-style="minimalist, flat design">Minimal</span>
+              <span class="style-chip" data-style="dark fantasy, cinematic lighting">Dark Fantasy</span>
+              <span class="style-chip" data-style="watercolor illustration">Watercolor</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="img-gallery-wrap" style="flex:1;overflow:hidden;display:flex;flex-direction:column;">
+        <div class="image-empty" id="img-empty">
+          <div class="ei">🖼️</div>
+          <h3>Generate stunning images</h3>
+          <p>Type a description above and click Generate. Powered by free AI image generation — no API key needed.</p>
+          <div style="display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-top:4px;">
+            <span style="background:rgba(236,72,153,0.1);border:1px solid rgba(236,72,153,0.2);color:var(--pink);padding:5px 12px;border-radius:100px;font-size:0.75rem;cursor:pointer;" onclick="quickGen('A futuristic city at night with neon lights and flying cars')">🌆 Futuristic city</span>
+            <span style="background:rgba(236,72,153,0.1);border:1px solid rgba(236,72,153,0.2);color:var(--pink);padding:5px 12px;border-radius:100px;font-size:0.75rem;cursor:pointer;" onclick="quickGen('A majestic mountain landscape at sunset with snow peaks')">🏔️ Mountain sunset</span>
+            <span style="background:rgba(236,72,153,0.1);border:1px solid rgba(236,72,153,0.2);color:var(--pink);padding:5px 12px;border-radius:100px;font-size:0.75rem;cursor:pointer;" onclick="quickGen('A cute cat sitting on a cozy window in the rain')">🐱 Cozy cat</span>
+            <span style="background:rgba(236,72,153,0.1);border:1px solid rgba(236,72,153,0.2);color:var(--pink);padding:5px 12px;border-radius:100px;font-size:0.75rem;cursor:pointer;" onclick="quickGen('An abstract colorful galaxy with stars and nebulae')">🌌 Galaxy</span>
+          </div>
+        </div>
+        <div class="image-gallery" id="img-gallery" style="display:none;">
+          <div class="gallery-grid" id="gallery-grid"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── VIDEO MAKER ── -->
+    <div class="video-page" id="video-page">
+
+      <div class="video-left">
+        <div class="video-left-header">
+          <h3>🎬 AI Video Script Maker</h3>
+          <p>Describe your video idea and get a full script, scene breakdown, voiceover, and shot list instantly.</p>
+        </div>
+        <div class="video-form">
+          <div class="form-group">
+            <div class="form-label">Video idea</div>
+            <textarea class="form-textarea" id="vid-prompt" rows="4" placeholder="e.g. A 60-second product promo for a new energy drink called 'Surge' targeting Gen Z athletes — energetic, fast cuts, neon aesthetic"></textarea>
+          </div>
+          <div class="form-group">
+            <div class="form-label">Video type</div>
+            <div class="type-chips" id="type-chips">
+              <span class="type-chip active" data-type="Product promo">Product promo</span>
+              <span class="type-chip" data-type="YouTube tutorial">Tutorial</span>
+              <span class="type-chip" data-type="Short-form social video">Social short</span>
+              <span class="type-chip" data-type="Documentary">Documentary</span>
+              <span class="type-chip" data-type="Brand story">Brand story</span>
+              <span class="type-chip" data-type="Explainer video">Explainer</span>
+              <span class="type-chip" data-type="Music video concept">Music video</span>
+            </div>
+          </div>
+          <div class="form-group">
+            <div class="form-label">Duration</div>
+            <select class="form-select" id="vid-duration">
+              <option value="15-second">15 seconds</option>
+              <option value="30-second">30 seconds</option>
+              <option value="60-second" selected>60 seconds</option>
+              <option value="2-minute">2 minutes</option>
+              <option value="5-minute">5 minutes</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <div class="form-label">Tone</div>
+            <select class="form-select" id="vid-tone">
+              <option value="energetic and hype">Energetic & Hype</option>
+              <option value="cinematic and dramatic">Cinematic</option>
+              <option value="fun and playful">Fun & Playful</option>
+              <option value="professional and trustworthy">Professional</option>
+              <option value="emotional and heartfelt">Emotional</option>
+              <option value="dark and mysterious">Dark & Mysterious</option>
+            </select>
+          </div>
+        </div>
+        <button class="video-gen-btn" id="vid-btn" onclick="generateScript()">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+          Generate Script
+        </button>
+      </div>
+
+      <div class="video-right">
+        <div class="video-output" id="vid-output">
+          <div class="script-empty" id="script-empty">
+            <div class="ei">🎬</div>
+            <h3>Your video script will appear here</h3>
+            <p>Fill in your video idea on the left and click Generate Script. You'll get a full breakdown with scenes, voiceover, and shot descriptions.</p>
+          </div>
+          <div class="script-output" id="script-output">
+            <div class="script-header">
+              <h2 id="script-title">Video Script</h2>
+              <button class="copy-script-btn" onclick="copyScript()">Copy All</button>
+            </div>
+            <div id="script-body"></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    // ── PAGE TABS ──
+    function switchPage(page) {
+      document.getElementById('image-page').classList.toggle('active', page === 'image');
+      document.getElementById('video-page').classList.toggle('active', page === 'video');
+      document.getElementById('tab-img').classList.toggle('active', page === 'image');
+      document.getElementById('tab-vid').classList.toggle('active', page === 'video');
+    }
+
+    // ── STYLE CHIPS ──
+    document.querySelectorAll('.style-chip').forEach(chip => {
+      chip.addEventListener('click', () => {
+        document.querySelectorAll('.style-chip').forEach(c => c.classList.remove('active'));
+        chip.classList.add('active');
+      });
+    });
+
+    // ── TYPE CHIPS ──
+    document.querySelectorAll('.type-chip').forEach(chip => {
+      chip.addEventListener('click', () => {
+        document.querySelectorAll('.type-chip').forEach(c => c.classList.remove('active'));
+        chip.classList.add('active');
+      });
+    });
+
+    // ── IMAGE MAKER ──
+    function getStyle() {
+      const active = document.querySelector('.style-chip.active');
+      return active ? active.dataset.style : '';
+    }
+
+    function getSize() {
+      const val = document.getElementById('img-size').value;
+      const [w, h] = val.split('/');
+      return { w, h };
+    }
+
+    function buildImgUrl(prompt, style, w, h, seed) {
+      const full = style ? `${prompt}, ${style}` : prompt;
+      return `https://image.pollinations.ai/prompt/${encodeURIComponent(full)}?width=${w}&height=${h}&seed=${seed}&nologo=true`;
+    }
+
+    function quickGen(prompt) {
+      document.getElementById('img-prompt').value = prompt;
+      generateImages();
+    }
+
+    async function generateImages() {
+      const prompt = document.getElementById('img-prompt').value.trim();
+      if (!prompt) { document.getElementById('img-prompt').focus(); return; }
+
+      const count = parseInt(document.getElementById('img-count').value);
+      const style = getStyle();
+      const { w, h } = getSize();
+      const btn = document.getElementById('img-btn');
+      btn.disabled = true;
+      btn.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="animation:spin 1s linear infinite"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg> Generating...`;
+
+      document.getElementById('img-empty').style.display = 'none';
+      const gallery = document.getElementById('img-gallery');
+      const grid = document.getElementById('gallery-grid');
+      gallery.style.display = 'block';
+
+      // Add skeleton placeholders
+      grid.innerHTML = '';
+      for (let i = 0; i < count; i++) {
+        const card = document.createElement('div');
+        card.className = 'img-card';
+        card.innerHTML = `<div class="skeleton"></div><div class="img-card-body"><div style="height:10px;background:rgba(255,255,255,0.05);border-radius:4px;margin-bottom:8px;"></div><div style="height:28px;background:rgba(255,255,255,0.04);border-radius:6px;"></div></div>`;
+        grid.appendChild(card);
+      }
+
+      // Generate images with different seeds
+      const seeds = Array.from({ length: count }, () => Math.floor(Math.random() * 99999));
+      seeds.forEach((seed, i) => {
+        const url = buildImgUrl(prompt, style, w, h, seed);
+        const img = new Image();
+        img.onload = () => {
+          const card = grid.children[i];
+          if (!card) return;
+          card.innerHTML = `
+            <img class="img-thumb" src="${url}" alt="${prompt}" />
+            <div class="img-card-body">
+              <div class="img-prompt">${prompt}${style ? ` · ${style}` : ''}</div>
+              <div class="img-actions">
+                <button class="img-action dl" onclick="downloadImg('${url}', ${seed})">⬇ Download</button>
+                <button class="img-action" onclick="regenerateOne(${i}, '${prompt.replace(/'/g,"\\'")}', '${style.replace(/'/g,"\\'")}', ${w}, ${h})">↻ Redo</button>
+              </div>
+            </div>`;
+        };
+        img.onerror = () => {
+          const card = grid.children[i];
+          if (card) card.innerHTML = `<div style="aspect-ratio:1;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:0.8rem;padding:20px;text-align:center;">Failed to load image. Try again.</div>`;
+        };
+        img.src = url;
+      });
+
+      btn.disabled = false;
+      btn.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"/></svg> Generate`;
+    }
+
+    function regenerateOne(idx, prompt, style, w, h) {
+      const seed = Math.floor(Math.random() * 99999);
+      const url = buildImgUrl(prompt, style, w, h, seed);
+      const card = document.getElementById('gallery-grid').children[idx];
+      card.innerHTML = `<div class="skeleton"></div>`;
+      const img = new Image();
+      img.onload = () => {
+        card.innerHTML = `
+          <img class="img-thumb" src="${url}" alt="${prompt}" />
+          <div class="img-card-body">
+            <div class="img-prompt">${prompt}${style ? ` · ${style}` : ''}</div>
+            <div class="img-actions">
+              <button class="img-action dl" onclick="downloadImg('${url}', ${seed})">⬇ Download</button>
+              <button class="img-action" onclick="regenerateOne(${idx}, '${prompt.replace(/'/g,"\\'")}', '${style.replace(/'/g,"\\'")}', ${w}, ${h})">↻ Redo</button>
+            </div>
+          </div>`;
+      };
+      img.src = url;
+    }
+
+    async function downloadImg(url, seed) {
+      try {
+        const res = await fetch(url);
+        const blob = await res.blob();
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = `buildai-image-${seed}.jpg`;
+        a.click();
+      } catch {
+        window.open(url, '_blank');
+      }
+    }
+
+    // ── VIDEO SCRIPT MAKER ──
+    let currentScript = '';
+
+    async function generateScript() {
+      const prompt = document.getElementById('vid-prompt').value.trim();
+      if (!prompt) { document.getElementById('vid-prompt').focus(); return; }
+
+      const type = document.querySelector('.type-chip.active')?.dataset.type || 'promo';
+      const duration = document.getElementById('vid-duration').value;
+      const tone = document.getElementById('vid-tone').value;
+
+      const fullPrompt = `Create a detailed video script for: "${prompt}"
+
+Video type: ${type}
+Duration: ${duration}
+Tone: ${tone}
+
+Provide:
+1. VIDEO TITLE
+2. CONCEPT OVERVIEW (2-3 sentences)
+3. SCENE-BY-SCENE BREAKDOWN (each scene: scene number, duration, visual description, camera shot type, voiceover/dialogue, music/sound)
+4. FULL VOICEOVER SCRIPT
+5. SHOT LIST (condensed)
+6. PLATFORM RECOMMENDATION & HASHTAGS`;
+
+      const btn = document.getElementById('vid-btn');
+      btn.disabled = true;
+      btn.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="animation:spin 1s linear infinite"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg> Writing script...`;
+
+      document.getElementById('script-empty').style.display = 'none';
+      document.getElementById('script-output').style.display = 'none';
+      document.getElementById('script-body').innerHTML = `<div style="text-align:center;padding:40px;color:var(--muted);">
+        <div style="font-size:2rem;margin-bottom:12px;animation:float 2s ease-in-out infinite;">🎬</div>
+        <div>Writing your script...</div>
+      </div>`;
+      document.getElementById('script-output').classList.add('active');
+
+      try {
+        const res = await fetch('/api/tool', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ tool: 'content', messages: [{ role: 'user', content: fullPrompt }] }),
+        });
+        const data = await res.json();
+        if (data.error) throw new Error(data.error);
+        currentScript = data.output;
+        renderScript(data.output, prompt);
+      } catch (err) {
+        document.getElementById('script-body').innerHTML = `<div style="color:#fca5a5;padding:16px;background:rgba(239,68,68,0.06);border:1px solid rgba(239,68,68,0.2);border-radius:12px;">Error: ${err.message}</div>`;
+      }
+
+      btn.disabled = false;
+      btn.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"/></svg> Generate Script`;
+    }
+
+    function renderScript(text, prompt) {
+      document.getElementById('script-title').textContent = '🎬 Video Script';
+      const body = document.getElementById('script-body');
+      // Format as readable cards
+      const formatted = text
+        .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+        .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+        .replace(/^#+\s+(.+)$/gm, '<h3 style="font-size:0.95rem;font-weight:800;color:#e2e8f0;margin:20px 0 8px;padding-bottom:6px;border-bottom:1px solid rgba(255,255,255,0.07);">$1</h3>')
+        .replace(/\n\n/g, '</p><p style="margin:6px 0;">')
+        .replace(/\n/g, '<br>');
+      body.innerHTML = `<div class="raw-text-output">${formatted}</div>`;
+    }
+
+    function copyScript() {
+      navigator.clipboard.writeText(currentScript);
+      const btn = document.querySelector('.copy-script-btn');
+      btn.textContent = 'Copied!';
+      setTimeout(() => btn.textContent = 'Copy All', 1800);
+    }
+  </script>
+  <style>
+    @keyframes spin { to { transform: rotate(360deg); } }
+    @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
+  </style>
+</body>
+</html>
