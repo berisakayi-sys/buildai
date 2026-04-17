@@ -11,11 +11,11 @@
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --bg: #050508;
-      --surface: #0d0d14;
-      --surface2: #12121c;
+      --bg: #06060f;
+      --surface: rgba(13,13,22,0.85);
+      --surface2: rgba(18,18,30,0.9);
       --border: rgba(255,255,255,0.07);
-      --border2: rgba(255,255,255,0.12);
+      --border2: rgba(255,255,255,0.13);
       --purple: #7c3aed;
       --purple-light: #a78bfa;
       --blue: #3b82f6;
@@ -33,30 +33,48 @@
       color: var(--text);
       display: flex;
       flex-direction: column;
+      position: relative;
     }
+
+    /* Ambient background orbs */
+    body::before {
+      content: '';
+      position: fixed;
+      top: -200px; left: -150px;
+      width: 600px; height: 600px;
+      background: radial-gradient(circle, rgba(124,58,237,0.18) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+      animation: drift1 18s ease-in-out infinite alternate;
+    }
+    body::after {
+      content: '';
+      position: fixed;
+      bottom: -100px; right: -100px;
+      width: 500px; height: 500px;
+      background: radial-gradient(circle, rgba(59,130,246,0.14) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+      animation: drift2 22s ease-in-out infinite alternate;
+    }
+    @keyframes drift1 { from { transform: translate(0,0); } to { transform: translate(60px, 80px); } }
+    @keyframes drift2 { from { transform: translate(0,0); } to { transform: translate(-50px, -60px); } }
 
     /* ── TOPBAR ── */
     .topbar {
-      height: 54px;
+      height: 58px;
       display: flex;
       align-items: center;
       justify-content: space-between;
       padding: 0 20px;
-      background: var(--surface);
-      border-bottom: 1px solid var(--border);
+      background: rgba(8,8,16,0.75);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-bottom: 1px solid rgba(255,255,255,0.07);
       flex-shrink: 0;
       gap: 12px;
-    }
-
-    .logo {
-      font-size: 1.1rem;
-      font-weight: 800;
-      background: linear-gradient(135deg, #a78bfa, #60a5fa);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      text-decoration: none;
-      flex-shrink: 0;
+      position: relative;
+      z-index: 10;
     }
 
     .topbar-center {
@@ -64,15 +82,16 @@
       align-items: center;
       gap: 8px;
       background: rgba(255,255,255,0.04);
-      border: 1px solid var(--border);
-      border-radius: 8px;
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 10px;
       padding: 6px 14px;
       flex: 1;
-      max-width: 360px;
+      max-width: 340px;
     }
 
     .site-title-display {
-      font-size: 0.85rem;
+      font-size: 0.82rem;
       color: var(--muted2);
       font-weight: 500;
       white-space: nowrap;
@@ -82,14 +101,15 @@
 
     .topbar-actions {
       display: flex;
-      gap: 8px;
+      gap: 7px;
       flex-shrink: 0;
+      align-items: center;
     }
 
     .btn {
-      padding: 7px 16px;
-      border-radius: 8px;
-      font-size: 0.82rem;
+      padding: 7px 15px;
+      border-radius: 9px;
+      font-size: 0.8rem;
       font-weight: 600;
       cursor: pointer;
       border: none;
@@ -99,71 +119,82 @@
       transition: all 0.2s;
       text-decoration: none;
       white-space: nowrap;
+      letter-spacing: 0.01em;
     }
 
     .btn-ghost {
-      background: transparent;
+      background: rgba(255,255,255,0.05);
+      backdrop-filter: blur(8px);
       color: var(--muted2);
-      border: 1px solid var(--border);
+      border: 1px solid rgba(255,255,255,0.08);
     }
-    .btn-ghost:hover { color: var(--text); border-color: var(--border2); }
+    .btn-ghost:hover { background: rgba(255,255,255,0.09); color: var(--text); border-color: rgba(255,255,255,0.14); }
 
     .btn-primary {
       background: linear-gradient(135deg, var(--purple), var(--blue));
       color: #fff;
-      box-shadow: 0 0 20px rgba(124,58,237,0.3);
+      box-shadow: 0 0 18px rgba(124,58,237,0.35), inset 0 1px 0 rgba(255,255,255,0.15);
     }
-    .btn-primary:hover { box-shadow: 0 0 30px rgba(124,58,237,0.5); }
-    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-primary:hover { box-shadow: 0 0 28px rgba(124,58,237,0.55), inset 0 1px 0 rgba(255,255,255,0.2); transform: translateY(-1px); }
+    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
 
     .btn-download {
-      background: rgba(52,211,153,0.12);
+      background: rgba(52,211,153,0.1);
+      backdrop-filter: blur(8px);
       color: var(--green);
-      border: 1px solid rgba(52,211,153,0.25);
+      border: 1px solid rgba(52,211,153,0.2);
     }
-    .btn-download:hover { background: rgba(52,211,153,0.2); }
-    .btn-download:disabled { opacity: 0.4; cursor: not-allowed; }
+    .btn-download:hover { background: rgba(52,211,153,0.18); box-shadow: 0 0 14px rgba(52,211,153,0.2); }
+    .btn-download:disabled { opacity: 0.35; cursor: not-allowed; }
 
     .btn-publish {
-      background: rgba(124,58,237,0.15);
+      background: rgba(124,58,237,0.12);
+      backdrop-filter: blur(8px);
       color: var(--purple-light);
-      border: 1px solid rgba(124,58,237,0.3);
+      border: 1px solid rgba(124,58,237,0.25);
     }
-    .btn-publish:hover { background: rgba(124,58,237,0.25); }
-    .btn-publish:disabled { opacity: 0.4; cursor: not-allowed; }
+    .btn-publish:hover { background: rgba(124,58,237,0.22); box-shadow: 0 0 14px rgba(124,58,237,0.25); }
+    .btn-publish:disabled { opacity: 0.35; cursor: not-allowed; }
 
     .btn-save {
-      background: rgba(59,130,246,0.12);
+      background: rgba(59,130,246,0.1);
+      backdrop-filter: blur(8px);
       color: #60a5fa;
-      border: 1px solid rgba(59,130,246,0.25);
+      border: 1px solid rgba(59,130,246,0.22);
     }
-    .btn-save:hover { background: rgba(59,130,246,0.22); }
-    .btn-save:disabled { opacity: 0.4; cursor: not-allowed; }
+    .btn-save:hover { background: rgba(59,130,246,0.2); box-shadow: 0 0 14px rgba(59,130,246,0.2); }
+    .btn-save:disabled { opacity: 0.35; cursor: not-allowed; }
 
-    /* Projects Dashboard */
+    /* ── PROJECTS DASHBOARD ── */
     .dashboard-overlay {
       position: fixed;
       inset: 0;
-      background: rgba(0,0,0,0.85);
-      backdrop-filter: blur(8px);
+      background: rgba(0,0,0,0.8);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
       z-index: 100;
       display: none;
       flex-direction: column;
       overflow: hidden;
+      animation: fadeIn 0.2s ease;
     }
     .dashboard-overlay.open { display: flex; }
+
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
     .dashboard-header {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 20px 32px;
-      border-bottom: 1px solid var(--border);
-      background: var(--surface);
+      padding: 18px 32px;
+      border-bottom: 1px solid rgba(255,255,255,0.07);
+      background: rgba(8,8,16,0.85);
+      backdrop-filter: blur(20px);
       flex-shrink: 0;
     }
     .dashboard-header h2 {
-      font-size: 1.15rem;
+      font-size: 1.1rem;
       font-weight: 800;
       background: linear-gradient(135deg, #a78bfa, #60a5fa);
       -webkit-background-clip: text;
@@ -172,14 +203,14 @@
     }
     .dashboard-header-actions { display: flex; gap: 10px; align-items: center; }
     .dashboard-close {
-      width: 34px; height: 34px;
+      width: 32px; height: 32px;
       border-radius: 8px;
-      background: rgba(255,255,255,0.06);
-      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.08);
       color: var(--muted2);
       cursor: pointer;
       display: flex; align-items: center; justify-content: center;
-      font-size: 1rem;
+      font-size: 0.9rem;
       transition: all 0.2s;
     }
     .dashboard-close:hover { background: rgba(255,255,255,0.1); color: var(--text); }
@@ -194,136 +225,114 @@
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
       gap: 20px;
+      animation: slideUp 0.3s ease;
     }
 
     .project-card {
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      border-radius: 14px;
+      background: rgba(18,18,30,0.85);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 16px;
       overflow: hidden;
-      transition: all 0.2s;
-      cursor: pointer;
+      transition: all 0.25s;
     }
-    .project-card:hover { border-color: rgba(124,58,237,0.4); transform: translateY(-3px); box-shadow: 0 8px 32px rgba(0,0,0,0.4); }
+    .project-card:hover {
+      border-color: rgba(124,58,237,0.4);
+      transform: translateY(-4px);
+      box-shadow: 0 12px 40px rgba(0,0,0,0.5), 0 0 0 1px rgba(124,58,237,0.15);
+    }
 
     .project-card-thumb {
       height: 140px;
-      background: linear-gradient(135deg, rgba(124,58,237,0.15), rgba(59,130,246,0.1));
+      background: linear-gradient(135deg, rgba(124,58,237,0.12), rgba(59,130,246,0.08));
       display: flex;
       align-items: center;
       justify-content: center;
-      border-bottom: 1px solid var(--border);
+      border-bottom: 1px solid rgba(255,255,255,0.06);
       font-size: 2.5rem;
       position: relative;
       overflow: hidden;
     }
-    .project-card-thumb iframe {
-      width: 200%;
-      height: 200%;
-      border: none;
-      transform: scale(0.5);
-      transform-origin: top left;
-      pointer-events: none;
+    .project-card-thumb::after {
+      content: '';
       position: absolute;
-      top: 0; left: 0;
+      inset: 0;
+      background: radial-gradient(circle at 30% 40%, rgba(124,58,237,0.15), transparent 60%);
     }
 
-    .project-card-info {
-      padding: 14px 16px;
-    }
+    .project-card-info { padding: 14px 16px; }
     .project-card-info h4 {
-      font-size: 0.9rem;
+      font-size: 0.88rem;
       font-weight: 700;
       margin-bottom: 4px;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
     }
-    .project-card-info p {
-      font-size: 0.75rem;
-      color: var(--muted);
-      margin-bottom: 12px;
-    }
-    .project-card-actions {
-      display: flex;
-      gap: 8px;
-    }
+    .project-card-info p { font-size: 0.73rem; color: var(--muted); margin-bottom: 12px; }
+    .project-card-actions { display: flex; gap: 8px; }
     .project-card-actions button {
-      flex: 1;
-      padding: 6px;
-      border-radius: 7px;
-      font-size: 0.75rem;
-      font-weight: 600;
-      cursor: pointer;
-      border: 1px solid var(--border);
-      background: transparent;
-      color: var(--muted2);
-      transition: all 0.2s;
+      flex: 1; padding: 6px;
+      border-radius: 7px; font-size: 0.74rem; font-weight: 600;
+      cursor: pointer; border: 1px solid var(--border);
+      background: transparent; color: var(--muted2); transition: all 0.2s;
     }
     .project-card-actions .open-btn {
-      background: rgba(124,58,237,0.12);
+      background: rgba(124,58,237,0.1);
       color: var(--purple-light);
-      border-color: rgba(124,58,237,0.25);
+      border-color: rgba(124,58,237,0.22);
     }
-    .project-card-actions .open-btn:hover { background: rgba(124,58,237,0.25); }
+    .project-card-actions .open-btn:hover { background: rgba(124,58,237,0.22); }
     .project-card-actions .del-btn:hover { color: #f87171; border-color: rgba(248,113,113,0.3); background: rgba(248,113,113,0.06); }
 
     .login-prompt {
-      padding: 48px 24px;
-      text-align: center;
-      color: var(--muted2);
-      font-size: 0.9rem;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 16px;
+      padding: 60px 24px;
+      text-align: center; color: var(--muted2); font-size: 0.9rem;
+      display: flex; flex-direction: column; align-items: center; gap: 16px;
     }
     .login-prompt p { max-width: 320px; line-height: 1.6; }
     .login-prompt a {
       display: flex; align-items: center; gap: 7px;
       background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12);
-      color: #fff; padding: 10px 20px; border-radius: 9px;
-      font-size: 0.85rem; font-weight: 600; text-decoration: none;
-      transition: background 0.2s;
+      color: #fff; padding: 10px 20px; border-radius: 10px;
+      font-size: 0.85rem; font-weight: 600; text-decoration: none; transition: all 0.2s;
     }
     .login-prompt a:hover { background: rgba(255,255,255,0.1); }
 
     .dash-empty {
-      grid-column: 1/-1;
-      padding: 60px 24px;
-      text-align: center;
-      color: var(--muted);
-      font-size: 0.9rem;
+      grid-column: 1/-1; padding: 60px 24px;
+      text-align: center; color: var(--muted); font-size: 0.9rem;
     }
     .dash-empty p { margin-top: 8px; font-size: 0.82rem; }
 
+    /* ── PUBLISH TOAST ── */
     .publish-toast {
       position: fixed;
-      bottom: 24px;
-      left: 50%;
-      transform: translateX(-50%) translateY(80px);
-      background: #1e1b4b;
-      border: 1px solid rgba(124,58,237,0.4);
-      border-radius: 12px;
+      bottom: 24px; left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: rgba(15,10,40,0.92);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(124,58,237,0.35);
+      border-radius: 14px;
       padding: 14px 20px;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      font-size: 0.85rem;
+      display: flex; align-items: center; gap: 12px;
+      font-size: 0.84rem;
       z-index: 999;
-      transition: transform 0.3s ease;
+      transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
       max-width: 480px;
-      box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+      box-shadow: 0 8px 40px rgba(0,0,0,0.6), 0 0 0 1px rgba(124,58,237,0.15);
     }
     .publish-toast.show { transform: translateX(-50%) translateY(0); }
     .publish-toast a { color: var(--purple-light); font-weight: 700; word-break: break-all; }
-    .publish-toast-close { cursor: pointer; color: var(--muted); margin-left: auto; flex-shrink: 0; font-size: 1rem; }
+    .publish-toast-close { cursor: pointer; color: var(--muted); margin-left: auto; flex-shrink: 0; }
 
     /* ── MAIN LAYOUT ── */
     .workspace {
       display: flex;
       flex: 1;
       overflow: hidden;
+      position: relative;
+      z-index: 1;
     }
 
     /* ── CHAT PANEL ── */
@@ -332,26 +341,29 @@
       flex-shrink: 0;
       display: flex;
       flex-direction: column;
-      border-right: 1px solid var(--border);
-      background: var(--surface);
+      border-right: 1px solid rgba(255,255,255,0.06);
+      background: rgba(9,9,18,0.7);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
     }
 
     .chat-header {
-      padding: 16px 20px 12px;
-      border-bottom: 1px solid var(--border);
+      padding: 18px 20px 14px;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      background: rgba(255,255,255,0.02);
     }
 
     .chat-header h3 {
-      font-size: 0.85rem;
+      font-size: 0.88rem;
       font-weight: 700;
-      color: var(--text);
-      margin-bottom: 4px;
+      background: linear-gradient(135deg, #a78bfa, #60a5fa);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 3px;
     }
 
-    .chat-header p {
-      font-size: 0.75rem;
-      color: var(--muted);
-    }
+    .chat-header p { font-size: 0.73rem; color: var(--muted); }
 
     .messages {
       flex: 1;
@@ -361,19 +373,15 @@
       flex-direction: column;
       gap: 12px;
       scrollbar-width: thin;
-      scrollbar-color: rgba(255,255,255,0.08) transparent;
+      scrollbar-color: rgba(255,255,255,0.07) transparent;
     }
 
-    .message {
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-    }
+    .message { display: flex; flex-direction: column; gap: 4px; }
 
     .message-role {
-      font-size: 0.68rem;
+      font-size: 0.65rem;
       font-weight: 700;
-      letter-spacing: 0.08em;
+      letter-spacing: 0.1em;
       text-transform: uppercase;
     }
 
@@ -382,44 +390,45 @@
 
     .message-bubble {
       padding: 10px 14px;
-      border-radius: 12px;
-      font-size: 0.85rem;
-      line-height: 1.55;
+      border-radius: 13px;
+      font-size: 0.83rem;
+      line-height: 1.6;
+      backdrop-filter: blur(8px);
     }
 
     .message.user .message-bubble {
-      background: rgba(124,58,237,0.15);
-      border: 1px solid rgba(124,58,237,0.2);
+      background: rgba(124,58,237,0.14);
+      border: 1px solid rgba(124,58,237,0.22);
       color: var(--text);
     }
 
     .message.ai .message-bubble {
-      background: rgba(255,255,255,0.04);
-      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.07);
       color: var(--muted2);
     }
 
     .message.ai.success .message-bubble {
-      border-color: rgba(52,211,153,0.25);
-      background: rgba(52,211,153,0.05);
+      border-color: rgba(52,211,153,0.22);
+      background: rgba(52,211,153,0.04);
+      color: #a7f3d0;
     }
 
     .message.ai.error .message-bubble {
-      border-color: rgba(239,68,68,0.25);
+      border-color: rgba(239,68,68,0.22);
       background: rgba(239,68,68,0.05);
       color: #fca5a5;
     }
 
     /* Typing indicator */
     .typing-indicator {
-      display: flex;
-      align-items: center;
-      gap: 5px;
+      display: flex; align-items: center; gap: 5px;
       padding: 10px 14px;
-      background: rgba(255,255,255,0.04);
-      border: 1px solid var(--border);
-      border-radius: 12px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 13px;
       width: fit-content;
+      backdrop-filter: blur(8px);
     }
 
     .typing-indicator span {
@@ -438,62 +447,70 @@
 
     /* ── INPUT AREA ── */
     .input-area {
-      padding: 14px 16px;
-      border-top: 1px solid var(--border);
+      padding: 14px 14px 12px;
+      border-top: 1px solid rgba(255,255,255,0.06);
       display: flex;
       flex-direction: column;
       gap: 10px;
+      background: rgba(255,255,255,0.02);
     }
 
     .input-wrap {
       display: flex;
       gap: 8px;
       align-items: flex-end;
+      background: rgba(255,255,255,0.04);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 14px;
+      padding: 8px 8px 8px 14px;
+      transition: border-color 0.2s, box-shadow 0.2s;
     }
 
-    textarea {
+    .input-wrap:focus-within {
+      border-color: rgba(124,58,237,0.45);
+      box-shadow: 0 0 0 3px rgba(124,58,237,0.1), 0 0 20px rgba(124,58,237,0.1);
+    }
+
+    #user-input {
       flex: 1;
-      background: rgba(255,255,255,0.05);
-      border: 1px solid var(--border2);
-      border-radius: 10px;
+      background: transparent;
+      border: none;
       color: var(--text);
       font-family: inherit;
       font-size: 0.85rem;
-      padding: 10px 14px;
+      padding: 4px 0;
       resize: none;
       outline: none;
-      min-height: 44px;
+      min-height: 36px;
       max-height: 160px;
       line-height: 1.5;
-      transition: border-color 0.2s;
     }
 
-    textarea:focus { border-color: rgba(124,58,237,0.5); }
-    textarea::placeholder { color: var(--muted); }
+    #user-input::placeholder { color: var(--muted); }
 
     .send-btn {
-      width: 40px; height: 40px;
+      width: 38px; height: 38px;
       background: linear-gradient(135deg, var(--purple), var(--blue));
       border: none;
       border-radius: 10px;
       color: white;
       cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1rem;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.95rem;
       flex-shrink: 0;
       transition: all 0.2s;
-      box-shadow: 0 0 16px rgba(124,58,237,0.3);
+      box-shadow: 0 0 14px rgba(124,58,237,0.35);
     }
 
-    .send-btn:hover { transform: scale(1.05); box-shadow: 0 0 24px rgba(124,58,237,0.5); }
-    .send-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+    .send-btn:hover { transform: scale(1.07); box-shadow: 0 0 22px rgba(124,58,237,0.55); }
+    .send-btn:disabled { opacity: 0.35; cursor: not-allowed; transform: none; }
 
     .input-hint {
-      font-size: 0.72rem;
+      font-size: 0.7rem;
       color: var(--muted);
       text-align: center;
+      opacity: 0.7;
     }
 
     /* ── PREVIEW PANEL ── */
@@ -502,30 +519,36 @@
       display: flex;
       flex-direction: column;
       overflow: hidden;
-      background: #1a1a2e;
+      background: #0a0a12;
     }
 
     .preview-toolbar {
-      height: 44px;
+      height: 46px;
       display: flex;
       align-items: center;
       justify-content: space-between;
       padding: 0 16px;
-      background: var(--surface2);
-      border-bottom: 1px solid var(--border);
+      background: rgba(10,10,18,0.85);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid rgba(255,255,255,0.06);
       gap: 10px;
       flex-shrink: 0;
     }
 
     .preview-tabs {
       display: flex;
-      gap: 2px;
+      gap: 3px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 9px;
+      padding: 3px;
     }
 
     .tab {
-      padding: 5px 14px;
+      padding: 4px 14px;
       border-radius: 6px;
-      font-size: 0.78rem;
+      font-size: 0.77rem;
       font-weight: 600;
       cursor: pointer;
       border: none;
@@ -535,35 +558,38 @@
     }
 
     .tab.active {
-      background: rgba(124,58,237,0.2);
+      background: rgba(124,58,237,0.25);
       color: var(--purple-light);
+      box-shadow: 0 0 10px rgba(124,58,237,0.2);
     }
 
-    .tab:hover:not(.active) { color: var(--text); }
+    .tab:hover:not(.active) { color: var(--text); background: rgba(255,255,255,0.05); }
 
     .preview-status {
-      font-size: 0.75rem;
+      font-size: 0.73rem;
       color: var(--muted);
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 7px;
     }
 
     .status-dot {
       width: 7px; height: 7px;
       border-radius: 50%;
       background: var(--muted);
+      transition: all 0.3s;
     }
 
     .status-dot.ready { background: var(--green); box-shadow: 0 0 8px var(--green); }
     .status-dot.building {
       background: var(--purple-light);
+      box-shadow: 0 0 8px var(--purple-light);
       animation: pulse2 1s infinite;
     }
 
     @keyframes pulse2 {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.3; }
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.8); }
     }
 
     .preview-frame-wrap {
@@ -576,14 +602,15 @@
       width: 100%;
       height: 100%;
       border: none;
-      background: white;
+      background: #06060f;
     }
 
+    /* ── CODE EDITOR ── */
     .code-view {
       flex: 1;
       display: none;
       flex-direction: column;
-      background: #0d1117;
+      background: #080d14;
       overflow: hidden;
     }
 
@@ -592,48 +619,46 @@
       align-items: center;
       justify-content: space-between;
       padding: 8px 16px;
-      background: #161b22;
+      background: rgba(10,16,26,0.95);
+      backdrop-filter: blur(12px);
       border-bottom: 1px solid rgba(255,255,255,0.06);
       flex-shrink: 0;
       gap: 8px;
     }
 
-    .code-editor-toolbar span {
-      font-size: 0.75rem;
-      color: var(--muted);
-    }
+    .code-editor-toolbar span { font-size: 0.73rem; color: var(--muted); }
 
     .btn-apply {
-      background: rgba(52,211,153,0.15);
+      background: rgba(52,211,153,0.12);
       color: var(--green);
-      border: 1px solid rgba(52,211,153,0.3);
+      border: 1px solid rgba(52,211,153,0.25);
       padding: 5px 14px;
-      border-radius: 6px;
-      font-size: 0.78rem;
+      border-radius: 7px;
+      font-size: 0.77rem;
       font-weight: 600;
       cursor: pointer;
       transition: all 0.2s;
     }
-    .btn-apply:hover { background: rgba(52,211,153,0.25); }
+    .btn-apply:hover { background: rgba(52,211,153,0.22); box-shadow: 0 0 12px rgba(52,211,153,0.2); }
 
     #code-editor {
       flex: 1;
-      background: #0d1117;
-      color: #e2e8f0;
+      background: transparent;
+      color: #c9d1d9;
       font-family: 'Fira Code', 'Cascadia Code', 'Consolas', monospace;
-      font-size: 0.78rem;
-      line-height: 1.6;
+      font-size: 0.77rem;
+      line-height: 1.65;
       padding: 16px 20px;
       border: none;
       outline: none;
       resize: none;
       width: 100%;
       scrollbar-width: thin;
-      scrollbar-color: rgba(255,255,255,0.08) transparent;
+      scrollbar-color: rgba(255,255,255,0.07) transparent;
       tab-size: 2;
     }
 
-    /* Empty state */
+    /* ── EMPTY STATE ── */
     .empty-state {
       position: absolute;
       inset: 0;
@@ -643,25 +668,32 @@
       justify-content: center;
       text-align: center;
       padding: 40px;
-      background: var(--surface);
+      background: radial-gradient(ellipse at 50% 60%, rgba(124,58,237,0.07) 0%, transparent 60%), var(--bg);
       gap: 16px;
     }
 
     .empty-icon {
-      font-size: 3.5rem;
+      font-size: 3rem;
       line-height: 1;
+      filter: drop-shadow(0 0 20px rgba(124,58,237,0.5));
+      animation: float 3s ease-in-out infinite;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-8px); }
     }
 
     .empty-state h3 {
       font-size: 1.2rem;
       font-weight: 700;
+      background: linear-gradient(135deg, #e2e8f0, #94a3b8);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
     }
 
-    .empty-state p {
-      color: var(--muted);
-      font-size: 0.88rem;
-      max-width: 360px;
-    }
+    .empty-state p { color: var(--muted); font-size: 0.85rem; max-width: 360px; line-height: 1.6; }
 
     .suggestion-chips {
       display: flex;
@@ -672,54 +704,44 @@
     }
 
     .chip {
-      background: rgba(124,58,237,0.1);
-      border: 1px solid rgba(124,58,237,0.25);
+      background: rgba(124,58,237,0.08);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(124,58,237,0.2);
       color: var(--purple-light);
       padding: 7px 14px;
       border-radius: 100px;
-      font-size: 0.78rem;
+      font-size: 0.77rem;
       font-weight: 500;
       cursor: pointer;
       transition: all 0.2s;
     }
 
     .chip:hover {
-      background: rgba(124,58,237,0.2);
-      border-color: rgba(124,58,237,0.5);
+      background: rgba(124,58,237,0.18);
+      border-color: rgba(124,58,237,0.45);
+      box-shadow: 0 0 14px rgba(124,58,237,0.2);
+      transform: translateY(-1px);
     }
 
-    /* Scrollbar */
-    ::-webkit-scrollbar { width: 5px; height: 5px; }
+    /* Scrollbars */
+    ::-webkit-scrollbar { width: 4px; height: 4px; }
     ::-webkit-scrollbar-track { background: transparent; }
-    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.07); border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.12); }
 
     @media (max-width: 700px) {
-      /* Topbar */
       .topbar { padding: 0 10px; gap: 6px; }
       .topbar-center { display: none; }
-      .btn { padding: 6px 10px; font-size: 0.75rem; }
+      .btn { padding: 6px 10px; font-size: 0.74rem; }
       #topbar-user img { width: 26px; height: 26px; }
-
-      /* Workspace: stack vertically, chat on top */
       .workspace { flex-direction: column; height: auto; overflow: visible; }
       html, body { height: auto; overflow: auto; }
-
-      /* Chat takes full width, fixed height */
-      .chat-panel { width: 100%; border-right: none; border-bottom: 1px solid var(--border); height: 55vh; flex-shrink: 0; }
+      .chat-panel { width: 100%; border-right: none; border-bottom: 1px solid rgba(255,255,255,0.06); height: 55vh; flex-shrink: 0; }
       .messages { max-height: calc(55vh - 130px); }
-
-      /* Preview below */
       .preview-panel { height: 60vh; flex-shrink: 0; }
       .preview-frame-wrap { height: 100%; }
-
-      /* Projects drawer full width on mobile */
-      .projects-drawer { width: 100%; }
-
-      /* Suggestion chips scrollable */
       .suggestion-chips { flex-wrap: nowrap; overflow-x: auto; justify-content: flex-start; padding-bottom: 4px; }
       .chip { white-space: nowrap; }
-
-      /* Toast full width */
       .publish-toast { width: 90%; max-width: 90%; }
     }
   </style>
@@ -728,17 +750,32 @@
 
   <!-- TOPBAR -->
   <div class="topbar">
-    <a href="/"><img src="/logo.png" style="height:44px;width:auto;" alt="BuildAI" /></a>
+    <a href="/"><img src="/logo.png" style="height:42px;width:auto;" alt="BuildAI" /></a>
     <div class="topbar-center">
-      <span style="color: var(--muted); font-size: 0.75rem;">📄</span>
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgba(100,116,139,0.8)" stroke-width="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
       <span class="site-title-display" id="site-title">No website generated yet</span>
     </div>
     <div class="topbar-actions">
-      <button class="btn btn-ghost" id="btn-new" onclick="newProject()">+ New</button>
-      <button class="btn btn-ghost" id="btn-projects" onclick="toggleProjects()" style="display:none;">📁 Projects</button>
-      <button class="btn btn-save" id="btn-save" disabled onclick="saveProject()">💾 Save</button>
-      <button class="btn btn-publish" id="btn-publish" disabled onclick="publishSite()">🌐 Publish</button>
-      <button class="btn btn-download" id="btn-download" disabled onclick="downloadSite()">⬇ Download</button>
+      <button class="btn btn-ghost" onclick="newProject()">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        New
+      </button>
+      <button class="btn btn-ghost" id="btn-projects" onclick="toggleProjects()" style="display:none;">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+        Projects
+      </button>
+      <button class="btn btn-save" id="btn-save" disabled onclick="saveProject()">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+        Save
+      </button>
+      <button class="btn btn-publish" id="btn-publish" disabled onclick="publishSite()">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+        Publish
+      </button>
+      <button class="btn btn-download" id="btn-download" disabled onclick="downloadSite()">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Download
+      </button>
       <div id="topbar-user"></div>
     </div>
   </div>
@@ -746,9 +783,9 @@
   <!-- PROJECTS DASHBOARD -->
   <div class="dashboard-overlay" id="dashboard-overlay">
     <div class="dashboard-header">
-      <h2>📁 My Projects</h2>
+      <h2>My Projects</h2>
       <div class="dashboard-header-actions">
-        <button class="btn btn-primary" onclick="closeDashboard(); newProject();" style="padding:7px 16px;font-size:0.82rem;">+ New Project</button>
+        <button class="btn btn-primary" onclick="closeDashboard(); newProject();" style="padding:7px 16px;font-size:0.8rem;">+ New Project</button>
         <button class="dashboard-close" onclick="closeDashboard()">✕</button>
       </div>
     </div>
@@ -759,8 +796,8 @@
 
   <!-- PUBLISH TOAST -->
   <div class="publish-toast" id="publish-toast">
-    <span>🌐</span>
-    <span>Your site is live at: <a id="publish-link" href="#" target="_blank"></a></span>
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="9 11 12 14 22 4"/></svg>
+    <span>Live at: <a id="publish-link" href="#" target="_blank"></a></span>
     <span class="publish-toast-close" onclick="document.getElementById('publish-toast').classList.remove('show')">✕</span>
   </div>
 
@@ -787,12 +824,14 @@
         <div class="input-wrap">
           <textarea
             id="user-input"
-            placeholder="e.g. Build a modern landing page for a fitness app called 'FitFlow' with a dark theme, hero section, features, and pricing..."
+            placeholder="e.g. Build a landing page for a fitness app called FitFlow with dark theme, hero, features, and pricing..."
             rows="2"
           ></textarea>
-          <button class="send-btn" id="send-btn" onclick="sendMessage()">➤</button>
+          <button class="send-btn" id="send-btn" onclick="sendMessage()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+          </button>
         </div>
-        <div class="input-hint">Press Enter to send · Shift+Enter for new line</div>
+        <div class="input-hint">Enter to send · Shift+Enter for new line</div>
       </div>
     </div>
 
@@ -810,7 +849,6 @@
       </div>
 
       <div class="preview-frame-wrap" id="preview-wrap">
-        <!-- Empty state -->
         <div class="empty-state" id="empty-state">
           <div class="empty-icon">✦</div>
           <h3>Your website will appear here</h3>
@@ -824,16 +862,15 @@
             <span class="chip" onclick="useSuggestion('Wedding photography portfolio with gallery and booking form')">📸 Photography</span>
           </div>
         </div>
-
         <iframe id="preview-iframe" style="display:none;"></iframe>
       </div>
 
       <div class="code-view" id="code-view">
         <div class="code-editor-toolbar">
-          <span>Edit HTML · changes apply to preview</span>
+          <span>Edit HTML · click Apply to update preview</span>
           <button class="btn-apply" onclick="applyCodeEdit()">▶ Apply Changes</button>
         </div>
-        <textarea id="code-editor" spellcheck="false" placeholder="Your website HTML will appear here. You can edit it directly and click Apply Changes to update the preview."></textarea>
+        <textarea id="code-editor" spellcheck="false" placeholder="Your website HTML will appear here after generation. You can edit it directly."></textarea>
       </div>
     </div>
 
@@ -850,28 +887,21 @@
       const el = document.getElementById('topbar-user');
       if (user) {
         el.innerHTML = `<div style="display:flex;align-items:center;gap:8px;margin-left:4px;">
-          <img src="${user.avatar}" title="${user.name}" style="width:30px;height:30px;border-radius:50%;border:2px solid rgba(59,130,246,0.4);" />
-          <a href="/auth/logout" style="color:var(--muted);font-size:0.75rem;text-decoration:none;">Logout</a>
+          <img src="${user.avatar}" title="${user.name}" style="width:30px;height:30px;border-radius:50%;border:2px solid rgba(124,58,237,0.4);box-shadow:0 0 10px rgba(124,58,237,0.3);" />
+          <a href="/auth/logout" style="color:var(--muted);font-size:0.73rem;text-decoration:none;transition:color 0.2s;" onmouseover="this.style.color='var(--text)'" onmouseout="this.style.color='var(--muted)'">Logout</a>
         </div>`;
         document.getElementById('btn-projects').style.display = 'flex';
       } else {
-        el.innerHTML = `<a href="/auth/google" style="display:flex;align-items:center;gap:6px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);color:#fff;padding:6px 12px;border-radius:7px;font-size:0.78rem;font-weight:600;text-decoration:none;white-space:nowrap;">
-          <img src="https://www.google.com/favicon.ico" style="width:13px;height:13px;"> Sign in to save
+        el.innerHTML = `<a href="/auth/google" style="display:flex;align-items:center;gap:6px;background:rgba(255,255,255,0.05);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,0.1);color:#fff;padding:6px 12px;border-radius:9px;font-size:0.77rem;font-weight:600;text-decoration:none;white-space:nowrap;transition:all 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.09)'" onmouseout="this.style.background='rgba(255,255,255,0.05)'">
+          <img src="https://www.google.com/favicon.ico" style="width:12px;height:12px;"> Sign in
         </a>`;
       }
     }
 
-    // Load user on startup
     fetch('/api/me')
       .then(r => r.json())
-      .then(({ user }) => {
-        currentUser = user;
-        renderTopbarUser(user);
-      })
-      .catch(() => {
-        currentUser = null;
-        renderTopbarUser(null);
-      });
+      .then(({ user }) => { currentUser = user; renderTopbarUser(user); })
+      .catch(() => { currentUser = null; renderTopbarUser(null); });
 
     const messagesEl = document.getElementById('messages');
     const inputEl = document.getElementById('user-input');
@@ -884,23 +914,16 @@
     const downloadBtn = document.getElementById('btn-download');
 
     const startupError = new URLSearchParams(window.location.search).get('error');
-    if (startupError === 'database') {
-      addMessage('ai', 'Google sign-in and saved projects are unavailable until DATABASE_URL is configured.', 'error');
-    } else if (startupError === 'google-auth') {
-      addMessage('ai', 'Google sign-in is unavailable until GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET are configured.', 'error');
-    }
+    if (startupError === 'database') addMessage('ai', 'Google sign-in and saved projects are unavailable until DATABASE_URL is configured.', 'error');
+    else if (startupError === 'google-auth') addMessage('ai', 'Google sign-in is unavailable until GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET are configured.', 'error');
 
-    // Auto-resize textarea
     inputEl.addEventListener('input', () => {
       inputEl.style.height = 'auto';
       inputEl.style.height = Math.min(inputEl.scrollHeight, 160) + 'px';
     });
 
     inputEl.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' && !e.shiftKey) {
-        e.preventDefault();
-        sendMessage();
-      }
+      if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
     });
 
     function useSuggestion(text) {
@@ -930,15 +953,9 @@
       const div = document.createElement('div');
       div.className = 'message ai';
       div.id = 'typing';
-      div.innerHTML = `
-        <div class="message-role">BuildAI</div>
-        <div class="typing-indicator">
-          <span></span><span></span><span></span>
-        </div>
-      `;
+      div.innerHTML = `<div class="message-role">BuildAI</div><div class="typing-indicator"><span></span><span></span><span></span></div>`;
       messagesEl.appendChild(div);
       messagesEl.scrollTop = messagesEl.scrollHeight;
-      return div;
     }
 
     function removeTypingIndicator() {
@@ -954,8 +971,7 @@
       emptyState.style.display = 'none';
       iframeEl.style.display = 'block';
       const blob = new Blob([html], { type: 'text/html' });
-      const url = URL.createObjectURL(blob);
-      iframeEl.src = url;
+      iframeEl.src = URL.createObjectURL(blob);
       document.getElementById('code-editor').value = html;
       currentHtml = html;
       downloadBtn.disabled = false;
@@ -970,28 +986,24 @@
       currentHtml = html;
       emptyState.style.display = 'none';
       iframeEl.style.display = 'block';
-      const blob = new Blob([html], { type: 'text/html' });
-      iframeEl.src = URL.createObjectURL(blob);
+      iframeEl.src = URL.createObjectURL(new Blob([html], { type: 'text/html' }));
       setStatus('ready', 'Code applied');
       downloadBtn.disabled = false;
       document.getElementById('btn-publish').disabled = false;
       document.getElementById('btn-save').disabled = false;
-      // Flash the button green
       const btn = document.querySelector('.btn-apply');
       btn.textContent = '✓ Applied';
       setTimeout(() => { btn.textContent = '▶ Apply Changes'; }, 1500);
     }
 
-    // Tab key inserts spaces in code editor
     document.addEventListener('DOMContentLoaded', () => {
       const editor = document.getElementById('code-editor');
       editor.addEventListener('keydown', (e) => {
         if (e.key === 'Tab') {
           e.preventDefault();
-          const start = editor.selectionStart;
-          const end = editor.selectionEnd;
-          editor.value = editor.value.substring(0, start) + '  ' + editor.value.substring(end);
-          editor.selectionStart = editor.selectionEnd = start + 2;
+          const s = editor.selectionStart, end = editor.selectionEnd;
+          editor.value = editor.value.substring(0, s) + '  ' + editor.value.substring(end);
+          editor.selectionStart = editor.selectionEnd = s + 2;
         }
       });
     });
@@ -1007,8 +1019,7 @@
 
       addMessage('user', text);
       conversationHistory.push({ role: 'user', content: text });
-
-      const typingEl = addTypingIndicator();
+      addTypingIndicator();
       setStatus('building', 'AI is building your website...');
 
       try {
@@ -1019,31 +1030,23 @@
         });
 
         const parsed = await res.json();
-
-        if (!res.ok || parsed.error) {
-          throw new Error(parsed.error || `Server error (${res.status})`);
-        }
+        if (!res.ok || parsed.error) throw new Error(parsed.error || `Server error (${res.status})`);
 
         removeTypingIndicator();
-
         conversationHistory.push({ role: 'assistant', content: JSON.stringify(parsed) });
 
         if (parsed.html) {
           showPreview(parsed.html);
-          if (parsed.title) {
-            siteTitle.textContent = parsed.title;
-          }
-          const desc = parsed.description || 'Website generated successfully!';
-          addMessage('ai', `✅ ${desc}\n\nYou can ask me to make changes — just describe what you want updated!`, 'success');
+          if (parsed.title) siteTitle.textContent = parsed.title;
+          addMessage('ai', `✅ ${parsed.description || 'Website generated successfully!'}\n\nAsk me to make any changes!`, 'success');
         } else {
           addMessage('ai', parsed.description || 'Done!', 'success');
           setStatus(currentHtml ? 'ready' : '', currentHtml ? 'Website ready' : 'Waiting for prompt...');
         }
-
       } catch (err) {
         removeTypingIndicator();
         addMessage('ai', `Error: ${err.message}`, 'error');
-        setStatus('', 'Error — check your API key in .env');
+        setStatus('', 'Error occurred');
       }
 
       isGenerating = false;
@@ -1076,30 +1079,32 @@
 
       const btn = document.getElementById('btn-save');
       btn.disabled = true;
-      btn.textContent = 'Saving...';
+      btn.innerHTML = 'Saving...';
 
       try {
         const body = { title: siteTitle.textContent, description: '', html: currentHtml };
-        let res, data;
+        let res;
         if (currentProjectId) {
           res = await fetch(`/api/projects/${currentProjectId}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
         } else {
           res = await fetch('/api/projects', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
         }
-        data = await res.json();
+        const data = await res.json();
         currentProjectId = data.id;
-        btn.textContent = '✓ Saved';
-        setTimeout(() => { btn.textContent = '💾 Save'; btn.disabled = false; }, 2000);
+        btn.innerHTML = '✓ Saved';
+        setTimeout(() => {
+          btn.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Save`;
+          btn.disabled = false;
+        }, 2000);
       } catch (err) {
-        btn.textContent = '💾 Save';
+        btn.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Save`;
         btn.disabled = false;
         alert('Save failed: ' + err.message);
       }
     }
 
     async function toggleProjects() {
-      const overlay = document.getElementById('dashboard-overlay');
-      overlay.classList.add('open');
+      document.getElementById('dashboard-overlay').classList.add('open');
       await loadProjects();
     }
 
@@ -1107,7 +1112,6 @@
       document.getElementById('dashboard-overlay').classList.remove('open');
     }
 
-    // Close on backdrop click
     document.getElementById('dashboard-overlay').addEventListener('click', (e) => {
       if (e.target === document.getElementById('dashboard-overlay')) closeDashboard();
     });
@@ -1116,7 +1120,7 @@
       const grid = document.getElementById('projects-grid');
       if (!currentUser) {
         grid.innerHTML = `<div class="login-prompt" style="grid-column:1/-1;">
-          <div style="font-size:2.5rem;">🔐</div>
+          <div style="font-size:2.5rem;filter:drop-shadow(0 0 16px rgba(124,58,237,0.5));">🔐</div>
           <p>Sign in with Google to save and access your projects from any device.</p>
           <a href="/auth/google"><img src="https://www.google.com/favicon.ico" style="width:14px;"> Sign in with Google</a>
         </div>`;
@@ -1128,9 +1132,9 @@
         const projects = await res.json();
         if (!projects.length) {
           grid.innerHTML = `<div class="dash-empty">
-            <div style="font-size:2.5rem;">✦</div>
+            <div style="font-size:2.5rem;filter:drop-shadow(0 0 14px rgba(124,58,237,0.4));">✦</div>
             <p>No saved projects yet.</p>
-            <p>Generate a website and hit <strong>Save</strong> to keep it here.</p>
+            <p>Generate a website and hit <strong style="color:var(--muted2)">Save</strong> to keep it here.</p>
           </div>`;
           return;
         }
@@ -1176,7 +1180,7 @@
       if (!currentHtml) return;
       const btn = document.getElementById('btn-publish');
       btn.disabled = true;
-      btn.textContent = 'Publishing...';
+      btn.innerHTML = 'Publishing...';
 
       try {
         const res = await fetch('/api/publish', {
@@ -1192,12 +1196,13 @@
         link.href = fullUrl;
         link.textContent = fullUrl;
         document.getElementById('publish-toast').classList.add('show');
+        setTimeout(() => document.getElementById('publish-toast').classList.remove('show'), 8000);
       } catch (err) {
         alert('Publish failed: ' + err.message);
       }
 
       btn.disabled = false;
-      btn.textContent = '🌐 Publish';
+      btn.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg> Publish`;
     }
 
     function downloadSite() {
@@ -1218,15 +1223,13 @@
       messagesEl.innerHTML = `
         <div class="message ai">
           <div class="message-role">BuildAI</div>
-          <div class="message-bubble">
-            Hi! Tell me about the website you want to build. Describe the type of business, style preferences, colors, and any sections you need. I'll generate a complete website for you instantly! 🚀
-          </div>
+          <div class="message-bubble">Hi! Tell me about the website you want to build. Describe the type of business, style preferences, colors, and any sections you need. I'll generate a complete website for you instantly! 🚀</div>
         </div>
       `;
       emptyState.style.display = 'flex';
       iframeEl.style.display = 'none';
       iframeEl.src = '';
-      codeContent.textContent = '';
+      document.getElementById('code-editor').value = '';
       siteTitle.textContent = 'No website generated yet';
       downloadBtn.disabled = true;
       document.getElementById('btn-publish').disabled = true;
