@@ -8,6 +8,7 @@ const { Pool } = require('pg');
 const PgSession = require('connect-pg-simple')(session);
 const cors = require('cors');
 const path = require('path');
+const https = require('https');
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -402,34 +403,55 @@ app.post('/api/tool', async (req, res) => {
 });
 
 // ── HF VIDEO GENERATION ──
+function hfPost(model, token, body) {
+  return new Promise((resolve, reject) => {
+    const bodyStr = JSON.stringify(body);
+    const options = {
+      hostname: 'api-inference.huggingface.co',
+      path: `/models/${model}`,
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+        'Content-Length': Buffer.byteLength(bodyStr),
+      },
+    };
+    const req = https.request(options, (response) => {
+      const chunks = [];
+      response.on('data', chunk => chunks.push(chunk));
+      response.on('end', () => resolve({
+        status: response.statusCode,
+        contentType: response.headers['content-type'] || 'video/mp4',
+        buffer: Buffer.concat(chunks),
+      }));
+    });
+    req.on('error', reject);
+    req.write(bodyStr);
+    req.end();
+  });
+}
+
 app.post('/api/video', async (req, res) => {
   const { prompt, model = 'damo-vilab/text-to-video-ms-1.7b' } = req.body;
   if (!prompt) return res.status(400).json({ error: 'prompt is required' });
   if (!process.env.HF_TOKEN) return res.status(500).json({ error: 'HF_TOKEN not set in environment' });
 
   try {
-    const hfRes = await fetch(`https://api-inference.huggingface.co/models/${model}`, {
-      method: 'POST',
-      headers: { 'Authorization': `Bearer ${process.env.HF_TOKEN}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ inputs: prompt }),
-    });
+    const hf = await hfPost(model, process.env.HF_TOKEN, { inputs: prompt });
 
-    if (hfRes.status === 503) {
-      const json = await hfRes.json().catch(() => ({}));
-      const wait = json.estimated_time ? Math.ceil(json.estimated_time) : 20;
+    if (hf.status === 503) {
+      let wait = 20;
+      try { const j = JSON.parse(hf.buffer.toString()); wait = Math.ceil(j.estimated_time || 20); } catch {}
       return res.status(503).json({ error: 'model_loading', estimated_time: wait });
     }
 
-    if (!hfRes.ok) {
-      const msg = await hfRes.text();
-      return res.status(hfRes.status).json({ error: msg });
+    if (hf.status !== 200) {
+      return res.status(hf.status).json({ error: hf.buffer.toString() });
     }
 
-    const contentType = hfRes.headers.get('content-type') || 'video/mp4';
-    const buffer = await hfRes.arrayBuffer();
-    res.set('Content-Type', contentType);
+    res.set('Content-Type', hf.contentType);
     res.set('Content-Disposition', 'inline; filename="video.mp4"');
-    res.send(Buffer.from(buffer));
+    res.send(hf.buffer);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
