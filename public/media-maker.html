@@ -182,6 +182,17 @@
     }
     .form-select option { background: #0d0d14; }
 
+    .vstyle-chips { display:flex; flex-wrap:wrap; gap:6px; }
+    .vstyle-chip { padding:5px 12px; border-radius:100px; font-size:0.74rem; font-weight:600; border:1px solid var(--border); background:rgba(255,255,255,0.04); color:var(--muted2); cursor:pointer; transition:all 0.2s; }
+    .vstyle-chip.active { background:rgba(6,182,212,0.12); border-color:rgba(6,182,212,0.3); color:var(--cyan); }
+    .vstyle-chip:hover:not(.active) { color:var(--text); background:rgba(255,255,255,0.06); }
+
+    .scene-strip { display:flex; gap:6px; flex-wrap:wrap; justify-content:center; max-width:560px; }
+    .scene-thumb { width:60px; height:38px; border-radius:6px; overflow:hidden; border:2px solid transparent; background:rgba(255,255,255,0.05); transition:all 0.3s; flex-shrink:0; }
+    .scene-thumb img { width:100%; height:100%; object-fit:cover; display:block; }
+    .scene-thumb.done { border-color:rgba(6,182,212,0.4); }
+    .scene-thumb.active { border-color:var(--cyan); box-shadow:0 0 10px rgba(6,182,212,0.5); }
+
     .video-gen-btn {
       margin: 0 16px 16px; padding: 13px; border-radius: 11px; font-size: 0.9rem; font-weight: 700;
       background: linear-gradient(135deg, var(--cyan), var(--blue));
@@ -338,37 +349,48 @@
       <div class="video-left">
         <div class="video-left-header">
           <h3>🎬 AI Video Maker</h3>
-          <p>Powered by HuggingFace text-to-video AI. Generates real video with actual motion.</p>
+          <p>AI writes scenes → generates images → animates with effects → exports a real downloadable video.</p>
         </div>
         <div class="video-form">
 
           <div class="form-group">
-            <div class="form-label">Video prompt</div>
-            <textarea class="form-textarea" id="vid-prompt" rows="4" placeholder="e.g. A cat walking through a neon-lit city at night, cinematic slow motion"></textarea>
+            <div class="form-label">Video concept</div>
+            <textarea class="form-textarea" id="vid-prompt" rows="4" placeholder="e.g. A luxury car brand commercial with speed, power and neon city streets at night"></textarea>
           </div>
 
           <div class="form-group">
-            <div class="form-label">AI Model</div>
-            <select class="form-select" id="vid-model">
-              <option value="anotherjesse/zeroscope-v2-xl">ZeroScope v2 XL (Best quality)</option>
-              <option value="lucataco/zeroscope-v2-576w">ZeroScope v2 576w (Faster)</option>
-              <option value="deforum/deforum_stable_diffusion">Deforum (Animated)</option>
+            <div class="form-label">Visual style</div>
+            <div class="vstyle-chips">
+              <span class="vstyle-chip active" data-style="cinematic, dramatic lighting, film grain">Cinematic</span>
+              <span class="vstyle-chip" data-style="photorealistic, 4k, sharp detail">Photorealistic</span>
+              <span class="vstyle-chip" data-style="dark moody, high contrast, deep shadows">Dark & Moody</span>
+              <span class="vstyle-chip" data-style="neon cyberpunk, glowing lights, futuristic">Neon/Cyber</span>
+              <span class="vstyle-chip" data-style="anime style, vivid colors, stylized">Anime</span>
+              <span class="vstyle-chip" data-style="watercolor, soft painterly, artistic">Watercolor</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <div class="form-label">Scenes</div>
+            <select class="form-select" id="vid-scenes">
+              <option value="4">4 scenes (~12s)</option>
+              <option value="6" selected>6 scenes (~18s)</option>
+              <option value="8">8 scenes (~24s)</option>
             </select>
           </div>
 
-          <div class="form-group" style="background:rgba(6,182,212,0.05);border:1px solid rgba(6,182,212,0.12);border-radius:10px;padding:10px 12px;">
-            <div style="font-size:0.74rem;color:var(--cyan);font-weight:600;margin-bottom:4px;">💡 Tips for better videos</div>
-            <div style="font-size:0.72rem;color:var(--muted);line-height:1.6;">
-              • Describe motion (walking, flying, flowing)<br>
-              • Add style (cinematic, slow motion, 4k)<br>
-              • Keep prompts short and clear<br>
-              • First generation may take 30–60s (model warming up)
-            </div>
+          <div class="form-group">
+            <div class="form-label">Transition style</div>
+            <select class="form-select" id="vid-transition">
+              <option value="fade">Crossfade</option>
+              <option value="zoom">Zoom burst</option>
+              <option value="slide">Slide</option>
+            </select>
           </div>
 
         </div>
         <button class="video-gen-btn" id="vid-btn" onclick="makeVideo()">
-          🎬 Generate Video
+          🎬 Create Video
         </button>
       </div>
 
@@ -377,17 +399,18 @@
         <!-- Empty state -->
         <div class="vid-empty" id="vid-empty">
           <div class="big-icon">🎬</div>
-          <h3>Real AI video generation</h3>
-          <p>Uses HuggingFace text-to-video models to generate actual video with real motion — not a slideshow.</p>
+          <h3>AI-powered video creation</h3>
+          <p>Free, no API key needed. AI generates unique scenes and animates them into a downloadable video with cinematic effects.</p>
         </div>
 
         <!-- Progress state -->
         <div class="vid-progress" id="vid-progress">
-          <div class="vid-spinner"></div>
-          <div class="vid-status-text" id="vid-status">Generating video...</div>
-          <div class="progress-track">
-            <div class="progress-fill" id="progress-fill"></div>
+          <div class="preview-canvas-wrap">
+            <canvas id="preview-canvas" style="width:100%;height:auto;display:block;border-radius:10px;"></canvas>
           </div>
+          <div class="scene-strip" id="scene-strip"></div>
+          <div class="vid-status-text" id="vid-status">Preparing...</div>
+          <div class="progress-track"><div class="progress-fill" id="progress-fill"></div></div>
         </div>
 
         <!-- Result state -->
@@ -396,7 +419,7 @@
             <video id="result-video" controls loop autoplay></video>
           </div>
           <div class="result-actions">
-            <button class="res-btn primary" onclick="downloadVideo()">⬇ Download Video</button>
+            <button class="res-btn primary" onclick="downloadVideo()">⬇ Download .webm</button>
             <button class="res-btn secondary" onclick="resetVideo()">↩ Make Another</button>
           </div>
           <div class="result-info" id="result-info"></div>
@@ -521,74 +544,190 @@
       document.getElementById('progress-fill').style.width = '0%';
     }
 
-    async function makeVideo() {
-      const prompt = document.getElementById('vid-prompt').value.trim();
-      if (!prompt) { document.getElementById('vid-prompt').focus(); return; }
+    // ── VIDEO MAKER ──
+    let videoBlob = null;
 
-      const model = document.getElementById('vid-model').value;
+    function showVidState(s) {
+      document.getElementById('vid-empty').style.display = s==='empty'?'flex':'none';
+      document.getElementById('vid-progress').classList.toggle('active', s==='progress');
+      document.getElementById('vid-result').classList.toggle('active', s==='result');
+    }
+    function setStatus(msg, pct) {
+      document.getElementById('vid-status').textContent = msg;
+      if (pct!==undefined) document.getElementById('progress-fill').style.width = pct+'%';
+    }
+    function resetVideo() { showVidState('empty'); videoBlob=null; document.getElementById('vid-btn').disabled=false; document.getElementById('progress-fill').style.width='0%'; }
+
+    async function makeVideo() {
+      const concept = document.getElementById('vid-prompt').value.trim();
+      if (!concept) { document.getElementById('vid-prompt').focus(); return; }
+      const style = document.querySelector('.vstyle-chip.active')?.dataset.style || 'cinematic';
+      const sceneCount = parseInt(document.getElementById('vid-scenes').value);
+      const transition = document.getElementById('vid-transition').value;
       const btn = document.getElementById('vid-btn');
       btn.disabled = true;
       showVidState('progress');
-      setStatus('Starting video generation...', 5);
 
+      // Scene strip placeholders
+      const strip = document.getElementById('scene-strip');
+      strip.innerHTML = '';
+      for (let i=0;i<sceneCount;i++) { const t=document.createElement('div'); t.className='scene-thumb'; t.id=`st-${i}`; strip.appendChild(t); }
+
+      setStatus('🤖 Writing scene descriptions...', 5);
+      let prompts;
+      try { prompts = await getScenePrompts(concept, style, sceneCount); }
+      catch { prompts = fallbackPrompts(concept, style, sceneCount); }
+
+      // Load images
+      const images = [];
+      for (let i=0;i<prompts.length;i++) {
+        setStatus(`🖼️ Generating scene ${i+1} of ${prompts.length}...`, 10 + 55*(i/prompts.length));
+        const seed = Math.floor(Math.random()*99999);
+        const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompts[i])}?width=1280&height=720&seed=${seed}&nologo=true`;
+        try {
+          const img = await loadImg(url);
+          images.push(img);
+          const t = document.getElementById(`st-${i}`);
+          if (t) { t.innerHTML=`<img src="${url}">`; t.classList.add('done'); }
+        } catch { images.push(null); }
+      }
+      const valid = images.filter(Boolean);
+      if (!valid.length) { setStatus('❌ Failed to load images. Try again.', 0); btn.disabled=false; return; }
+
+      setStatus('🎬 Recording video...', 68);
       try {
-        // Start prediction
-        const startRes = await fetch('/api/video', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ prompt, model }),
-        });
-        const startData = await startRes.json();
-        if (!startRes.ok || startData.error) throw new Error(startData.error || 'Failed to start');
-
-        setStatus('Generating video... (this takes 1-3 min)', 15);
-
-        // Poll for completion
-        const videoUrl = await pollPrediction(startData.id);
-
+        videoBlob = await recordVideo(valid, transition);
         setStatus('✅ Done!', 100);
-        const videoEl = document.getElementById('result-video');
-        videoEl.src = videoUrl;
-        videoMimeType = 'video/mp4';
-        document.getElementById('result-info').textContent = `${model.split('/')[1]} · Powered by Replicate`;
-        setTimeout(() => showVidState('result'), 400);
-      } catch(err) {
-        setStatus('❌ ' + err.message, 0);
+        const v = document.getElementById('result-video');
+        v.src = URL.createObjectURL(videoBlob);
+        document.getElementById('result-info').textContent = `${valid.length} scenes · ${Math.round(valid.length*3)}s · 1280×720 · Free`;
+        setTimeout(()=>showVidState('result'), 400);
+      } catch(e) {
+        setStatus('❌ '+e.message, 0);
       }
       btn.disabled = false;
     }
 
-    async function pollPrediction(id) {
-      for (let i = 0; i < 90; i++) {
-        await sleep(3000);
-        const res = await fetch(`/api/video/${id}`);
-        const data = await res.json();
-        if (data.error) throw new Error(data.error);
-        if (data.status === 'succeeded') {
-          const output = Array.isArray(data.output) ? data.output[0] : data.output;
-          if (!output) throw new Error('No video output returned');
-          return output;
-        }
-        if (data.status === 'failed' || data.status === 'canceled') {
-          throw new Error(data.error || 'Generation failed');
-        }
-        const elapsed = (i + 1) * 3;
-        setStatus(`Generating... ${elapsed}s elapsed`, Math.min(15 + elapsed, 90));
-      }
-      throw new Error('Timed out after 4.5 minutes');
+    async function getScenePrompts(concept, style, count) {
+      const res = await fetch('/api/tool', {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ tool:'content', messages:[{role:'user',content:
+          `For this video: "${concept}" in ${style} style, write exactly ${count} short image prompts (numbered 1-${count}), one per line. Each under 20 words. Only output the numbered list.`
+        }]})
+      });
+      const data = await res.json();
+      if (data.error) throw new Error(data.error);
+      const lines = data.output.split('\n').filter(l=>/^\d+/.test(l.trim())).map(l=>l.replace(/^\d+[\.\)]\s*/,'').trim()).filter(l=>l.length>4);
+      if (lines.length < count) throw new Error('not enough');
+      return lines.slice(0,count).map(p=>`${p}, ${style}`);
     }
 
-    function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+    function fallbackPrompts(concept, style, count) {
+      const angles = ['wide establishing shot','dramatic close-up','medium cinematic shot','low angle looking up','golden hour lighting','aerial bird\'s eye view','silhouette dramatic backlight','slow motion blur effect'];
+      return angles.slice(0,count).map(a=>`${concept}, ${a}, ${style}`);
+    }
+
+    function loadImg(url) {
+      return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+        img.onload = () => resolve(img);
+        img.onerror = () => { const i2=new Image(); i2.onload=()=>resolve(i2); i2.onerror=reject; i2.src=url+'&nocors=1'; };
+        img.src = url;
+      });
+    }
+
+    function recordVideo(images, transition) {
+      return new Promise((resolve, reject) => {
+        const W=1280, H=720, FPS=30, SCENE=3, TRANS=0.7;
+        const canvas = document.createElement('canvas');
+        canvas.width=W; canvas.height=H;
+        const ctx = canvas.getContext('2d');
+        const prev = document.getElementById('preview-canvas');
+        prev.width=W; prev.height=H;
+        const pCtx = prev.getContext('2d');
+        const TOTAL = images.length * SCENE;
+
+        let mime = 'video/webm;codecs=vp9';
+        if (!MediaRecorder.isTypeSupported(mime)) mime='video/webm;codecs=vp8';
+        if (!MediaRecorder.isTypeSupported(mime)) mime='video/webm';
+        if (!MediaRecorder.isTypeSupported(mime)) { reject(new Error('Browser does not support video recording. Use Chrome or Firefox.')); return; }
+
+        const stream = canvas.captureStream(FPS);
+        const recorder = new MediaRecorder(stream, {mimeType:mime, videoBitsPerSecond:6000000});
+        const chunks = [];
+        recorder.ondataavailable = e => { if(e.data?.size>0) chunks.push(e.data); };
+        recorder.onstop = () => resolve(new Blob(chunks, {type:mime}));
+        recorder.onerror = e => reject(new Error(e.error?.message||'Recorder error'));
+        recorder.start(100);
+
+        const t0 = performance.now();
+
+        function drawKenBurns(img, progress, idx) {
+          const dir = idx%2===0?1:-1;
+          const scale = 1.08 + 0.06*progress;
+          const panX = dir * 0.03 * W * progress;
+          const panY = (idx%3===0?1:-1) * 0.015 * H * Math.sin(progress*Math.PI);
+          ctx.save();
+          ctx.translate(W/2+panX, H/2+panY);
+          ctx.scale(scale, scale);
+          try { ctx.drawImage(img, -W/2, -H/2, W, H); } catch{}
+          ctx.restore();
+        }
+
+        function tick() {
+          const elapsed = (performance.now()-t0)/1000;
+          if (elapsed >= TOTAL+0.1) { recorder.stop(); return; }
+
+          const t = Math.min(elapsed, TOTAL);
+          const si = Math.min(Math.floor(t/SCENE), images.length-1);
+          const sp = (t%SCENE)/SCENE;
+
+          ctx.clearRect(0,0,W,H);
+          drawKenBurns(images[si], sp, si);
+
+          // Transitions
+          const transStart = 1 - TRANS/SCENE;
+          if (sp > transStart && si < images.length-1) {
+            const alpha = (sp - transStart) / (TRANS/SCENE);
+            if (transition === 'fade') {
+              ctx.globalAlpha = Math.min(1, alpha);
+              drawKenBurns(images[si+1], 0, si+1);
+              ctx.globalAlpha = 1;
+            } else if (transition === 'zoom') {
+              ctx.globalAlpha = Math.min(1, alpha);
+              const zs = 1 + (1-alpha)*0.3;
+              ctx.save(); ctx.translate(W/2,H/2); ctx.scale(zs,zs);
+              try { ctx.drawImage(images[si+1], -W/2, -H/2, W, H); } catch{}
+              ctx.restore(); ctx.globalAlpha=1;
+            } else if (transition === 'slide') {
+              const off = W*(1-Math.min(1,alpha));
+              try { ctx.drawImage(images[si+1], off, 0, W, H); } catch{}
+            }
+          }
+
+          // Mirror to preview
+          pCtx.drawImage(canvas, 0, 0, prev.width, prev.height);
+
+          // Highlight active scene
+          document.querySelectorAll('.scene-thumb').forEach((th,i)=>th.classList.toggle('active',i===si));
+
+          setStatus(`🎬 Recording ${Math.round(elapsed)}s / ${Math.round(TOTAL)}s`, 68 + 30*(elapsed/TOTAL));
+          setTimeout(tick, 1000/FPS);
+        }
+        tick();
+      });
+    }
 
     function downloadVideo() {
-      const videoEl = document.getElementById('result-video');
-      if (!videoEl.src) return;
+      if (!videoBlob) return;
       const a = document.createElement('a');
-      a.href = videoEl.src;
-      a.download = `buildai-video-${Date.now()}.mp4`;
-      a.target = '_blank';
+      a.href = URL.createObjectURL(videoBlob);
+      a.download = `buildai-video-${Date.now()}.webm`;
       a.click();
     }
+
+    function sleep(ms) { return new Promise(r=>setTimeout(r,ms)); }
 
   </script>
 </body>

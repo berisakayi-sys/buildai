@@ -402,66 +402,6 @@ app.post('/api/tool', async (req, res) => {
   }
 });
 
-// ── REPLICATE VIDEO GENERATION ──
-function replicateRequest(method, path, token, body) {
-  return new Promise((resolve, reject) => {
-    const bodyStr = body ? JSON.stringify(body) : null;
-    const headers = {
-      'Authorization': `Token ${token}`,
-      'Content-Type': 'application/json',
-    };
-    if (bodyStr) headers['Content-Length'] = Buffer.byteLength(bodyStr);
-    const req = https.request({ hostname: 'api.replicate.com', path, method, headers }, (response) => {
-      const chunks = [];
-      response.on('data', chunk => chunks.push(chunk));
-      response.on('end', () => resolve({ status: response.statusCode, body: Buffer.concat(chunks).toString() }));
-    });
-    req.on('error', reject);
-    if (bodyStr) req.write(bodyStr);
-    req.end();
-  });
-}
-
-// Start prediction
-app.post('/api/video', async (req, res) => {
-  const { prompt, model = 'anotherjesse/zeroscope-v2-xl' } = req.body;
-  if (!prompt) return res.status(400).json({ error: 'prompt is required' });
-  const token = process.env.REPLICATE_TOKEN;
-  if (!token) return res.status(500).json({ error: 'REPLICATE_TOKEN not set in Railway environment variables' });
-  try {
-    const [owner, name] = model.split('/');
-
-    // Get latest version of the model
-    const modelInfo = await replicateRequest('GET', `/v1/models/${owner}/${name}`, token, null);
-    const modelData = JSON.parse(modelInfo.body);
-    if (modelInfo.status !== 200) return res.status(500).json({ error: modelData.detail || 'Model not found on Replicate' });
-    const version = modelData.latest_version?.id;
-    if (!version) return res.status(500).json({ error: 'Could not get model version' });
-
-    // Start prediction
-    const r = await replicateRequest('POST', '/v1/predictions', token, {
-      version,
-      input: { prompt, num_frames: 24, fps: 8, num_inference_steps: 40, guidance_scale: 7.5 },
-    });
-    const data = JSON.parse(r.body);
-    if (r.status !== 201) return res.status(500).json({ error: data.detail || r.body });
-    res.json({ id: data.id, status: data.status });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// Poll prediction status
-app.get('/api/video/:id', async (req, res) => {
-  if (!process.env.REPLICATE_TOKEN) return res.status(500).json({ error: 'REPLICATE_TOKEN not set' });
-  try {
-    const r = await replicateRequest('GET', `/v1/predictions/${req.params.id}`, process.env.REPLICATE_TOKEN, null);
-    const data = JSON.parse(r.body);
-    res.json({ status: data.status, output: data.output, error: data.error });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
 
 // ── PAGES ──
 app.get('/builder', (req, res) => res.sendFile(path.join(__dirname, 'public', 'builder.html')));
