@@ -350,9 +350,9 @@
           <div class="form-group">
             <div class="form-label">AI Model</div>
             <select class="form-select" id="vid-model">
-              <option value="damo-vilab/text-to-video-ms-1.7b">DAMO Text-to-Video 1.7B (Fast)</option>
-              <option value="cerspense/zeroscope_v2_576w">ZeroScope v2 576w (Good quality)</option>
-              <option value="cerspense/zeroscope_v2_XL">ZeroScope v2 XL (Best quality, slow)</option>
+              <option value="anotherjesse/zeroscope-v2-xl">ZeroScope v2 XL (Best quality)</option>
+              <option value="lucataco/zeroscope-v2-576w">ZeroScope v2 576w (Faster)</option>
+              <option value="deforum/deforum_stable_diffusion">Deforum (Animated)</option>
             </select>
           </div>
 
@@ -528,68 +528,65 @@
       const model = document.getElementById('vid-model').value;
       const btn = document.getElementById('vid-btn');
       btn.disabled = true;
-
       showVidState('progress');
-      setStatus('Sending to HuggingFace AI...', 10);
+      setStatus('Starting video generation...', 5);
 
       try {
-        await tryGenerate(prompt, model, 0);
+        // Start prediction
+        const startRes = await fetch('/api/video', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ prompt, model }),
+        });
+        const startData = await startRes.json();
+        if (!startRes.ok || startData.error) throw new Error(startData.error || 'Failed to start');
+
+        setStatus('Generating video... (this takes 1-3 min)', 15);
+
+        // Poll for completion
+        const videoUrl = await pollPrediction(startData.id);
+
+        setStatus('✅ Done!', 100);
+        const videoEl = document.getElementById('result-video');
+        videoEl.src = videoUrl;
+        videoMimeType = 'video/mp4';
+        document.getElementById('result-info').textContent = `${model.split('/')[1]} · Powered by Replicate`;
+        setTimeout(() => showVidState('result'), 400);
       } catch(err) {
         setStatus('❌ ' + err.message, 0);
-        btn.disabled = false;
-        return;
       }
+      btn.disabled = false;
     }
 
-    async function tryGenerate(prompt, model, attempt) {
-      const res = await fetch('/api/video', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt, model }),
-      });
-
-      if (res.status === 503) {
+    async function pollPrediction(id) {
+      for (let i = 0; i < 90; i++) {
+        await sleep(3000);
+        const res = await fetch(`/api/video/${id}`);
         const data = await res.json();
-        const wait = data.estimated_time || 20;
-        // Model is loading — retry after wait time
-        for (let i = wait; i > 0; i--) {
-          setStatus(`Model is warming up... retrying in ${i}s`, 15);
-          await sleep(1000);
+        if (data.error) throw new Error(data.error);
+        if (data.status === 'succeeded') {
+          const output = Array.isArray(data.output) ? data.output[0] : data.output;
+          if (!output) throw new Error('No video output returned');
+          return output;
         }
-        setStatus('Retrying...', 20);
-        return tryGenerate(prompt, model, attempt + 1);
+        if (data.status === 'failed' || data.status === 'canceled') {
+          throw new Error(data.error || 'Generation failed');
+        }
+        const elapsed = (i + 1) * 3;
+        setStatus(`Generating... ${elapsed}s elapsed`, Math.min(15 + elapsed, 90));
       }
-
-      if (!res.ok) {
-        let msg = 'Generation failed';
-        try { const d = await res.json(); msg = d.error || msg; } catch {}
-        throw new Error(msg);
-      }
-
-      setStatus('Downloading video...', 80);
-      const contentType = res.headers.get('content-type') || 'video/mp4';
-      videoMimeType = contentType;
-      const buffer = await res.arrayBuffer();
-      videoBlob = new Blob([buffer], { type: contentType });
-
-      setStatus('✅ Done!', 100);
-
-      const videoEl = document.getElementById('result-video');
-      videoEl.src = URL.createObjectURL(videoBlob);
-      const kb = Math.round(videoBlob.size / 1024);
-      document.getElementById('result-info').textContent = `${model.split('/')[1]} · ${kb} KB`;
-      setTimeout(() => showVidState('result'), 400);
-      document.getElementById('vid-btn').disabled = false;
+      throw new Error('Timed out after 4.5 minutes');
     }
 
     function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 
     function downloadVideo() {
-      if (!videoBlob) return;
-      const ext = videoMimeType.includes('mp4') ? 'mp4' : videoMimeType.includes('gif') ? 'gif' : 'mp4';
+      const videoEl = document.getElementById('result-video');
+      if (!videoEl.src) return;
       const a = document.createElement('a');
-      a.href = URL.createObjectURL(videoBlob);
-      a.download = `buildai-video-${Date.now()}.${ext}`;
+      a.href = videoEl.src;
+      a.download = `buildai-video-${Date.now()}.mp4`;
+      a.target = '_blank';
       a.click();
     }
 

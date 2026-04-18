@@ -402,66 +402,54 @@ app.post('/api/tool', async (req, res) => {
   }
 });
 
-// ── HF VIDEO GENERATION ──
-function hfPost(model, token, body) {
+// ── REPLICATE VIDEO GENERATION ──
+function replicateRequest(method, path, token, body) {
   return new Promise((resolve, reject) => {
-    const bodyStr = JSON.stringify(body);
-    const options = {
-      hostname: 'api-inference.huggingface.co',
-      path: `/models/${model}`,
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json',
-        'Content-Length': Buffer.byteLength(bodyStr),
-      },
+    const bodyStr = body ? JSON.stringify(body) : null;
+    const headers = {
+      'Authorization': `Token ${token}`,
+      'Content-Type': 'application/json',
     };
-    const req = https.request(options, (response) => {
+    if (bodyStr) headers['Content-Length'] = Buffer.byteLength(bodyStr);
+    const req = https.request({ hostname: 'api.replicate.com', path, method, headers }, (response) => {
       const chunks = [];
       response.on('data', chunk => chunks.push(chunk));
-      response.on('end', () => resolve({
-        status: response.statusCode,
-        contentType: response.headers['content-type'] || 'video/mp4',
-        buffer: Buffer.concat(chunks),
-      }));
+      response.on('end', () => resolve({ status: response.statusCode, body: Buffer.concat(chunks).toString() }));
     });
     req.on('error', reject);
-    req.write(bodyStr);
+    if (bodyStr) req.write(bodyStr);
     req.end();
   });
 }
 
-async function handleHfVideo(prompt, model, res) {
+// Start prediction
+app.post('/api/video', async (req, res) => {
+  const { prompt, model = 'anotherjesse/zeroscope-v2-xl' } = req.body;
   if (!prompt) return res.status(400).json({ error: 'prompt is required' });
-  if (!process.env.HF_TOKEN) return res.status(500).json({ error: 'HF_TOKEN not set in environment' });
+  if (!process.env.REPLICATE_TOKEN) return res.status(500).json({ error: 'REPLICATE_TOKEN not set in Railway environment variables' });
   try {
-    const hf = await hfPost(model, process.env.HF_TOKEN, { inputs: prompt });
-    if (hf.status === 503) {
-      let wait = 20;
-      try { const j = JSON.parse(hf.buffer.toString()); wait = Math.ceil(j.estimated_time || 20); } catch {}
-      return res.status(503).json({ error: 'model_loading', estimated_time: wait });
-    }
-    if (hf.status !== 200) {
-      return res.status(500).json({ error: hf.buffer.toString() });
-    }
-    res.set('Content-Type', hf.contentType);
-    res.set('Content-Disposition', 'inline; filename="video.mp4"');
-    res.send(hf.buffer);
+    const [owner, name] = model.split('/');
+    const r = await replicateRequest('POST', `/v1/models/${owner}/${name}/predictions`, process.env.REPLICATE_TOKEN, {
+      input: { prompt, num_frames: 24, fps: 8, num_inference_steps: 40, guidance_scale: 7.5 },
+    });
+    const data = JSON.parse(r.body);
+    if (r.status !== 201) return res.status(500).json({ error: data.detail || r.body });
+    res.json({ id: data.id, status: data.status });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
-}
-
-// Catch redirected HF requests that land on /models/* directly
-app.post('/models/*', (req, res) => {
-  const model = req.params[0];
-  const prompt = req.body?.inputs || req.body?.prompt || '';
-  handleHfVideo(prompt, model, res);
 });
 
-app.post('/api/video', async (req, res) => {
-  const { prompt, model = 'damo-vilab/text-to-video-ms-1.7b' } = req.body;
-  handleHfVideo(prompt, model, res);
+// Poll prediction status
+app.get('/api/video/:id', async (req, res) => {
+  if (!process.env.REPLICATE_TOKEN) return res.status(500).json({ error: 'REPLICATE_TOKEN not set' });
+  try {
+    const r = await replicateRequest('GET', `/v1/predictions/${req.params.id}`, process.env.REPLICATE_TOKEN, null);
+    const data = JSON.parse(r.body);
+    res.json({ status: data.status, output: data.output, error: data.error });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // ── PAGES ──
