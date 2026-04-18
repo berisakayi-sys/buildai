@@ -426,10 +426,21 @@ function replicateRequest(method, path, token, body) {
 app.post('/api/video', async (req, res) => {
   const { prompt, model = 'anotherjesse/zeroscope-v2-xl' } = req.body;
   if (!prompt) return res.status(400).json({ error: 'prompt is required' });
-  if (!process.env.REPLICATE_TOKEN) return res.status(500).json({ error: 'REPLICATE_TOKEN not set in Railway environment variables' });
+  const token = process.env.REPLICATE_TOKEN;
+  if (!token) return res.status(500).json({ error: 'REPLICATE_TOKEN not set in Railway environment variables' });
   try {
     const [owner, name] = model.split('/');
-    const r = await replicateRequest('POST', `/v1/models/${owner}/${name}/predictions`, process.env.REPLICATE_TOKEN, {
+
+    // Get latest version of the model
+    const modelInfo = await replicateRequest('GET', `/v1/models/${owner}/${name}`, token, null);
+    const modelData = JSON.parse(modelInfo.body);
+    if (modelInfo.status !== 200) return res.status(500).json({ error: modelData.detail || 'Model not found on Replicate' });
+    const version = modelData.latest_version?.id;
+    if (!version) return res.status(500).json({ error: 'Could not get model version' });
+
+    // Start prediction
+    const r = await replicateRequest('POST', '/v1/predictions', token, {
+      version,
       input: { prompt, num_frames: 24, fps: 8, num_inference_steps: 40, guidance_scale: 7.5 },
     });
     const data = JSON.parse(r.body);
