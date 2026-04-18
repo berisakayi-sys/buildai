@@ -182,27 +182,6 @@
     }
     .form-select option { background: #0d0d14; }
 
-    .vstyle-chips { display: flex; flex-wrap: wrap; gap: 6px; }
-    .vstyle-chip {
-      padding: 5px 12px; border-radius: 100px; font-size: 0.74rem; font-weight: 600;
-      border: 1px solid var(--border); background: rgba(255,255,255,0.04);
-      color: var(--muted2); cursor: pointer; transition: all 0.2s;
-    }
-    .vstyle-chip.active { background: rgba(6,182,212,0.12); border-color: rgba(6,182,212,0.3); color: var(--cyan); }
-    .vstyle-chip:hover:not(.active) { color: var(--text); background: rgba(255,255,255,0.06); }
-
-    .format-btns { display: flex; gap: 8px; }
-    .format-btn {
-      flex: 1; padding: 8px 4px; border-radius: 9px; border: 1px solid var(--border);
-      background: rgba(255,255,255,0.03); color: var(--muted2); cursor: pointer;
-      font-family: inherit; font-size: 0.78rem; font-weight: 600; text-align: center;
-      transition: all 0.2s; display: flex; flex-direction: column; align-items: center; gap: 2px;
-    }
-    .format-btn .fmt-icon { font-size: 1.1rem; line-height: 1; }
-    .format-btn .fmt-label { font-size: 0.65rem; color: var(--muted); font-weight: 500; }
-    .format-btn.active { background: rgba(6,182,212,0.1); border-color: rgba(6,182,212,0.3); color: var(--cyan); }
-    .format-btn.active .fmt-label { color: rgba(6,182,212,0.7); }
-
     .video-gen-btn {
       margin: 0 16px 16px; padding: 13px; border-radius: 11px; font-size: 0.9rem; font-weight: 700;
       background: linear-gradient(135deg, var(--cyan), var(--blue));
@@ -224,44 +203,17 @@
     .vid-empty .big-icon { font-size: 4rem; filter: drop-shadow(0 0 24px rgba(6,182,212,0.4)); animation: float 3s ease-in-out infinite; }
     .vid-empty h3 { font-size: 1.15rem; font-weight: 700; color: var(--muted2); }
     .vid-empty p { font-size: 0.82rem; max-width: 340px; line-height: 1.65; }
-    .vid-empty .steps { display: flex; flex-direction: column; gap: 8px; margin-top: 4px; width: 100%; max-width: 320px; }
-    .step-row { display: flex; align-items: center; gap: 10px; background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 10px; padding: 10px 14px; text-align: left; }
-    .step-num { width: 22px; height: 22px; border-radius: 50%; background: rgba(6,182,212,0.15); border: 1px solid rgba(6,182,212,0.25); display: flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: 700; color: var(--cyan); flex-shrink: 0; }
-    .step-text { font-size: 0.78rem; color: var(--muted2); line-height: 1.4; }
-    .compat-note { font-size: 0.72rem; color: var(--muted); background: rgba(234,179,8,0.07); border: 1px solid rgba(234,179,8,0.15); border-radius: 8px; padding: 8px 12px; max-width: 320px; }
 
     /* Progress state */
     .vid-progress {
       flex: 1; display: none; flex-direction: column; align-items: center; justify-content: center;
-      gap: 20px; padding: 30px;
+      gap: 20px; padding: 30px; text-align: center;
     }
     .vid-progress.active { display: flex; }
-    .preview-canvas-wrap {
-      width: 100%; max-width: 560px; border-radius: 14px; overflow: hidden;
-      border: 1px solid var(--border); background: #000; position: relative;
-      box-shadow: 0 0 40px rgba(6,182,212,0.15);
-    }
-    #preview-canvas { width: 100%; height: auto; display: block; }
-    .canvas-recording-badge {
-      position: absolute; top: 10px; right: 10px;
-      background: rgba(239,68,68,0.9); color: #fff; font-size: 0.68rem; font-weight: 700;
-      padding: 4px 9px; border-radius: 100px; display: flex; align-items: center; gap: 5px;
-      backdrop-filter: blur(8px);
-    }
-    .rec-dot { width: 6px; height: 6px; border-radius: 50%; background: #fff; animation: blink 1s ease-in-out infinite; }
-    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
-
-    .vid-status-text { font-size: 0.88rem; color: var(--muted2); font-weight: 500; }
-    .progress-track { width: 100%; max-width: 480px; height: 6px; background: rgba(255,255,255,0.06); border-radius: 100px; overflow: hidden; }
-    .progress-fill { height: 100%; background: linear-gradient(90deg, var(--cyan), var(--blue)); border-radius: 100px; transition: width 0.3s ease; width: 0%; }
-    .scene-strip { display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; max-width: 560px; }
-    .scene-thumb {
-      width: 60px; height: 40px; border-radius: 6px; overflow: hidden; border: 2px solid transparent;
-      background: rgba(255,255,255,0.05); transition: all 0.3s; flex-shrink: 0;
-    }
-    .scene-thumb.done { border-color: rgba(6,182,212,0.5); }
-    .scene-thumb.active { border-color: var(--cyan); box-shadow: 0 0 12px rgba(6,182,212,0.4); }
-    .scene-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .vid-spinner { width: 52px; height: 52px; border-radius: 50%; border: 3px solid rgba(6,182,212,0.15); border-top-color: var(--cyan); animation: spin 1s linear infinite; }
+    .vid-status-text { font-size: 0.92rem; color: var(--muted2); font-weight: 500; max-width: 340px; line-height: 1.5; }
+    .progress-track { width: 100%; max-width: 400px; height: 6px; background: rgba(255,255,255,0.06); border-radius: 100px; overflow: hidden; }
+    .progress-fill { height: 100%; background: linear-gradient(90deg, var(--cyan), var(--blue)); border-radius: 100px; transition: width 0.4s ease; width: 0%; }
 
     /* Result state */
     .vid-result {
@@ -283,6 +235,7 @@
     .res-btn.primary:hover { box-shadow: 0 0 30px rgba(6,182,212,0.5); transform: translateY(-1px); }
     .res-btn.secondary { background: rgba(255,255,255,0.05); border: 1px solid var(--border); color: var(--muted2); }
     .res-btn.secondary:hover { background: rgba(255,255,255,0.09); color: var(--text); }
+    .result-info { font-size: 0.75rem; color: var(--muted); text-align: center; }
     .result-info { font-size: 0.78rem; color: var(--muted); text-align: center; }
 
     ::-webkit-scrollbar { width: 4px; }
@@ -384,57 +337,38 @@
 
       <div class="video-left">
         <div class="video-left-header">
-          <h3>🎬 Real AI Video Maker</h3>
-          <p>AI generates scenes → creates images → animates → exports a real downloadable video file.</p>
+          <h3>🎬 AI Video Maker</h3>
+          <p>Powered by HuggingFace text-to-video AI. Generates real video with actual motion.</p>
         </div>
         <div class="video-form">
 
           <div class="form-group">
-            <div class="form-label">Video concept</div>
-            <textarea class="form-textarea" id="vid-prompt" rows="4" placeholder="e.g. A luxury coffee brand showcase with rich dark roasts, cozy café atmosphere, morning light filtering through windows"></textarea>
+            <div class="form-label">Video prompt</div>
+            <textarea class="form-textarea" id="vid-prompt" rows="4" placeholder="e.g. A cat walking through a neon-lit city at night, cinematic slow motion"></textarea>
           </div>
 
           <div class="form-group">
-            <div class="form-label">Visual style</div>
-            <div class="vstyle-chips">
-              <span class="vstyle-chip active" data-style="cinematic, dramatic lighting, film grain, high contrast">Cinematic</span>
-              <span class="vstyle-chip" data-style="photorealistic, 4k, sharp detail, natural light">Photorealistic</span>
-              <span class="vstyle-chip" data-style="dark moody, high contrast, deep shadows, atmospheric">Dark & Moody</span>
-              <span class="vstyle-chip" data-style="neon cyberpunk, glowing lights, futuristic city, rain">Neon/Cyber</span>
-              <span class="vstyle-chip" data-style="anime style, vivid colors, stylized, clean lines">Anime</span>
-              <span class="vstyle-chip" data-style="watercolor illustration, soft colors, painterly, artistic">Watercolor</span>
-              <span class="vstyle-chip" data-style="minimalist, clean, white space, elegant design">Minimal</span>
-            </div>
-          </div>
-
-          <div class="form-group">
-            <div class="form-label">Number of scenes</div>
-            <select class="form-select" id="vid-scenes">
-              <option value="4">4 scenes (~12 sec)</option>
-              <option value="6" selected>6 scenes (~18 sec)</option>
-              <option value="8">8 scenes (~24 sec)</option>
-              <option value="10">10 scenes (~30 sec)</option>
+            <div class="form-label">AI Model</div>
+            <select class="form-select" id="vid-model">
+              <option value="damo-vilab/text-to-video-ms-1.7b">DAMO Text-to-Video 1.7B (Fast)</option>
+              <option value="cerspense/zeroscope_v2_576w">ZeroScope v2 576w (Good quality)</option>
+              <option value="cerspense/zeroscope_v2_XL">ZeroScope v2 XL (Best quality, slow)</option>
             </select>
           </div>
 
-          <div class="form-group">
-            <div class="form-label">Format</div>
-            <div class="format-btns">
-              <button class="format-btn active" id="fmt-169" onclick="setFormat(1280,720,'fmt-169')">
-                <span class="fmt-icon">📺</span>16:9<span class="fmt-label">YouTube</span>
-              </button>
-              <button class="format-btn" id="fmt-916" onclick="setFormat(720,1280,'fmt-916')">
-                <span class="fmt-icon">📱</span>9:16<span class="fmt-label">TikTok</span>
-              </button>
-              <button class="format-btn" id="fmt-11" onclick="setFormat(720,720,'fmt-11')">
-                <span class="fmt-icon">⬜</span>1:1<span class="fmt-label">Instagram</span>
-              </button>
+          <div class="form-group" style="background:rgba(6,182,212,0.05);border:1px solid rgba(6,182,212,0.12);border-radius:10px;padding:10px 12px;">
+            <div style="font-size:0.74rem;color:var(--cyan);font-weight:600;margin-bottom:4px;">💡 Tips for better videos</div>
+            <div style="font-size:0.72rem;color:var(--muted);line-height:1.6;">
+              • Describe motion (walking, flying, flowing)<br>
+              • Add style (cinematic, slow motion, 4k)<br>
+              • Keep prompts short and clear<br>
+              • First generation may take 30–60s (model warming up)
             </div>
           </div>
 
         </div>
         <button class="video-gen-btn" id="vid-btn" onclick="makeVideo()">
-          🎬 Create Video
+          🎬 Generate Video
         </button>
       </div>
 
@@ -443,39 +377,14 @@
         <!-- Empty state -->
         <div class="vid-empty" id="vid-empty">
           <div class="big-icon">🎬</div>
-          <h3>AI-powered video creation</h3>
-          <p>Generates real scenes with AI images and animates them into a downloadable video.</p>
-          <div class="steps">
-            <div class="step-row">
-              <div class="step-num">1</div>
-              <div class="step-text">AI writes cinematic scene descriptions for your concept</div>
-            </div>
-            <div class="step-row">
-              <div class="step-num">2</div>
-              <div class="step-text">Each scene is rendered as a unique AI-generated image</div>
-            </div>
-            <div class="step-row">
-              <div class="step-num">3</div>
-              <div class="step-text">Scenes animate with Ken Burns effects + crossfade transitions</div>
-            </div>
-            <div class="step-row">
-              <div class="step-num">4</div>
-              <div class="step-text">Download as a real .webm video file</div>
-            </div>
-          </div>
-          <div class="compat-note">⚠️ Best in Chrome or Firefox — Safari has limited video recording support.</div>
+          <h3>Real AI video generation</h3>
+          <p>Uses HuggingFace text-to-video models to generate actual video with real motion — not a slideshow.</p>
         </div>
 
         <!-- Progress state -->
         <div class="vid-progress" id="vid-progress">
-          <div class="preview-canvas-wrap">
-            <canvas id="preview-canvas"></canvas>
-            <div class="canvas-recording-badge" id="rec-badge" style="display:none;">
-              <div class="rec-dot"></div> REC
-            </div>
-          </div>
-          <div class="scene-strip" id="scene-strip"></div>
-          <div class="vid-status-text" id="vid-status">Preparing...</div>
+          <div class="vid-spinner"></div>
+          <div class="vid-status-text" id="vid-status">Generating video...</div>
           <div class="progress-track">
             <div class="progress-fill" id="progress-fill"></div>
           </div>
@@ -484,10 +393,10 @@
         <!-- Result state -->
         <div class="vid-result" id="vid-result">
           <div class="result-video-wrap">
-            <video id="result-video" controls loop></video>
+            <video id="result-video" controls loop autoplay></video>
           </div>
           <div class="result-actions">
-            <button class="res-btn primary" onclick="downloadVideo()">⬇ Download .webm</button>
+            <button class="res-btn primary" onclick="downloadVideo()">⬇ Download Video</button>
             <button class="res-btn secondary" onclick="resetVideo()">↩ Make Another</button>
           </div>
           <div class="result-info" id="result-info"></div>
@@ -592,6 +501,7 @@
 
     // ── VIDEO MAKER ──
     let videoBlob = null;
+    let videoMimeType = 'video/mp4';
 
     function showVidState(state) {
       document.getElementById('vid-empty').style.display = state==='empty' ? 'flex' : 'none';
@@ -601,252 +511,88 @@
 
     function setStatus(msg, pct) {
       document.getElementById('vid-status').textContent = msg;
-      document.getElementById('progress-fill').style.width = pct + '%';
+      if (pct !== undefined) document.getElementById('progress-fill').style.width = pct + '%';
     }
 
-    function resetVideo() { showVidState('empty'); videoBlob = null; document.getElementById('vid-btn').disabled = false; }
+    function resetVideo() {
+      showVidState('empty');
+      videoBlob = null;
+      document.getElementById('vid-btn').disabled = false;
+      document.getElementById('progress-fill').style.width = '0%';
+    }
 
     async function makeVideo() {
-      const concept = document.getElementById('vid-prompt').value.trim();
-      if (!concept) { document.getElementById('vid-prompt').focus(); return; }
-      if (!window.MediaRecorder) { alert('Your browser does not support video recording. Please use Chrome or Firefox.'); return; }
+      const prompt = document.getElementById('vid-prompt').value.trim();
+      if (!prompt) { document.getElementById('vid-prompt').focus(); return; }
 
-      const style = document.querySelector('.vstyle-chip.active')?.dataset.style || 'cinematic';
-      const sceneCount = parseInt(document.getElementById('vid-scenes').value);
+      const model = document.getElementById('vid-model').value;
       const btn = document.getElementById('vid-btn');
       btn.disabled = true;
 
       showVidState('progress');
-      document.getElementById('rec-badge').style.display = 'none';
-
-      // Build scene strip placeholders
-      const strip = document.getElementById('scene-strip');
-      strip.innerHTML = '';
-      for (let i=0; i<sceneCount; i++) {
-        const t = document.createElement('div');
-        t.className = 'scene-thumb';
-        t.id = `scene-thumb-${i}`;
-        strip.appendChild(t);
-      }
-
-      setStatus('🤖 AI is writing scene descriptions...', 5);
-
-      // Step 1: get scene prompts from AI
-      let scenePrompts;
-      try { scenePrompts = await getScenePrompts(concept, style, sceneCount); }
-      catch(e) { scenePrompts = fallbackPrompts(concept, style, sceneCount); }
-
-      // Step 2: load images
-      setStatus(`🖼️ Generating ${sceneCount} AI images...`, 15);
-      const images = [];
-      for (let i=0; i<scenePrompts.length; i++) {
-        const seed = Math.floor(Math.random()*99999);
-        const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(scenePrompts[i])}?width=${vidW}&height=${vidH}&seed=${seed}&nologo=true`;
-        try {
-          const img = await loadImageCORS(url);
-          images.push(img);
-          // show thumb
-          const thumb = document.getElementById(`scene-thumb-${i}`);
-          if (thumb) {
-            thumb.innerHTML = `<img src="${url}" />`;
-            thumb.classList.add('done');
-          }
-        } catch(e) {
-          // If CORS fails, try without crossOrigin (won't work for canvas but shows preview)
-          images.push(null);
-        }
-        setStatus(`🖼️ Loaded scene ${i+1} of ${scenePrompts.length}`, 15 + 55*(i+1)/scenePrompts.length);
-      }
-
-      const validImages = images.filter(Boolean);
-      if (validImages.length === 0) {
-        setStatus('❌ Failed to load images. Please try again.', 0);
-        btn.disabled = false;
-        return;
-      }
-
-      // Step 3: record video
-      setStatus('🎬 Recording video...', 72);
-      document.getElementById('rec-badge').style.display = 'flex';
+      setStatus('Sending to HuggingFace AI...', 10);
 
       try {
-        videoBlob = await recordCanvas(validImages);
-      } catch(e) {
-        setStatus('❌ Recording failed: ' + e.message, 0);
+        await tryGenerate(prompt, model, 0);
+      } catch(err) {
+        setStatus('❌ ' + err.message, 0);
         btn.disabled = false;
-        document.getElementById('rec-badge').style.display = 'none';
         return;
       }
+    }
 
-      document.getElementById('rec-badge').style.display = 'none';
+    async function tryGenerate(prompt, model, attempt) {
+      const res = await fetch('/api/video', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt, model }),
+      });
+
+      if (res.status === 503) {
+        const data = await res.json();
+        const wait = data.estimated_time || 20;
+        // Model is loading — retry after wait time
+        for (let i = wait; i > 0; i--) {
+          setStatus(`Model is warming up... retrying in ${i}s`, 15);
+          await sleep(1000);
+        }
+        setStatus('Retrying...', 20);
+        return tryGenerate(prompt, model, attempt + 1);
+      }
+
+      if (!res.ok) {
+        let msg = 'Generation failed';
+        try { const d = await res.json(); msg = d.error || msg; } catch {}
+        throw new Error(msg);
+      }
+
+      setStatus('Downloading video...', 80);
+      const contentType = res.headers.get('content-type') || 'video/mp4';
+      videoMimeType = contentType;
+      const buffer = await res.arrayBuffer();
+      videoBlob = new Blob([buffer], { type: contentType });
+
       setStatus('✅ Done!', 100);
 
-      // Show result
       const videoEl = document.getElementById('result-video');
       videoEl.src = URL.createObjectURL(videoBlob);
-      const durationSec = validImages.length * 3;
-      document.getElementById('result-info').textContent = `${validImages.length} scenes · ~${durationSec}s · ${vidW}×${vidH} · WebM format`;
-      setTimeout(() => showVidState('result'), 500);
+      const kb = Math.round(videoBlob.size / 1024);
+      document.getElementById('result-info').textContent = `${model.split('/')[1]} · ${kb} KB`;
+      setTimeout(() => showVidState('result'), 400);
+      document.getElementById('vid-btn').disabled = false;
     }
 
-    async function getScenePrompts(concept, style, count) {
-      const prompt = `You are a cinematographer. For the video concept: "${concept}"
-
-Write exactly ${count} short image prompts for ${style} visual style.
-Format your response as a numbered list only, like:
-1. [scene description]
-2. [scene description]
-...
-
-Each prompt must be a vivid, specific visual description under 25 words.
-Make each scene visually distinct — vary the angle, distance, and lighting.
-Do not write anything else.`;
-
-      const res = await fetch('/api/tool', {
-        method: 'POST', headers: {'Content-Type':'application/json'},
-        body: JSON.stringify({tool:'content', messages:[{role:'user',content:prompt}]})
-      });
-      const data = await res.json();
-      if (data.error) throw new Error(data.error);
-
-      const lines = data.output.split('\n')
-        .map(l => l.trim())
-        .filter(l => /^\d+[\.\):]/.test(l))
-        .map(l => l.replace(/^\d+[\.\):]\s*/, '').trim())
-        .filter(l => l.length > 5);
-
-      if (lines.length < count) throw new Error('Not enough prompts returned');
-      return lines.slice(0, count).map(p => `${p}, ${style}`);
-    }
-
-    function fallbackPrompts(concept, style, count) {
-      const angles = [
-        'wide establishing shot, dramatic depth of field',
-        'close-up detail shot, macro lens, shallow focus',
-        'medium hero shot from side angle',
-        'low angle dramatic perspective, looking up',
-        'overhead flat lay composition',
-        'golden hour warm rim lighting',
-        'silhouette against bright background',
-        'slow motion motion blur, dynamic energy',
-        'bokeh background out of focus foreground',
-        'aerial bird\'s eye view looking down'
-      ];
-      return angles.slice(0, count).map(a => `${concept}, ${a}, ${style}`);
-    }
-
-    function loadImageCORS(url) {
-      return new Promise((resolve, reject) => {
-        const img = new Image();
-        img.crossOrigin = 'anonymous';
-        img.onload = () => resolve(img);
-        img.onerror = () => {
-          // retry without crossOrigin header
-          const img2 = new Image();
-          img2.onload = () => resolve(img2);
-          img2.onerror = () => reject(new Error('Image load failed'));
-          img2.src = url + '&t=' + Date.now();
-        };
-        img.src = url;
-      });
-    }
-
-    function recordCanvas(images) {
-      return new Promise((resolve, reject) => {
-        const canvas = document.createElement('canvas');
-        canvas.width = vidW;
-        canvas.height = vidH;
-        const ctx = canvas.getContext('2d');
-
-        const previewCanvas = document.getElementById('preview-canvas');
-        previewCanvas.width = vidW;
-        previewCanvas.height = vidH;
-        const pCtx = previewCanvas.getContext('2d');
-
-        const FPS = 30;
-        const SCENE_SEC = 3;
-        const TRANSITION = 0.6;
-        const TOTAL = images.length * SCENE_SEC;
-
-        let mimeType = 'video/webm;codecs=vp9';
-        if (!MediaRecorder.isTypeSupported(mimeType)) mimeType = 'video/webm;codecs=vp8';
-        if (!MediaRecorder.isTypeSupported(mimeType)) mimeType = 'video/webm';
-        if (!MediaRecorder.isTypeSupported(mimeType)) { reject(new Error('No supported video format')); return; }
-
-        const stream = canvas.captureStream(FPS);
-        const recorder = new MediaRecorder(stream, {mimeType, videoBitsPerSecond: 4000000});
-        const chunks = [];
-        recorder.ondataavailable = e => { if (e.data && e.data.size > 0) chunks.push(e.data); };
-        recorder.onstop = () => resolve(new Blob(chunks, {type: mimeType}));
-        recorder.onerror = e => reject(new Error(e.error?.message || 'Recorder error'));
-
-        recorder.start(100);
-        const startTime = performance.now();
-
-        function drawScene(img, progress, direction) {
-          const zoomAmount = 0.12;
-          const scale = 1 + zoomAmount * progress;
-          const panX = 0.04 * vidW * direction * progress;
-          const panY = 0.02 * vidH * Math.sin(progress * Math.PI) * (direction > 0 ? 1 : -1);
-
-          ctx.save();
-          ctx.translate(vidW/2 + panX, vidH/2 + panY);
-          ctx.scale(scale, scale);
-          try { ctx.drawImage(img, -vidW/2, -vidH/2, vidW, vidH); } catch(e) {}
-          ctx.restore();
-        }
-
-        function tick() {
-          const elapsed = (performance.now() - startTime) / 1000;
-          if (elapsed >= TOTAL + 0.2) { recorder.stop(); return; }
-
-          const t = Math.min(elapsed, TOTAL);
-          const rawIdx = t / SCENE_SEC;
-          const sceneIdx = Math.min(Math.floor(rawIdx), images.length - 1);
-          const sceneProgress = rawIdx - Math.floor(rawIdx);
-          const direction = sceneIdx % 2 === 0 ? 1 : -1;
-
-          ctx.clearRect(0, 0, vidW, vidH);
-
-          // Current scene with Ken Burns
-          drawScene(images[sceneIdx], sceneProgress, direction);
-
-          // Crossfade to next
-          if (sceneProgress > 1 - TRANSITION/SCENE_SEC && sceneIdx < images.length - 1) {
-            const fadeStart = 1 - TRANSITION/SCENE_SEC;
-            const alpha = (sceneProgress - fadeStart) / (TRANSITION/SCENE_SEC);
-            ctx.globalAlpha = Math.min(1, alpha);
-            const nextDir = (sceneIdx+1) % 2 === 0 ? 1 : -1;
-            drawScene(images[sceneIdx+1], 0, nextDir);
-            ctx.globalAlpha = 1;
-          }
-
-          // Mirror to preview (scaled down)
-          pCtx.drawImage(canvas, 0, 0, previewCanvas.width, previewCanvas.height);
-
-          // Highlight active scene thumb
-          const thumbIdx = Math.min(sceneIdx, images.length-1);
-          document.querySelectorAll('.scene-thumb').forEach((th,i) => {
-            th.classList.toggle('active', i===thumbIdx);
-          });
-
-          const pct = Math.min(100, 72 + 26*(elapsed/TOTAL));
-          setStatus(`🎬 Recording... ${Math.round(elapsed)}s / ${Math.round(TOTAL)}s`, pct);
-
-          setTimeout(tick, 1000/FPS);
-        }
-
-        tick();
-      });
-    }
+    function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 
     function downloadVideo() {
       if (!videoBlob) return;
+      const ext = videoMimeType.includes('mp4') ? 'mp4' : videoMimeType.includes('gif') ? 'gif' : 'mp4';
       const a = document.createElement('a');
       a.href = URL.createObjectURL(videoBlob);
-      a.download = `buildai-video-${Date.now()}.webm`;
+      a.download = `buildai-video-${Date.now()}.${ext}`;
       a.click();
     }
+
   </script>
 </body>
 </html>
