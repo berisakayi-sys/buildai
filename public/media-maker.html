@@ -128,8 +128,6 @@
       width: 100%; aspect-ratio: 1; object-fit: cover; display: block;
       background: rgba(255,255,255,0.03);
     }
-    .img-thumb.loading { filter: blur(8px); transform: scale(1.05); }
-
     .img-card-body { padding: 12px 14px; }
     .img-prompt { font-size: 0.75rem; color: var(--muted2); line-height: 1.5; margin-bottom: 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .img-actions { display: flex; gap: 8px; }
@@ -144,15 +142,12 @@
 
     .skeleton {
       background: linear-gradient(90deg, rgba(255,255,255,0.04) 25%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.04) 75%);
-      background-size: 200% 100%;
-      animation: shimmer 1.5s infinite;
-      aspect-ratio: 1; border-radius: 0;
+      background-size: 200% 100%; animation: shimmer 1.5s infinite; aspect-ratio: 1; border-radius: 0;
     }
     @keyframes shimmer { from{background-position:200% 0} to{background-position:-200% 0} }
 
     .image-empty { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; color: var(--muted); text-align: center; padding: 40px; }
     .image-empty .ei { font-size: 3rem; filter: drop-shadow(0 0 16px rgba(236,72,153,0.4)); animation: float 3s ease-in-out infinite; }
-    @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
     .image-empty h3 { font-size: 1.1rem; color: var(--muted2); }
     .image-empty p { font-size: 0.82rem; max-width: 300px; line-height: 1.6; }
 
@@ -161,22 +156,22 @@
     .video-page.active { display: flex; }
 
     .video-left {
-      width: 360px; flex-shrink: 0; display: flex; flex-direction: column;
+      width: 340px; flex-shrink: 0; display: flex; flex-direction: column;
       border-right: 1px solid var(--border); background: rgba(9,9,18,0.7); backdrop-filter: blur(16px);
     }
     .video-left-header { padding: 18px 20px 14px; border-bottom: 1px solid var(--border); }
     .video-left-header h3 { font-size: 0.9rem; font-weight: 700; background: linear-gradient(135deg, var(--cyan), var(--blue)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; margin-bottom: 3px; }
     .video-left-header p { font-size: 0.73rem; color: var(--muted); line-height: 1.5; }
 
-    .video-form { flex: 1; padding: 16px; overflow-y: auto; display: flex; flex-direction: column; gap: 14px; }
+    .video-form { flex: 1; padding: 16px; overflow-y: auto; display: flex; flex-direction: column; gap: 14px; scrollbar-width: none; }
+    .video-form::-webkit-scrollbar { display: none; }
 
     .form-group { display: flex; flex-direction: column; gap: 6px; }
     .form-label { font-size: 0.72rem; font-weight: 600; color: var(--muted2); text-transform: uppercase; letter-spacing: 0.08em; }
     .form-textarea {
       background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.09);
       border-radius: 10px; color: var(--text); font-family: inherit; font-size: 0.84rem;
-      padding: 10px 12px; resize: none; outline: none; line-height: 1.55;
-      transition: border-color 0.2s;
+      padding: 10px 12px; resize: none; outline: none; line-height: 1.55; transition: border-color 0.2s;
     }
     .form-textarea:focus { border-color: rgba(6,182,212,0.4); }
     .form-textarea::placeholder { color: var(--muted); }
@@ -187,65 +182,118 @@
     }
     .form-select option { background: #0d0d14; }
 
-    .type-chips { display: flex; flex-wrap: wrap; gap: 6px; }
-    .type-chip {
+    .vstyle-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+    .vstyle-chip {
       padding: 5px 12px; border-radius: 100px; font-size: 0.74rem; font-weight: 600;
       border: 1px solid var(--border); background: rgba(255,255,255,0.04);
       color: var(--muted2); cursor: pointer; transition: all 0.2s;
     }
-    .type-chip.active { background: rgba(6,182,212,0.12); border-color: rgba(6,182,212,0.3); color: var(--cyan); }
-    .type-chip:hover:not(.active) { color: var(--text); }
+    .vstyle-chip.active { background: rgba(6,182,212,0.12); border-color: rgba(6,182,212,0.3); color: var(--cyan); }
+    .vstyle-chip:hover:not(.active) { color: var(--text); background: rgba(255,255,255,0.06); }
+
+    .format-btns { display: flex; gap: 8px; }
+    .format-btn {
+      flex: 1; padding: 8px 4px; border-radius: 9px; border: 1px solid var(--border);
+      background: rgba(255,255,255,0.03); color: var(--muted2); cursor: pointer;
+      font-family: inherit; font-size: 0.78rem; font-weight: 600; text-align: center;
+      transition: all 0.2s; display: flex; flex-direction: column; align-items: center; gap: 2px;
+    }
+    .format-btn .fmt-icon { font-size: 1.1rem; line-height: 1; }
+    .format-btn .fmt-label { font-size: 0.65rem; color: var(--muted); font-weight: 500; }
+    .format-btn.active { background: rgba(6,182,212,0.1); border-color: rgba(6,182,212,0.3); color: var(--cyan); }
+    .format-btn.active .fmt-label { color: rgba(6,182,212,0.7); }
 
     .video-gen-btn {
-      margin: 0 16px 16px; padding: 12px; border-radius: 11px; font-size: 0.88rem; font-weight: 700;
+      margin: 0 16px 16px; padding: 13px; border-radius: 11px; font-size: 0.9rem; font-weight: 700;
       background: linear-gradient(135deg, var(--cyan), var(--blue));
       color: #fff; border: none; cursor: pointer; transition: all 0.2s;
       display: flex; align-items: center; justify-content: center; gap: 8px;
       box-shadow: 0 0 20px rgba(6,182,212,0.3); flex-shrink: 0;
     }
-    .video-gen-btn:hover { box-shadow: 0 0 30px rgba(6,182,212,0.5); transform: translateY(-1px); }
+    .video-gen-btn:hover { box-shadow: 0 0 32px rgba(6,182,212,0.5); transform: translateY(-1px); }
     .video-gen-btn:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
 
-    /* Video output */
-    .video-right { flex: 1; display: flex; flex-direction: column; overflow: hidden; background: #08080f; }
-    .video-output { flex: 1; overflow-y: auto; padding: 24px; scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.07) transparent; }
+    /* Video right panel */
+    .video-right { flex: 1; display: flex; flex-direction: column; overflow: hidden; background: #05050e; }
 
-    .script-empty { height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; color: var(--muted); text-align: center; }
-    .script-empty .ei { font-size: 3rem; filter: drop-shadow(0 0 16px rgba(6,182,212,0.4)); animation: float 3s ease-in-out infinite; }
-    .script-empty h3 { font-size: 1.1rem; color: var(--muted2); }
-    .script-empty p { font-size: 0.82rem; max-width: 300px; line-height: 1.6; }
-
-    .script-output { display: none; font-size: 0.88rem; line-height: 1.75; color: var(--text); }
-    .script-output.active { display: block; }
-
-    .scene-card {
-      background: rgba(255,255,255,0.03); border: 1px solid var(--border);
-      border-radius: 14px; padding: 18px 20px; margin-bottom: 16px;
-      transition: border-color 0.2s;
+    /* Empty state */
+    .vid-empty {
+      flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 16px; color: var(--muted); text-align: center; padding: 40px;
     }
-    .scene-card:hover { border-color: rgba(6,182,212,0.25); }
-    .scene-num { font-size: 0.68rem; font-weight: 700; color: var(--cyan); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 6px; }
-    .scene-title { font-size: 0.95rem; font-weight: 700; margin-bottom: 8px; }
-    .scene-body { font-size: 0.84rem; color: var(--muted2); line-height: 1.65; white-space: pre-wrap; }
+    .vid-empty .big-icon { font-size: 4rem; filter: drop-shadow(0 0 24px rgba(6,182,212,0.4)); animation: float 3s ease-in-out infinite; }
+    .vid-empty h3 { font-size: 1.15rem; font-weight: 700; color: var(--muted2); }
+    .vid-empty p { font-size: 0.82rem; max-width: 340px; line-height: 1.65; }
+    .vid-empty .steps { display: flex; flex-direction: column; gap: 8px; margin-top: 4px; width: 100%; max-width: 320px; }
+    .step-row { display: flex; align-items: center; gap: 10px; background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 10px; padding: 10px 14px; text-align: left; }
+    .step-num { width: 22px; height: 22px; border-radius: 50%; background: rgba(6,182,212,0.15); border: 1px solid rgba(6,182,212,0.25); display: flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: 700; color: var(--cyan); flex-shrink: 0; }
+    .step-text { font-size: 0.78rem; color: var(--muted2); line-height: 1.4; }
+    .compat-note { font-size: 0.72rem; color: var(--muted); background: rgba(234,179,8,0.07); border: 1px solid rgba(234,179,8,0.15); border-radius: 8px; padding: 8px 12px; max-width: 320px; }
 
-    .script-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
-    .script-header h2 { font-size: 1.1rem; font-weight: 800; }
-    .copy-script-btn {
-      padding: 6px 14px; border-radius: 8px; font-size: 0.78rem; font-weight: 600;
-      border: 1px solid var(--border); background: rgba(255,255,255,0.04);
-      color: var(--muted2); cursor: pointer; transition: all 0.2s;
+    /* Progress state */
+    .vid-progress {
+      flex: 1; display: none; flex-direction: column; align-items: center; justify-content: center;
+      gap: 20px; padding: 30px;
     }
-    .copy-script-btn:hover { color: var(--green); border-color: rgba(52,211,153,0.3); background: rgba(52,211,153,0.06); }
+    .vid-progress.active { display: flex; }
+    .preview-canvas-wrap {
+      width: 100%; max-width: 560px; border-radius: 14px; overflow: hidden;
+      border: 1px solid var(--border); background: #000; position: relative;
+      box-shadow: 0 0 40px rgba(6,182,212,0.15);
+    }
+    #preview-canvas { width: 100%; height: auto; display: block; }
+    .canvas-recording-badge {
+      position: absolute; top: 10px; right: 10px;
+      background: rgba(239,68,68,0.9); color: #fff; font-size: 0.68rem; font-weight: 700;
+      padding: 4px 9px; border-radius: 100px; display: flex; align-items: center; gap: 5px;
+      backdrop-filter: blur(8px);
+    }
+    .rec-dot { width: 6px; height: 6px; border-radius: 50%; background: #fff; animation: blink 1s ease-in-out infinite; }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
 
-    .raw-text-output { white-space: pre-wrap; font-size: 0.85rem; line-height: 1.75; color: var(--muted2); }
-    .raw-text-output strong { color: var(--text); }
+    .vid-status-text { font-size: 0.88rem; color: var(--muted2); font-weight: 500; }
+    .progress-track { width: 100%; max-width: 480px; height: 6px; background: rgba(255,255,255,0.06); border-radius: 100px; overflow: hidden; }
+    .progress-fill { height: 100%; background: linear-gradient(90deg, var(--cyan), var(--blue)); border-radius: 100px; transition: width 0.3s ease; width: 0%; }
+    .scene-strip { display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; max-width: 560px; }
+    .scene-thumb {
+      width: 60px; height: 40px; border-radius: 6px; overflow: hidden; border: 2px solid transparent;
+      background: rgba(255,255,255,0.05); transition: all 0.3s; flex-shrink: 0;
+    }
+    .scene-thumb.done { border-color: rgba(6,182,212,0.5); }
+    .scene-thumb.active { border-color: var(--cyan); box-shadow: 0 0 12px rgba(6,182,212,0.4); }
+    .scene-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+    /* Result state */
+    .vid-result {
+      flex: 1; display: none; flex-direction: column; align-items: center; justify-content: center;
+      gap: 18px; padding: 30px;
+    }
+    .vid-result.active { display: flex; }
+    .result-video-wrap {
+      width: 100%; max-width: 600px; border-radius: 14px; overflow: hidden;
+      border: 1px solid rgba(6,182,212,0.25); box-shadow: 0 0 40px rgba(6,182,212,0.15);
+    }
+    #result-video { width: 100%; display: block; background: #000; }
+    .result-actions { display: flex; gap: 10px; }
+    .res-btn {
+      padding: 11px 24px; border-radius: 10px; font-size: 0.88rem; font-weight: 700;
+      border: none; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 8px;
+    }
+    .res-btn.primary { background: linear-gradient(135deg, var(--cyan), var(--blue)); color: #fff; box-shadow: 0 0 20px rgba(6,182,212,0.3); }
+    .res-btn.primary:hover { box-shadow: 0 0 30px rgba(6,182,212,0.5); transform: translateY(-1px); }
+    .res-btn.secondary { background: rgba(255,255,255,0.05); border: 1px solid var(--border); color: var(--muted2); }
+    .res-btn.secondary:hover { background: rgba(255,255,255,0.09); color: var(--text); }
+    .result-info { font-size: 0.78rem; color: var(--muted); text-align: center; }
 
     ::-webkit-scrollbar { width: 4px; }
     ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.07); border-radius: 4px; }
 
+    @keyframes spin { to { transform: rotate(360deg); } }
+    @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
+
     @media (max-width: 700px) {
       .video-page { flex-direction: column; }
-      .video-left { width: 100%; border-right: none; border-bottom: 1px solid var(--border); max-height: 45vh; }
+      .video-left { width: 100%; border-right: none; border-bottom: 1px solid var(--border); max-height: 50vh; }
       .options-row { gap: 6px; }
     }
   </style>
@@ -336,71 +384,116 @@
 
       <div class="video-left">
         <div class="video-left-header">
-          <h3>🎬 AI Video Script Maker</h3>
-          <p>Describe your video idea and get a full script, scene breakdown, voiceover, and shot list instantly.</p>
+          <h3>🎬 Real AI Video Maker</h3>
+          <p>AI generates scenes → creates images → animates → exports a real downloadable video file.</p>
         </div>
         <div class="video-form">
+
           <div class="form-group">
-            <div class="form-label">Video idea</div>
-            <textarea class="form-textarea" id="vid-prompt" rows="4" placeholder="e.g. A 60-second product promo for a new energy drink called 'Surge' targeting Gen Z athletes — energetic, fast cuts, neon aesthetic"></textarea>
+            <div class="form-label">Video concept</div>
+            <textarea class="form-textarea" id="vid-prompt" rows="4" placeholder="e.g. A luxury coffee brand showcase with rich dark roasts, cozy café atmosphere, morning light filtering through windows"></textarea>
           </div>
+
           <div class="form-group">
-            <div class="form-label">Video type</div>
-            <div class="type-chips" id="type-chips">
-              <span class="type-chip active" data-type="Product promo">Product promo</span>
-              <span class="type-chip" data-type="YouTube tutorial">Tutorial</span>
-              <span class="type-chip" data-type="Short-form social video">Social short</span>
-              <span class="type-chip" data-type="Documentary">Documentary</span>
-              <span class="type-chip" data-type="Brand story">Brand story</span>
-              <span class="type-chip" data-type="Explainer video">Explainer</span>
-              <span class="type-chip" data-type="Music video concept">Music video</span>
+            <div class="form-label">Visual style</div>
+            <div class="vstyle-chips">
+              <span class="vstyle-chip active" data-style="cinematic, dramatic lighting, film grain, high contrast">Cinematic</span>
+              <span class="vstyle-chip" data-style="photorealistic, 4k, sharp detail, natural light">Photorealistic</span>
+              <span class="vstyle-chip" data-style="dark moody, high contrast, deep shadows, atmospheric">Dark & Moody</span>
+              <span class="vstyle-chip" data-style="neon cyberpunk, glowing lights, futuristic city, rain">Neon/Cyber</span>
+              <span class="vstyle-chip" data-style="anime style, vivid colors, stylized, clean lines">Anime</span>
+              <span class="vstyle-chip" data-style="watercolor illustration, soft colors, painterly, artistic">Watercolor</span>
+              <span class="vstyle-chip" data-style="minimalist, clean, white space, elegant design">Minimal</span>
             </div>
           </div>
+
           <div class="form-group">
-            <div class="form-label">Duration</div>
-            <select class="form-select" id="vid-duration">
-              <option value="15-second">15 seconds</option>
-              <option value="30-second">30 seconds</option>
-              <option value="60-second" selected>60 seconds</option>
-              <option value="2-minute">2 minutes</option>
-              <option value="5-minute">5 minutes</option>
+            <div class="form-label">Number of scenes</div>
+            <select class="form-select" id="vid-scenes">
+              <option value="4">4 scenes (~12 sec)</option>
+              <option value="6" selected>6 scenes (~18 sec)</option>
+              <option value="8">8 scenes (~24 sec)</option>
+              <option value="10">10 scenes (~30 sec)</option>
             </select>
           </div>
+
           <div class="form-group">
-            <div class="form-label">Tone</div>
-            <select class="form-select" id="vid-tone">
-              <option value="energetic and hype">Energetic & Hype</option>
-              <option value="cinematic and dramatic">Cinematic</option>
-              <option value="fun and playful">Fun & Playful</option>
-              <option value="professional and trustworthy">Professional</option>
-              <option value="emotional and heartfelt">Emotional</option>
-              <option value="dark and mysterious">Dark & Mysterious</option>
-            </select>
+            <div class="form-label">Format</div>
+            <div class="format-btns">
+              <button class="format-btn active" id="fmt-169" onclick="setFormat(1280,720,'fmt-169')">
+                <span class="fmt-icon">📺</span>16:9<span class="fmt-label">YouTube</span>
+              </button>
+              <button class="format-btn" id="fmt-916" onclick="setFormat(720,1280,'fmt-916')">
+                <span class="fmt-icon">📱</span>9:16<span class="fmt-label">TikTok</span>
+              </button>
+              <button class="format-btn" id="fmt-11" onclick="setFormat(720,720,'fmt-11')">
+                <span class="fmt-icon">⬜</span>1:1<span class="fmt-label">Instagram</span>
+              </button>
+            </div>
           </div>
+
         </div>
-        <button class="video-gen-btn" id="vid-btn" onclick="generateScript()">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-          Generate Script
+        <button class="video-gen-btn" id="vid-btn" onclick="makeVideo()">
+          🎬 Create Video
         </button>
       </div>
 
       <div class="video-right">
-        <div class="video-output" id="vid-output">
-          <div class="script-empty" id="script-empty">
-            <div class="ei">🎬</div>
-            <h3>Your video script will appear here</h3>
-            <p>Fill in your video idea on the left and click Generate Script. You'll get a full breakdown with scenes, voiceover, and shot descriptions.</p>
-          </div>
-          <div class="script-output" id="script-output">
-            <div class="script-header">
-              <h2 id="script-title">Video Script</h2>
-              <button class="copy-script-btn" onclick="copyScript()">Copy All</button>
+
+        <!-- Empty state -->
+        <div class="vid-empty" id="vid-empty">
+          <div class="big-icon">🎬</div>
+          <h3>AI-powered video creation</h3>
+          <p>Generates real scenes with AI images and animates them into a downloadable video.</p>
+          <div class="steps">
+            <div class="step-row">
+              <div class="step-num">1</div>
+              <div class="step-text">AI writes cinematic scene descriptions for your concept</div>
             </div>
-            <div id="script-body"></div>
+            <div class="step-row">
+              <div class="step-num">2</div>
+              <div class="step-text">Each scene is rendered as a unique AI-generated image</div>
+            </div>
+            <div class="step-row">
+              <div class="step-num">3</div>
+              <div class="step-text">Scenes animate with Ken Burns effects + crossfade transitions</div>
+            </div>
+            <div class="step-row">
+              <div class="step-num">4</div>
+              <div class="step-text">Download as a real .webm video file</div>
+            </div>
+          </div>
+          <div class="compat-note">⚠️ Best in Chrome or Firefox — Safari has limited video recording support.</div>
+        </div>
+
+        <!-- Progress state -->
+        <div class="vid-progress" id="vid-progress">
+          <div class="preview-canvas-wrap">
+            <canvas id="preview-canvas"></canvas>
+            <div class="canvas-recording-badge" id="rec-badge" style="display:none;">
+              <div class="rec-dot"></div> REC
+            </div>
+          </div>
+          <div class="scene-strip" id="scene-strip"></div>
+          <div class="vid-status-text" id="vid-status">Preparing...</div>
+          <div class="progress-track">
+            <div class="progress-fill" id="progress-fill"></div>
           </div>
         </div>
-      </div>
 
+        <!-- Result state -->
+        <div class="vid-result" id="vid-result">
+          <div class="result-video-wrap">
+            <video id="result-video" controls loop></video>
+          </div>
+          <div class="result-actions">
+            <button class="res-btn primary" onclick="downloadVideo()">⬇ Download .webm</button>
+            <button class="res-btn secondary" onclick="resetVideo()">↩ Make Another</button>
+          </div>
+          <div class="result-info" id="result-info"></div>
+        </div>
+
+      </div>
     </div>
   </div>
 
@@ -413,7 +506,7 @@
       document.getElementById('tab-vid').classList.toggle('active', page === 'video');
     }
 
-    // ── STYLE CHIPS ──
+    // ── STYLE CHIPS (image) ──
     document.querySelectorAll('.style-chip').forEach(chip => {
       chip.addEventListener('click', () => {
         document.querySelectorAll('.style-chip').forEach(c => c.classList.remove('active'));
@@ -421,53 +514,44 @@
       });
     });
 
-    // ── TYPE CHIPS ──
-    document.querySelectorAll('.type-chip').forEach(chip => {
+    // ── VSTYLE CHIPS (video) ──
+    document.querySelectorAll('.vstyle-chip').forEach(chip => {
       chip.addEventListener('click', () => {
-        document.querySelectorAll('.type-chip').forEach(c => c.classList.remove('active'));
+        document.querySelectorAll('.vstyle-chip').forEach(c => c.classList.remove('active'));
         chip.classList.add('active');
       });
     });
 
+    // ── FORMAT ──
+    let vidW = 1280, vidH = 720;
+    function setFormat(w, h, btnId) {
+      vidW = w; vidH = h;
+      document.querySelectorAll('.format-btn').forEach(b => b.classList.remove('active'));
+      document.getElementById(btnId).classList.add('active');
+    }
+
     // ── IMAGE MAKER ──
-    function getStyle() {
-      const active = document.querySelector('.style-chip.active');
-      return active ? active.dataset.style : '';
-    }
-
-    function getSize() {
-      const val = document.getElementById('img-size').value;
-      const [w, h] = val.split('/');
-      return { w, h };
-    }
-
+    function getImgStyle() { return document.querySelector('.style-chip.active')?.dataset.style || ''; }
+    function getImgSize() { const [w,h] = document.getElementById('img-size').value.split('/'); return {w,h}; }
     function buildImgUrl(prompt, style, w, h, seed) {
       const full = style ? `${prompt}, ${style}` : prompt;
       return `https://image.pollinations.ai/prompt/${encodeURIComponent(full)}?width=${w}&height=${h}&seed=${seed}&nologo=true`;
     }
-
-    function quickGen(prompt) {
-      document.getElementById('img-prompt').value = prompt;
-      generateImages();
-    }
+    function quickGen(prompt) { document.getElementById('img-prompt').value = prompt; generateImages(); }
 
     async function generateImages() {
       const prompt = document.getElementById('img-prompt').value.trim();
       if (!prompt) { document.getElementById('img-prompt').focus(); return; }
-
       const count = parseInt(document.getElementById('img-count').value);
-      const style = getStyle();
-      const { w, h } = getSize();
+      const style = getImgStyle();
+      const {w, h} = getImgSize();
       const btn = document.getElementById('img-btn');
       btn.disabled = true;
       btn.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="animation:spin 1s linear infinite"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg> Generating...`;
-
       document.getElementById('img-empty').style.display = 'none';
       const gallery = document.getElementById('img-gallery');
       const grid = document.getElementById('gallery-grid');
       gallery.style.display = 'block';
-
-      // Add skeleton placeholders
       grid.innerHTML = '';
       for (let i = 0; i < count; i++) {
         const card = document.createElement('div');
@@ -475,147 +559,294 @@
         card.innerHTML = `<div class="skeleton"></div><div class="img-card-body"><div style="height:10px;background:rgba(255,255,255,0.05);border-radius:4px;margin-bottom:8px;"></div><div style="height:28px;background:rgba(255,255,255,0.04);border-radius:6px;"></div></div>`;
         grid.appendChild(card);
       }
-
-      // Generate images with different seeds
-      const seeds = Array.from({ length: count }, () => Math.floor(Math.random() * 99999));
-      seeds.forEach((seed, i) => {
+      const seeds = Array.from({length:count},()=>Math.floor(Math.random()*99999));
+      seeds.forEach((seed,i) => {
         const url = buildImgUrl(prompt, style, w, h, seed);
         const img = new Image();
         img.onload = () => {
           const card = grid.children[i];
           if (!card) return;
-          card.innerHTML = `
-            <img class="img-thumb" src="${url}" alt="${prompt}" />
-            <div class="img-card-body">
-              <div class="img-prompt">${prompt}${style ? ` · ${style}` : ''}</div>
-              <div class="img-actions">
-                <button class="img-action dl" onclick="downloadImg('${url}', ${seed})">⬇ Download</button>
-                <button class="img-action" onclick="regenerateOne(${i}, '${prompt.replace(/'/g,"\\'")}', '${style.replace(/'/g,"\\'")}', ${w}, ${h})">↻ Redo</button>
-              </div>
-            </div>`;
+          card.innerHTML = `<img class="img-thumb" src="${url}" alt="${prompt}" /><div class="img-card-body"><div class="img-prompt">${prompt}${style?` · ${style}`:''}</div><div class="img-actions"><button class="img-action dl" onclick="downloadImg('${url}',${seed})">⬇ Download</button><button class="img-action" onclick="regenOne(${i},'${prompt.replace(/'/g,"\\'")}','${style.replace(/'/g,"\\'")}',${w},${h})">↻ Redo</button></div></div>`;
         };
-        img.onerror = () => {
-          const card = grid.children[i];
-          if (card) card.innerHTML = `<div style="aspect-ratio:1;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:0.8rem;padding:20px;text-align:center;">Failed to load image. Try again.</div>`;
-        };
+        img.onerror = () => { const c=grid.children[i]; if(c) c.innerHTML=`<div style="aspect-ratio:1;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:0.8rem;padding:20px;text-align:center;">Failed. Try again.</div>`; };
         img.src = url;
       });
-
       btn.disabled = false;
       btn.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"/></svg> Generate`;
     }
 
-    function regenerateOne(idx, prompt, style, w, h) {
-      const seed = Math.floor(Math.random() * 99999);
+    function regenOne(idx, prompt, style, w, h) {
+      const seed = Math.floor(Math.random()*99999);
       const url = buildImgUrl(prompt, style, w, h, seed);
       const card = document.getElementById('gallery-grid').children[idx];
       card.innerHTML = `<div class="skeleton"></div>`;
       const img = new Image();
-      img.onload = () => {
-        card.innerHTML = `
-          <img class="img-thumb" src="${url}" alt="${prompt}" />
-          <div class="img-card-body">
-            <div class="img-prompt">${prompt}${style ? ` · ${style}` : ''}</div>
-            <div class="img-actions">
-              <button class="img-action dl" onclick="downloadImg('${url}', ${seed})">⬇ Download</button>
-              <button class="img-action" onclick="regenerateOne(${idx}, '${prompt.replace(/'/g,"\\'")}', '${style.replace(/'/g,"\\'")}', ${w}, ${h})">↻ Redo</button>
-            </div>
-          </div>`;
-      };
+      img.onload = () => { card.innerHTML = `<img class="img-thumb" src="${url}" alt="${prompt}" /><div class="img-card-body"><div class="img-prompt">${prompt}${style?` · ${style}`:''}</div><div class="img-actions"><button class="img-action dl" onclick="downloadImg('${url}',${seed})">⬇ Download</button><button class="img-action" onclick="regenOne(${idx},'${prompt.replace(/'/g,"\\'")}','${style.replace(/'/g,"\\'")}',${w},${h})">↻ Redo</button></div></div>`; };
       img.src = url;
     }
 
     async function downloadImg(url, seed) {
-      try {
-        const res = await fetch(url);
-        const blob = await res.blob();
-        const a = document.createElement('a');
-        a.href = URL.createObjectURL(blob);
-        a.download = `buildai-image-${seed}.jpg`;
-        a.click();
-      } catch {
-        window.open(url, '_blank');
-      }
+      try { const res=await fetch(url); const blob=await res.blob(); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=`buildai-image-${seed}.jpg`; a.click(); }
+      catch { window.open(url,'_blank'); }
     }
 
-    // ── VIDEO SCRIPT MAKER ──
-    let currentScript = '';
+    // ── VIDEO MAKER ──
+    let videoBlob = null;
 
-    async function generateScript() {
-      const prompt = document.getElementById('vid-prompt').value.trim();
-      if (!prompt) { document.getElementById('vid-prompt').focus(); return; }
+    function showVidState(state) {
+      document.getElementById('vid-empty').style.display = state==='empty' ? 'flex' : 'none';
+      document.getElementById('vid-progress').classList.toggle('active', state==='progress');
+      document.getElementById('vid-result').classList.toggle('active', state==='result');
+    }
 
-      const type = document.querySelector('.type-chip.active')?.dataset.type || 'promo';
-      const duration = document.getElementById('vid-duration').value;
-      const tone = document.getElementById('vid-tone').value;
+    function setStatus(msg, pct) {
+      document.getElementById('vid-status').textContent = msg;
+      document.getElementById('progress-fill').style.width = pct + '%';
+    }
 
-      const fullPrompt = `Create a detailed video script for: "${prompt}"
+    function resetVideo() { showVidState('empty'); videoBlob = null; document.getElementById('vid-btn').disabled = false; }
 
-Video type: ${type}
-Duration: ${duration}
-Tone: ${tone}
+    async function makeVideo() {
+      const concept = document.getElementById('vid-prompt').value.trim();
+      if (!concept) { document.getElementById('vid-prompt').focus(); return; }
+      if (!window.MediaRecorder) { alert('Your browser does not support video recording. Please use Chrome or Firefox.'); return; }
 
-Provide:
-1. VIDEO TITLE
-2. CONCEPT OVERVIEW (2-3 sentences)
-3. SCENE-BY-SCENE BREAKDOWN (each scene: scene number, duration, visual description, camera shot type, voiceover/dialogue, music/sound)
-4. FULL VOICEOVER SCRIPT
-5. SHOT LIST (condensed)
-6. PLATFORM RECOMMENDATION & HASHTAGS`;
-
+      const style = document.querySelector('.vstyle-chip.active')?.dataset.style || 'cinematic';
+      const sceneCount = parseInt(document.getElementById('vid-scenes').value);
       const btn = document.getElementById('vid-btn');
       btn.disabled = true;
-      btn.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="animation:spin 1s linear infinite"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg> Writing script...`;
 
-      document.getElementById('script-empty').style.display = 'none';
-      document.getElementById('script-output').style.display = 'none';
-      document.getElementById('script-body').innerHTML = `<div style="text-align:center;padding:40px;color:var(--muted);">
-        <div style="font-size:2rem;margin-bottom:12px;animation:float 2s ease-in-out infinite;">🎬</div>
-        <div>Writing your script...</div>
-      </div>`;
-      document.getElementById('script-output').classList.add('active');
+      showVidState('progress');
+      document.getElementById('rec-badge').style.display = 'none';
 
-      try {
-        const res = await fetch('/api/tool', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ tool: 'content', messages: [{ role: 'user', content: fullPrompt }] }),
-        });
-        const data = await res.json();
-        if (data.error) throw new Error(data.error);
-        currentScript = data.output;
-        renderScript(data.output, prompt);
-      } catch (err) {
-        document.getElementById('script-body').innerHTML = `<div style="color:#fca5a5;padding:16px;background:rgba(239,68,68,0.06);border:1px solid rgba(239,68,68,0.2);border-radius:12px;">Error: ${err.message}</div>`;
+      // Build scene strip placeholders
+      const strip = document.getElementById('scene-strip');
+      strip.innerHTML = '';
+      for (let i=0; i<sceneCount; i++) {
+        const t = document.createElement('div');
+        t.className = 'scene-thumb';
+        t.id = `scene-thumb-${i}`;
+        strip.appendChild(t);
       }
 
-      btn.disabled = false;
-      btn.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"/></svg> Generate Script`;
+      setStatus('🤖 AI is writing scene descriptions...', 5);
+
+      // Step 1: get scene prompts from AI
+      let scenePrompts;
+      try { scenePrompts = await getScenePrompts(concept, style, sceneCount); }
+      catch(e) { scenePrompts = fallbackPrompts(concept, style, sceneCount); }
+
+      // Step 2: load images
+      setStatus(`🖼️ Generating ${sceneCount} AI images...`, 15);
+      const images = [];
+      for (let i=0; i<scenePrompts.length; i++) {
+        const seed = Math.floor(Math.random()*99999);
+        const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(scenePrompts[i])}?width=${vidW}&height=${vidH}&seed=${seed}&nologo=true`;
+        try {
+          const img = await loadImageCORS(url);
+          images.push(img);
+          // show thumb
+          const thumb = document.getElementById(`scene-thumb-${i}`);
+          if (thumb) {
+            thumb.innerHTML = `<img src="${url}" />`;
+            thumb.classList.add('done');
+          }
+        } catch(e) {
+          // If CORS fails, try without crossOrigin (won't work for canvas but shows preview)
+          images.push(null);
+        }
+        setStatus(`🖼️ Loaded scene ${i+1} of ${scenePrompts.length}`, 15 + 55*(i+1)/scenePrompts.length);
+      }
+
+      const validImages = images.filter(Boolean);
+      if (validImages.length === 0) {
+        setStatus('❌ Failed to load images. Please try again.', 0);
+        btn.disabled = false;
+        return;
+      }
+
+      // Step 3: record video
+      setStatus('🎬 Recording video...', 72);
+      document.getElementById('rec-badge').style.display = 'flex';
+
+      try {
+        videoBlob = await recordCanvas(validImages);
+      } catch(e) {
+        setStatus('❌ Recording failed: ' + e.message, 0);
+        btn.disabled = false;
+        document.getElementById('rec-badge').style.display = 'none';
+        return;
+      }
+
+      document.getElementById('rec-badge').style.display = 'none';
+      setStatus('✅ Done!', 100);
+
+      // Show result
+      const videoEl = document.getElementById('result-video');
+      videoEl.src = URL.createObjectURL(videoBlob);
+      const durationSec = validImages.length * 3;
+      document.getElementById('result-info').textContent = `${validImages.length} scenes · ~${durationSec}s · ${vidW}×${vidH} · WebM format`;
+      setTimeout(() => showVidState('result'), 500);
     }
 
-    function renderScript(text, prompt) {
-      document.getElementById('script-title').textContent = '🎬 Video Script';
-      const body = document.getElementById('script-body');
-      // Format as readable cards
-      const formatted = text
-        .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
-        .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
-        .replace(/^#+\s+(.+)$/gm, '<h3 style="font-size:0.95rem;font-weight:800;color:#e2e8f0;margin:20px 0 8px;padding-bottom:6px;border-bottom:1px solid rgba(255,255,255,0.07);">$1</h3>')
-        .replace(/\n\n/g, '</p><p style="margin:6px 0;">')
-        .replace(/\n/g, '<br>');
-      body.innerHTML = `<div class="raw-text-output">${formatted}</div>`;
+    async function getScenePrompts(concept, style, count) {
+      const prompt = `You are a cinematographer. For the video concept: "${concept}"
+
+Write exactly ${count} short image prompts for ${style} visual style.
+Format your response as a numbered list only, like:
+1. [scene description]
+2. [scene description]
+...
+
+Each prompt must be a vivid, specific visual description under 25 words.
+Make each scene visually distinct — vary the angle, distance, and lighting.
+Do not write anything else.`;
+
+      const res = await fetch('/api/tool', {
+        method: 'POST', headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({tool:'content', messages:[{role:'user',content:prompt}]})
+      });
+      const data = await res.json();
+      if (data.error) throw new Error(data.error);
+
+      const lines = data.output.split('\n')
+        .map(l => l.trim())
+        .filter(l => /^\d+[\.\):]/.test(l))
+        .map(l => l.replace(/^\d+[\.\):]\s*/, '').trim())
+        .filter(l => l.length > 5);
+
+      if (lines.length < count) throw new Error('Not enough prompts returned');
+      return lines.slice(0, count).map(p => `${p}, ${style}`);
     }
 
-    function copyScript() {
-      navigator.clipboard.writeText(currentScript);
-      const btn = document.querySelector('.copy-script-btn');
-      btn.textContent = 'Copied!';
-      setTimeout(() => btn.textContent = 'Copy All', 1800);
+    function fallbackPrompts(concept, style, count) {
+      const angles = [
+        'wide establishing shot, dramatic depth of field',
+        'close-up detail shot, macro lens, shallow focus',
+        'medium hero shot from side angle',
+        'low angle dramatic perspective, looking up',
+        'overhead flat lay composition',
+        'golden hour warm rim lighting',
+        'silhouette against bright background',
+        'slow motion motion blur, dynamic energy',
+        'bokeh background out of focus foreground',
+        'aerial bird\'s eye view looking down'
+      ];
+      return angles.slice(0, count).map(a => `${concept}, ${a}, ${style}`);
+    }
+
+    function loadImageCORS(url) {
+      return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+        img.onload = () => resolve(img);
+        img.onerror = () => {
+          // retry without crossOrigin header
+          const img2 = new Image();
+          img2.onload = () => resolve(img2);
+          img2.onerror = () => reject(new Error('Image load failed'));
+          img2.src = url + '&t=' + Date.now();
+        };
+        img.src = url;
+      });
+    }
+
+    function recordCanvas(images) {
+      return new Promise((resolve, reject) => {
+        const canvas = document.createElement('canvas');
+        canvas.width = vidW;
+        canvas.height = vidH;
+        const ctx = canvas.getContext('2d');
+
+        const previewCanvas = document.getElementById('preview-canvas');
+        previewCanvas.width = vidW;
+        previewCanvas.height = vidH;
+        const pCtx = previewCanvas.getContext('2d');
+
+        const FPS = 30;
+        const SCENE_SEC = 3;
+        const TRANSITION = 0.6;
+        const TOTAL = images.length * SCENE_SEC;
+
+        let mimeType = 'video/webm;codecs=vp9';
+        if (!MediaRecorder.isTypeSupported(mimeType)) mimeType = 'video/webm;codecs=vp8';
+        if (!MediaRecorder.isTypeSupported(mimeType)) mimeType = 'video/webm';
+        if (!MediaRecorder.isTypeSupported(mimeType)) { reject(new Error('No supported video format')); return; }
+
+        const stream = canvas.captureStream(FPS);
+        const recorder = new MediaRecorder(stream, {mimeType, videoBitsPerSecond: 4000000});
+        const chunks = [];
+        recorder.ondataavailable = e => { if (e.data && e.data.size > 0) chunks.push(e.data); };
+        recorder.onstop = () => resolve(new Blob(chunks, {type: mimeType}));
+        recorder.onerror = e => reject(new Error(e.error?.message || 'Recorder error'));
+
+        recorder.start(100);
+        const startTime = performance.now();
+
+        function drawScene(img, progress, direction) {
+          const zoomAmount = 0.12;
+          const scale = 1 + zoomAmount * progress;
+          const panX = 0.04 * vidW * direction * progress;
+          const panY = 0.02 * vidH * Math.sin(progress * Math.PI) * (direction > 0 ? 1 : -1);
+
+          ctx.save();
+          ctx.translate(vidW/2 + panX, vidH/2 + panY);
+          ctx.scale(scale, scale);
+          try { ctx.drawImage(img, -vidW/2, -vidH/2, vidW, vidH); } catch(e) {}
+          ctx.restore();
+        }
+
+        function tick() {
+          const elapsed = (performance.now() - startTime) / 1000;
+          if (elapsed >= TOTAL + 0.2) { recorder.stop(); return; }
+
+          const t = Math.min(elapsed, TOTAL);
+          const rawIdx = t / SCENE_SEC;
+          const sceneIdx = Math.min(Math.floor(rawIdx), images.length - 1);
+          const sceneProgress = rawIdx - Math.floor(rawIdx);
+          const direction = sceneIdx % 2 === 0 ? 1 : -1;
+
+          ctx.clearRect(0, 0, vidW, vidH);
+
+          // Current scene with Ken Burns
+          drawScene(images[sceneIdx], sceneProgress, direction);
+
+          // Crossfade to next
+          if (sceneProgress > 1 - TRANSITION/SCENE_SEC && sceneIdx < images.length - 1) {
+            const fadeStart = 1 - TRANSITION/SCENE_SEC;
+            const alpha = (sceneProgress - fadeStart) / (TRANSITION/SCENE_SEC);
+            ctx.globalAlpha = Math.min(1, alpha);
+            const nextDir = (sceneIdx+1) % 2 === 0 ? 1 : -1;
+            drawScene(images[sceneIdx+1], 0, nextDir);
+            ctx.globalAlpha = 1;
+          }
+
+          // Mirror to preview (scaled down)
+          pCtx.drawImage(canvas, 0, 0, previewCanvas.width, previewCanvas.height);
+
+          // Highlight active scene thumb
+          const thumbIdx = Math.min(sceneIdx, images.length-1);
+          document.querySelectorAll('.scene-thumb').forEach((th,i) => {
+            th.classList.toggle('active', i===thumbIdx);
+          });
+
+          const pct = Math.min(100, 72 + 26*(elapsed/TOTAL));
+          setStatus(`🎬 Recording... ${Math.round(elapsed)}s / ${Math.round(TOTAL)}s`, pct);
+
+          setTimeout(tick, 1000/FPS);
+        }
+
+        tick();
+      });
+    }
+
+    function downloadVideo() {
+      if (!videoBlob) return;
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(videoBlob);
+      a.download = `buildai-video-${Date.now()}.webm`;
+      a.click();
     }
   </script>
-  <style>
-    @keyframes spin { to { transform: rotate(360deg); } }
-    @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
-  </style>
 </body>
 </html>
