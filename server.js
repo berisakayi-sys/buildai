@@ -431,30 +431,37 @@ function hfPost(model, token, body) {
   });
 }
 
-app.post('/api/video', async (req, res) => {
-  const { prompt, model = 'damo-vilab/text-to-video-ms-1.7b' } = req.body;
+async function handleHfVideo(prompt, model, res) {
   if (!prompt) return res.status(400).json({ error: 'prompt is required' });
   if (!process.env.HF_TOKEN) return res.status(500).json({ error: 'HF_TOKEN not set in environment' });
-
   try {
     const hf = await hfPost(model, process.env.HF_TOKEN, { inputs: prompt });
-
     if (hf.status === 503) {
       let wait = 20;
       try { const j = JSON.parse(hf.buffer.toString()); wait = Math.ceil(j.estimated_time || 20); } catch {}
       return res.status(503).json({ error: 'model_loading', estimated_time: wait });
     }
-
     if (hf.status !== 200) {
-      return res.status(hf.status).json({ error: hf.buffer.toString() });
+      return res.status(500).json({ error: hf.buffer.toString() });
     }
-
     res.set('Content-Type', hf.contentType);
     res.set('Content-Disposition', 'inline; filename="video.mp4"');
     res.send(hf.buffer);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
+}
+
+// Catch redirected HF requests that land on /models/* directly
+app.post('/models/:org/:repo', (req, res) => {
+  const model = `${req.params.org}/${req.params.repo}`;
+  const prompt = req.body?.inputs || req.body?.prompt || '';
+  handleHfVideo(prompt, model, res);
+});
+
+app.post('/api/video', async (req, res) => {
+  const { prompt, model = 'damo-vilab/text-to-video-ms-1.7b' } = req.body;
+  handleHfVideo(prompt, model, res);
 });
 
 // ── PAGES ──
