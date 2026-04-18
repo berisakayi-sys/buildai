@@ -453,8 +453,8 @@ async function handleHfVideo(prompt, model, res) {
 }
 
 // Catch redirected HF requests that land on /models/* directly
-app.post('/models/:org/:repo', (req, res) => {
-  const model = `${req.params.org}/${req.params.repo}`;
+app.post('/models/*', (req, res) => {
+  const model = req.params[0];
   const prompt = req.body?.inputs || req.body?.prompt || '';
   handleHfVideo(prompt, model, res);
 });
