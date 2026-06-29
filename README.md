@@ -32,7 +32,13 @@ cp .env.example .env
 npm start
 ```
 
-Open http://localhost:4000
+Open http://localhost:8080
+
+If Node.js is not installed, you can still preview the site with:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\serve.ps1
+```
 
 ## Project structure
 

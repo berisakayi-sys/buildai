@@ -11,7 +11,7 @@ const path = require('path');
 const https = require('https');
 
 const app = express();
-const PORT = process.env.PORT || 4000;
+const PORT = process.env.PORT || 8080;
 const hasDatabase = Boolean(process.env.DATABASE_URL);
 
 // ── DATABASE ──
