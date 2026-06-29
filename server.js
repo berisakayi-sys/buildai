@@ -8,6 +8,7 @@ const https = require('https');
 const app = express();
 const PORT = process.env.PORT || 8080;
 const OPENROUTER_MODEL = process.env.OPENROUTER_MODEL || 'qwen/qwen3-coder:free';
+const APP_URL = process.env.APP_URL || `http://localhost:${PORT}`;
 
 // ── MIDDLEWARE ──
 app.use(cors());
@@ -84,7 +85,7 @@ app.post('/api/generate', async (req, res) => {
       apiKey: process.env.OPENROUTER_API_KEY,
       baseURL: 'https://openrouter.ai/api/v1',
       defaultHeaders: {
-        'HTTP-Referer': 'https://buildai-production-017c.up.railway.app',
+        'HTTP-Referer': APP_URL,
         'X-Title': 'BuildAI',
       },
     });
@@ -198,7 +199,7 @@ app.post('/api/tool', async (req, res) => {
     const client = new OpenAI({
       apiKey: process.env.OPENROUTER_API_KEY,
       baseURL: 'https://openrouter.ai/api/v1',
-      defaultHeaders: { 'HTTP-Referer': 'https://buildai-production-017c.up.railway.app', 'X-Title': 'BuildAI' },
+      defaultHeaders: { 'HTTP-Referer': APP_URL, 'X-Title': 'BuildAI' },
     });
 
     const result = await client.chat.completions.create({

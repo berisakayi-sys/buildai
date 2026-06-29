@@ -11,6 +11,7 @@ A free, open-source AI website builder powered by OpenRouter. Describe any websi
    ```
    OPENROUTER_API_KEY = your_key_here
    OPENROUTER_MODEL = qwen/qwen3-coder:free
+   APP_URL = https://buildai.curbmate.co
    ```
 5. Railway auto-deploys. Your site is live!
 
@@ -21,7 +22,7 @@ Get your OpenRouter API key from OpenRouter.
 ```bash
 npm install
 cp .env.example .env
-# Edit .env and add your OPENROUTER_API_KEY and OPENROUTER_MODEL
+# Edit .env and add your OPENROUTER_API_KEY, OPENROUTER_MODEL, and APP_URL
 npm start
 ```
 
