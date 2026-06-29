@@ -5,8 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>BuildAI — Builder</title>
   <link rel="icon" href="/Icon.png" type="image/png" />
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -885,17 +883,7 @@
 
     function renderTopbarUser(user) {
       const el = document.getElementById('topbar-user');
-      if (user) {
-        el.innerHTML = `<div style="display:flex;align-items:center;gap:8px;margin-left:4px;">
-          <img src="${user.avatar}" title="${user.name}" style="width:30px;height:30px;border-radius:50%;border:2px solid rgba(124,58,237,0.4);box-shadow:0 0 10px rgba(124,58,237,0.3);" />
-          <a href="/auth/logout" style="color:var(--muted);font-size:0.73rem;text-decoration:none;transition:color 0.2s;" onmouseover="this.style.color='var(--text)'" onmouseout="this.style.color='var(--muted)'">Logout</a>
-        </div>`;
-        document.getElementById('btn-projects').style.display = 'flex';
-      } else {
-        el.innerHTML = `<a href="/auth/google" style="display:flex;align-items:center;gap:6px;background:rgba(255,255,255,0.05);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,0.1);color:#fff;padding:6px 12px;border-radius:9px;font-size:0.77rem;font-weight:600;text-decoration:none;white-space:nowrap;transition:all 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.09)'" onmouseout="this.style.background='rgba(255,255,255,0.05)'">
-          <img src="https://www.google.com/favicon.ico" style="width:12px;height:12px;"> Sign in
-        </a>`;
-      }
+      el.innerHTML = '';
     }
 
     fetch('/api/me')
@@ -912,10 +900,6 @@
     const statusText = document.getElementById('status-text');
     const siteTitle = document.getElementById('site-title');
     const downloadBtn = document.getElementById('btn-download');
-
-    const startupError = new URLSearchParams(window.location.search).get('error');
-    if (startupError === 'database') addMessage('ai', 'Google sign-in and saved projects are unavailable until DATABASE_URL is configured.', 'error');
-    else if (startupError === 'google-auth') addMessage('ai', 'Google sign-in is unavailable until GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET are configured.', 'error');
 
     inputEl.addEventListener('input', () => {
       inputEl.style.height = 'auto';
@@ -1075,32 +1059,7 @@
 
     async function saveProject() {
       if (!currentHtml) return;
-      if (!currentUser) { window.location.href = '/auth/google'; return; }
-
-      const btn = document.getElementById('btn-save');
-      btn.disabled = true;
-      btn.innerHTML = 'Saving...';
-
-      try {
-        const body = { title: siteTitle.textContent, description: '', html: currentHtml };
-        let res;
-        if (currentProjectId) {
-          res = await fetch(`/api/projects/${currentProjectId}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
-        } else {
-          res = await fetch('/api/projects', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
-        }
-        const data = await res.json();
-        currentProjectId = data.id;
-        btn.innerHTML = '✓ Saved';
-        setTimeout(() => {
-          btn.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Save`;
-          btn.disabled = false;
-        }, 2000);
-      } catch (err) {
-        btn.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Save`;
-        btn.disabled = false;
-        alert('Save failed: ' + err.message);
-      }
+      alert('Saving projects has been removed from this build.');
     }
 
     async function toggleProjects() {
@@ -1118,42 +1077,11 @@
 
     async function loadProjects() {
       const grid = document.getElementById('projects-grid');
-      if (!currentUser) {
-        grid.innerHTML = `<div class="login-prompt" style="grid-column:1/-1;">
-          <div style="font-size:2.5rem;filter:drop-shadow(0 0 16px rgba(124,58,237,0.5));">🔐</div>
-          <p>Sign in with Google to save and access your projects from any device.</p>
-          <a href="/auth/google"><img src="https://www.google.com/favicon.ico" style="width:14px;"> Sign in with Google</a>
-        </div>`;
-        return;
-      }
-      grid.innerHTML = '<div style="grid-column:1/-1;padding:20px;color:var(--muted);font-size:0.85rem;">Loading projects...</div>';
-      try {
-        const res = await fetch('/api/projects');
-        const projects = await res.json();
-        if (!projects.length) {
-          grid.innerHTML = `<div class="dash-empty">
-            <div style="font-size:2.5rem;filter:drop-shadow(0 0 14px rgba(124,58,237,0.4));">✦</div>
-            <p>No saved projects yet.</p>
-            <p>Generate a website and hit <strong style="color:var(--muted2)">Save</strong> to keep it here.</p>
-          </div>`;
-          return;
-        }
-        grid.innerHTML = projects.map(p => `
-          <div class="project-card">
-            <div class="project-card-thumb">✦</div>
-            <div class="project-card-info">
-              <h4>${escapeHtml(p.title)}</h4>
-              <p>Updated ${new Date(p.updated_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</p>
-              <div class="project-card-actions">
-                <button class="open-btn" onclick="loadProject(${p.id})">Open</button>
-                <button class="del-btn" onclick="deleteProject(${p.id}, this)">Delete</button>
-              </div>
-            </div>
-          </div>
-        `).join('');
-      } catch (err) {
-        grid.innerHTML = `<div class="dash-empty">Failed to load projects.</div>`;
-      }
+      grid.innerHTML = `<div class="dash-empty" style="grid-column:1/-1;">
+        <div style="font-size:2.5rem;filter:drop-shadow(0 0 14px rgba(124,58,237,0.4));">✦</div>
+        <p>Project saving has been removed from this build.</p>
+        <p>You can still generate, edit, download, and publish websites.</p>
+      </div>`;
     }
 
     async function loadProject(id) {

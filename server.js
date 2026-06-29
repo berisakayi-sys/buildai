@@ -1,201 +1,20 @@
 require('dotenv').config();
 const express = require('express');
-const session = require('express-session');
-const passport = require('passport');
-const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const OpenAI = require('openai');
-const { Pool } = require('pg');
-const PgSession = require('connect-pg-simple')(session);
 const cors = require('cors');
 const path = require('path');
 const https = require('https');
 
 const app = express();
 const PORT = process.env.PORT || 8080;
-const hasDatabase = Boolean(process.env.DATABASE_URL);
-
-// ── DATABASE ──
-let pool = null;
-let sessionStore = null;
-
-if (hasDatabase) {
-  pool = new Pool({
-    connectionString: process.env.DATABASE_URL,
-    ssl: { rejectUnauthorized: false },
-  });
-  sessionStore = new PgSession({ pool, createTableIfMissing: true, errorLog: console.error });
-} else {
-  console.warn('DATABASE_URL not set. Using in-memory sessions and disabling saved projects.');
-}
-
-async function initDB() {
-  if (!pool) return;
-  try {
-    await pool.query(`
-      CREATE TABLE IF NOT EXISTS users (
-        id SERIAL PRIMARY KEY,
-        google_id VARCHAR(255) UNIQUE NOT NULL,
-        email VARCHAR(255),
-        name VARCHAR(255),
-        avatar VARCHAR(500),
-        created_at TIMESTAMP DEFAULT NOW()
-      );
-      CREATE TABLE IF NOT EXISTS projects (
-        id SERIAL PRIMARY KEY,
-        user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
-        title VARCHAR(255),
-        description TEXT,
-        html TEXT,
-        updated_at TIMESTAMP DEFAULT NOW(),
-        created_at TIMESTAMP DEFAULT NOW()
-      );
-    `);
-    console.log('Database ready');
-  } catch (err) {
-    console.error('DB init error:', err.message);
-  }
-}
-initDB();
+const OPENROUTER_MODEL = process.env.OPENROUTER_MODEL || 'qwen/qwen3-coder:free';
 
 // ── MIDDLEWARE ──
 app.use(cors());
 app.use(express.json({ limit: '5mb' }));
 app.use(express.static(path.join(__dirname, 'public')));
-
-const sessionConfig = {
-  secret: process.env.SESSION_SECRET || 'buildai-secret-change-me',
-  resave: false,
-  saveUninitialized: false,
-  cookie: { maxAge: 30 * 24 * 60 * 60 * 1000, secure: false },
-};
-
-if (sessionStore) {
-  sessionConfig.store = sessionStore;
-}
-
-app.use(session(sessionConfig));
-
-app.use(passport.initialize());
-app.use(passport.session());
-
-// ── PASSPORT ──
-passport.use(new GoogleStrategy({
-  clientID: process.env.GOOGLE_CLIENT_ID,
-  clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-  callbackURL: process.env.CALLBACK_URL || '/auth/google/callback',
-}, async (accessToken, refreshToken, profile, done) => {
-  if (!pool) return done(null, false);
-  try {
-    const email = profile.emails?.[0]?.value;
-    const avatar = profile.photos?.[0]?.value;
-    const res = await pool.query(
-      `INSERT INTO users (google_id, email, name, avatar)
-       VALUES ($1, $2, $3, $4)
-       ON CONFLICT (google_id) DO UPDATE SET name=$3, avatar=$4
-       RETURNING *`,
-      [profile.id, email, profile.displayName, avatar]
-    );
-    done(null, res.rows[0]);
-  } catch (err) { done(err); }
-}));
-
-passport.serializeUser((user, done) => done(null, user.id));
-passport.deserializeUser(async (id, done) => {
-  if (!pool) return done(null, false);
-  try {
-    const res = await pool.query('SELECT * FROM users WHERE id=$1', [id]);
-    done(null, res.rows[0] || false);
-  } catch (err) { done(err); }
-});
-
-// ── AUTH ROUTES ──
-function requireGoogleAuthSetup(req, res, next) {
-  if (!pool) return res.redirect('/builder?error=database');
-  if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
-    return res.redirect('/builder?error=google-auth');
-  }
-  next();
-}
-
-app.get('/auth/google', requireGoogleAuthSetup, passport.authenticate('google', { scope: ['profile', 'email'] }));
-
-app.get('/auth/google/callback',
-  requireGoogleAuthSetup,
-  passport.authenticate('google', { failureRedirect: '/?error=auth' }),
-  (req, res) => res.redirect('/builder')
-);
-
-// Global error handler
-app.use((err, req, res, next) => {
-  console.error('Server error:', err);
-  res.status(500).send(`<h1>Something went wrong</h1><p>${err.message || 'Unknown error'}</p><a href="/">Go home</a>`);
-});
-
-app.get('/auth/logout', (req, res) => {
-  req.logout(() => res.redirect('/'));
-});
-
-app.get('/api/me', (req, res) => {
-  if (!req.user) return res.json({ user: null });
-  res.json({ user: { name: req.user.name, email: req.user.email, avatar: req.user.avatar } });
-});
-
-// ── PROJECTS API ──
-function requireAuth(req, res, next) {
-  if (!req.user) return res.status(401).json({ error: 'Not logged in' });
-  next();
-}
-
-function requireDatabase(req, res, next) {
-  if (!pool) {
-    return res.status(503).json({
-      error: 'Database is not configured. Add DATABASE_URL to enable saved projects and Google sign-in.',
-    });
-  }
-  next();
-}
-
-app.get('/api/projects', requireDatabase, requireAuth, async (req, res) => {
-  const result = await pool.query(
-    'SELECT id, title, description, updated_at FROM projects WHERE user_id=$1 ORDER BY updated_at DESC',
-    [req.user.id]
-  );
-  res.json(result.rows);
-});
-
-app.post('/api/projects', requireDatabase, requireAuth, async (req, res) => {
-  const { title, description, html } = req.body;
-  const result = await pool.query(
-    `INSERT INTO projects (user_id, title, description, html)
-     VALUES ($1, $2, $3, $4) RETURNING id, title, description, updated_at`,
-    [req.user.id, title || 'Untitled', description || '', html]
-  );
-  res.json(result.rows[0]);
-});
-
-app.put('/api/projects/:id', requireDatabase, requireAuth, async (req, res) => {
-  const { title, description, html } = req.body;
-  const result = await pool.query(
-    `UPDATE projects SET title=$1, description=$2, html=$3, updated_at=NOW()
-     WHERE id=$4 AND user_id=$5 RETURNING id, title, description, updated_at`,
-    [title, description, html, req.params.id, req.user.id]
-  );
-  if (!result.rows[0]) return res.status(404).json({ error: 'Not found' });
-  res.json(result.rows[0]);
-});
-
-app.get('/api/projects/:id', requireDatabase, requireAuth, async (req, res) => {
-  const result = await pool.query(
-    'SELECT * FROM projects WHERE id=$1 AND user_id=$2',
-    [req.params.id, req.user.id]
-  );
-  if (!result.rows[0]) return res.status(404).json({ error: 'Not found' });
-  res.json(result.rows[0]);
-});
-
-app.delete('/api/projects/:id', requireDatabase, requireAuth, async (req, res) => {
-  await pool.query('DELETE FROM projects WHERE id=$1 AND user_id=$2', [req.params.id, req.user.id]);
-  res.json({ ok: true });
+app.get('/api/me', (_req, res) => {
+  res.json({ user: null });
 });
 
 // ── AI GENERATION ──
@@ -231,7 +50,7 @@ EFFECTS & POLISH:
 - Hover micro-interactions: card lift (translateY -8px), glow intensify, image zoom
 
 TYPOGRAPHY:
-- Google Fonts — always pick a premium-feeling pair: one bold display font (e.g. Playfair Display, Syne, Clash Display via @import, Bebas Neue, DM Serif Display) + one clean body font (e.g. Inter, DM Sans, Outfit)
+- Use a premium-feeling pair of fonts: one bold display font plus one clean body font
 - Mix font weights dramatically: 900 for hero, 300 for subtext, 600 for labels
 
 PHOTOS — MANDATORY:
@@ -282,7 +101,7 @@ app.post('/api/generate', async (req, res) => {
     });
 
     const result = await client.chat.completions.create({
-      model: 'openrouter/auto',
+      model: OPENROUTER_MODEL,
       max_tokens: 8000,
       messages: [{ role: 'system', content: SYSTEM_PROMPT }, ...chatMessages],
     });
@@ -383,7 +202,7 @@ app.post('/api/tool', async (req, res) => {
     });
 
     const result = await client.chat.completions.create({
-      model: 'openrouter/auto',
+      model: OPENROUTER_MODEL,
       max_tokens: 4000,
       messages: [{ role: 'system', content: config.system }, ...messages],
     });

@@ -5,8 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>BuildAI — Free AI Creative Suite</title>
   <link rel="icon" href="/Icon.png" type="image/png" />
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -606,16 +604,7 @@
   <script>
     function renderNavUser(user) {
       const el = document.getElementById('nav-user');
-      if (user) {
-        el.innerHTML = `<div style="display:flex;align-items:center;gap:8px;">
-          <img src="${user.avatar}" style="width:30px;height:30px;border-radius:50%;border:2px solid rgba(14,165,233,0.4);box-shadow:0 0 10px rgba(14,165,233,0.25);" />
-          <a href="/auth/logout" style="color:var(--muted2);font-size:0.8rem;text-decoration:none;">Logout</a>
-        </div>`;
-      } else {
-        el.innerHTML = `<a href="/auth/google" style="display:flex;align-items:center;gap:7px;background:rgba(255,255,255,0.05);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,0.1);color:#fff;padding:7px 14px;border-radius:8px;font-size:0.8rem;font-weight:600;text-decoration:none;">
-          <img src="https://www.google.com/favicon.ico" style="width:13px;height:13px;"> Sign in
-        </a>`;
-      }
+      el.innerHTML = '';
     }
     fetch('/api/me').then(r=>r.json()).then(({user})=>renderNavUser(user)).catch(()=>renderNavUser(null));
   </script>
